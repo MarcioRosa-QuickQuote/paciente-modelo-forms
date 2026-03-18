@@ -16,7 +16,7 @@ export default function AdminDashboard() {
     try {
       const res = await fetch('/api/forms');
       const data = await res.json();
-      setForms(data);
+      setForms(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching forms:', error);
     } finally {
