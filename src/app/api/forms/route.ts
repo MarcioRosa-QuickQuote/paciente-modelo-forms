@@ -12,7 +12,8 @@ export async function GET() {
     return NextResponse.json(forms);
   } catch (error) {
     console.error('Error fetching forms:', error);
-    return NextResponse.json({ error: 'Erro ao buscar formulários' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Erro ao buscar formulários', details: msg }, { status: 500 });
   }
 }
 
