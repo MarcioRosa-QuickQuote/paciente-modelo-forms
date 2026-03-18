@@ -119,9 +119,7 @@ export default function CelebrationScreen({ whatsappNumber, procedureName }: Pro
           Você foi qualificada para ser nossa paciente modelo!
         </p>
         <p className="text-gray-500 text-base leading-relaxed max-w-sm mx-auto">
-          Uma das nossas consultoras entrará em contato pelo WhatsApp pelo número abaixo.
-          <br />
-          É só chamar a gente e aguardar nosso retorno 🥰
+          É só chamar a gente no WhatsApp abaixo e aguardar o retorno de uma das nossas consultoras 🥰
         </p>
       </motion.div>
 
