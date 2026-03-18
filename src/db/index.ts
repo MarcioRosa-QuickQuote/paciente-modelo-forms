@@ -299,7 +299,7 @@ export function rowToFormData(row: FormRow) {
     formFields: row.form_fields || defaultFields,
     theme: row.theme || 'purple',
     userId: row.user_id || '',
-    steps: Array.isArray(row.steps) ? row.steps : [],
+    steps: Array.isArray(row.steps) ? (row.steps as { id: string; type: 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta'; question?: string; yesText?: string; noText?: string }[]) : [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
