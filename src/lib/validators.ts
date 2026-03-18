@@ -1,0 +1,17 @@
+import { z } from 'zod';
+
+export const formInputSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  procedureName: z.string().min(1, 'Nome do procedimento é obrigatório'),
+  availableDays: z.string().min(1, 'Dias disponíveis é obrigatório'),
+  regularPrice: z.number().positive('Valor deve ser positivo'),
+  modelPrice: z.number().positive('Valor deve ser positivo'),
+  feeAmount: z.number().positive('Valor deve ser positivo'),
+  professionalName: z.string().min(1, 'Nome da profissional é obrigatório'),
+  instagramHandle: z.string().min(1, 'Instagram é obrigatório'),
+  whatsappNumber: z.string().min(1, 'WhatsApp é obrigatório'),
+  beforeImage: z.string().default(''),
+  afterImage: z.string().default(''),
+});
+
+export type FormInputSchema = z.infer<typeof formInputSchema>;
