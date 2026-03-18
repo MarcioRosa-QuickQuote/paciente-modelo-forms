@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const formInputSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   procedureName: z.string().min(1, 'Nome do procedimento é obrigatório'),
-  availableDays: z.string().min(1, 'Dias disponíveis é obrigatório'),
+  availableDays: z.string().default(''),
   regularPrice: z.number().positive('Valor deve ser positivo'),
   modelPrice: z.number().positive('Valor deve ser positivo'),
   feeAmount: z.number().positive('Valor deve ser positivo'),

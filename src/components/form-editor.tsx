@@ -212,7 +212,10 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
         router.refresh();
       } else {
         const data = await res.json();
-        alert(data.error || 'Erro ao salvar formulário');
+        const errMsg = typeof data.error === 'string'
+          ? data.error
+          : data.error?.formErrors?.[0] || JSON.stringify(data.error) || 'Erro ao salvar formulário';
+        alert(errMsg);
       }
     } catch {
       alert('Erro ao salvar formulário');
