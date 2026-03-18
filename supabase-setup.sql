@@ -46,6 +46,9 @@ CREATE TABLE responses (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 8. Adicionar campo de tema nas forms
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'purple';
+
 -- 7. Criar tabela de leads
 CREATE TABLE IF NOT EXISTS leads (
   id SERIAL PRIMARY KEY,

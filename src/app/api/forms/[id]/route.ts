@@ -60,6 +60,7 @@ export async function PUT(
     if (data.whatsappMessage !== undefined) updateData.whatsapp_message = data.whatsappMessage;
     if (data.finalScreenType !== undefined) updateData.final_screen_type = data.finalScreenType;
     if (data.formFields !== undefined) updateData.form_fields = data.formFields;
+    if (data.theme !== undefined) updateData.theme = data.theme;
 
     await updateForm(id, updateData);
 

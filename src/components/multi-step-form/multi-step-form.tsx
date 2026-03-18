@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormData } from '@/types/form';
+import { getTheme } from '@/lib/themes';
 import StepBeforeAfter from './step-before-after';
 import StepAvailability from './step-availability';
 import StepPricing from './step-pricing';
@@ -36,6 +37,7 @@ interface Props {
 
 export default function MultiStepForm({ formData }: Props) {
   const [screen, setScreen] = useState<Screen>('step1');
+  const theme = getTheme(formData.theme);
 
   const variants = useMemo(() => {
     const dir = getRandomDirection();
@@ -73,7 +75,8 @@ export default function MultiStepForm({ formData }: Props) {
       {!['rejected', 'celebration'].includes(screen) && (
         <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-100">
           <motion.div
-            className="h-full bg-gradient-to-r from-purple-600 to-pink-500"
+            style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})` }}
+          className="h-full"
             initial={{ width: '0%' }}
             animate={{
               width:
@@ -103,6 +106,7 @@ export default function MultiStepForm({ formData }: Props) {
               afterImage={formData.afterImage}
               onYes={() => handleYes('step2')}
               onNo={handleNo}
+              theme={theme}
             />
           )}
 
@@ -112,6 +116,7 @@ export default function MultiStepForm({ formData }: Props) {
               availableDays={formData.availableDays}
               onYes={() => handleYes('step3')}
               onNo={handleNo}
+              theme={theme}
             />
           )}
 
@@ -122,6 +127,7 @@ export default function MultiStepForm({ formData }: Props) {
               modelPrice={formData.modelPrice}
               onYes={() => handleYes('step4')}
               onNo={handleNo}
+              theme={theme}
             />
           )}
 
@@ -130,6 +136,7 @@ export default function MultiStepForm({ formData }: Props) {
               feeAmount={formData.feeAmount}
               onYes={() => handleYes('celebration')}
               onNo={handleNo}
+              theme={theme}
             />
           )}
 
@@ -137,6 +144,7 @@ export default function MultiStepForm({ formData }: Props) {
             <RejectionScreen
               professionalName={formData.professionalName}
               instagramHandle={formData.instagramHandle}
+              theme={theme}
             />
           )}
 
@@ -144,6 +152,7 @@ export default function MultiStepForm({ formData }: Props) {
             <LeadFormScreen
               formId={formData.id}
               formFields={formData.formFields}
+              theme={theme}
             />
           ) : screen === 'celebration' && (
             <CelebrationScreen
@@ -151,6 +160,7 @@ export default function MultiStepForm({ formData }: Props) {
               whatsappNumber={formData.whatsappNumber}
               procedureName={formData.procedureName}
               whatsappMessage={formData.whatsappMessage}
+              theme={theme}
             />
           )}
         </motion.div>

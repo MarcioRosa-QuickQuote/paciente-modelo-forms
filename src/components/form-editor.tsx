@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FormData, FormInput } from '@/types/form';
 import { generateSlug } from '@/lib/utils';
+import { THEMES } from '@/lib/themes';
 import Image from 'next/image';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
@@ -74,6 +75,7 @@ export default function FormEditor({ initialData, mode }: FormEditorProps) {
     whatsappMessage: initialData?.whatsappMessage || '',
     finalScreenType: initialData?.finalScreenType || 'whatsapp',
     formFields: initialData?.formFields || { name: true, whatsapp: true, email: true },
+    theme: initialData?.theme || 'purple',
   });
 
   const [regularPriceDisplay, setRegularPriceDisplay] = useState(formatBRL(form.regularPrice));
@@ -451,6 +453,39 @@ export default function FormEditor({ initialData, mode }: FormEditorProps) {
               </div>
             </div>
           </div>
+          {/* Tema de Cores */}
+          <div className="pt-4 border-t border-gray-100">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">Tema de Cores</h3>
+            <div className="grid grid-cols-4 gap-3">
+              {Object.values(THEMES).map((theme) => (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => updateField('theme', theme.id)}
+                  title={theme.name}
+                  className={`relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                    form.theme === theme.id
+                      ? 'border-gray-800 shadow-md scale-105'
+                      : 'border-gray-200 hover:border-gray-400'
+                  }`}
+                >
+                  <div
+                    className="w-10 h-10 rounded-full shadow-sm"
+                    style={{ background: `linear-gradient(135deg, ${theme.preview[0]}, ${theme.preview[1]})` }}
+                  />
+                  <span className="text-xs text-gray-600 font-medium text-center leading-tight">{theme.name}</span>
+                  {form.theme === theme.id && (
+                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-gray-800 rounded-full flex items-center justify-center">
+                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Separador - Tela Final */}
           <div className="pt-4 border-t border-gray-100">
             <h3 className="text-base font-semibold text-gray-900 mb-4">Configuração da Tela Final</h3>

@@ -3,56 +3,33 @@
 import { motion } from 'framer-motion';
 import { useEffect, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
+import { Theme } from '@/lib/themes';
 
 interface Props {
   formId: string;
   whatsappNumber: string;
   procedureName: string;
   whatsappMessage?: string;
+  theme: Theme;
 }
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage }: Props) {
+export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage, theme }: Props) {
   const hasLaunched = useRef(false);
 
   const launchConfetti = useCallback(() => {
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { x: 0.1, y: 0.8 },
-      colors: ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'],
-    });
-
-    confetti({
-      particleCount: 80,
-      spread: 70,
-      origin: { x: 0.9, y: 0.8 },
-      colors: ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'],
-    });
-
+    const colors = [theme.gradientFrom, theme.gradientTo, '#10b981', '#f59e0b', '#3b82f6'];
+    confetti({ particleCount: 80, spread: 70, origin: { x: 0.1, y: 0.8 }, colors });
+    confetti({ particleCount: 80, spread: 70, origin: { x: 0.9, y: 0.8 }, colors });
     setTimeout(() => {
-      confetti({
-        particleCount: 120,
-        spread: 100,
-        origin: { x: 0.5, y: 0.6 },
-        colors: ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'],
-      });
+      confetti({ particleCount: 120, spread: 100, origin: { x: 0.5, y: 0.6 }, colors });
     }, 500);
-
     setTimeout(() => {
-      confetti({
-        particleCount: 60,
-        spread: 80,
-        origin: { x: 0.3, y: 0.7 },
-      });
-      confetti({
-        particleCount: 60,
-        spread: 80,
-        origin: { x: 0.7, y: 0.7 },
-      });
+      confetti({ particleCount: 60, spread: 80, origin: { x: 0.3, y: 0.7 } });
+      confetti({ particleCount: 60, spread: 80, origin: { x: 0.7, y: 0.7 } });
     }, 1200);
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     if (!hasLaunched.current) {
@@ -114,7 +91,10 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
         className="text-center mb-8 z-10"
       >
         <h1 className="text-3xl sm:text-4xl font-extrabold mb-4">
-          <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent">
+          <span
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+          >
             Parabéns!
           </span>
         </h1>

@@ -19,6 +19,7 @@ export const formInputSchema = z.object({
     whatsapp: z.boolean(),
     email: z.boolean(),
   }).default({ name: true, whatsapp: true, email: true }),
+  theme: z.string().default('purple'),
 });
 
 export type FormInputSchema = z.infer<typeof formInputSchema>;

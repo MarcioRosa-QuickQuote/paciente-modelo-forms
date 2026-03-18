@@ -4,15 +4,17 @@ import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { FormFields } from '@/types/form';
+import { Theme } from '@/lib/themes';
 
 interface Props {
   formId: string;
   formFields: FormFields;
+  theme: Theme;
 }
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function LeadFormScreen({ formId, formFields }: Props) {
+export default function LeadFormScreen({ formId, formFields, theme }: Props) {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [email, setEmail] = useState('');
@@ -21,12 +23,13 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
   const hasLaunched = useRef(false);
 
   const launchConfetti = useCallback(() => {
-    confetti({ particleCount: 80, spread: 70, origin: { x: 0.1, y: 0.8 }, colors: ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'] });
-    confetti({ particleCount: 80, spread: 70, origin: { x: 0.9, y: 0.8 }, colors: ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'] });
+    const colors = [theme.gradientFrom, theme.gradientTo, '#10b981', '#f59e0b', '#3b82f6'];
+    confetti({ particleCount: 80, spread: 70, origin: { x: 0.1, y: 0.8 }, colors });
+    confetti({ particleCount: 80, spread: 70, origin: { x: 0.9, y: 0.8 }, colors });
     setTimeout(() => {
-      confetti({ particleCount: 120, spread: 100, origin: { x: 0.5, y: 0.6 }, colors: ['#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'] });
+      confetti({ particleCount: 120, spread: 100, origin: { x: 0.5, y: 0.6 }, colors });
     }, 500);
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     if (!hasLaunched.current) {
@@ -55,7 +58,6 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
       });
 
       if (res.ok) {
-        // Track as step 5
         fetch('/api/responses', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -104,7 +106,10 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
           className="text-center z-10"
         >
           <h1 className="text-3xl font-extrabold mb-3">
-            <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent">
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+            >
               Dados enviados!
             </span>
           </h1>
@@ -145,7 +150,10 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
         className="text-center mb-6 z-10"
       >
         <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">
-          <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent">
+          <span
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+          >
             Parabéns!
           </span>
         </h1>
@@ -172,7 +180,8 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Seu nome completo"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-gray-900 bg-white/90 backdrop-blur-sm"
+              style={{ '--tw-ring-color': theme.accent } as React.CSSProperties}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all text-gray-900 bg-white/90 backdrop-blur-sm"
               required
             />
           </div>
@@ -187,7 +196,8 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
               value={whatsapp}
               onChange={e => setWhatsapp(formatPhone(e.target.value))}
               placeholder="(91) 9 8382-8928"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-gray-900 bg-white/90 backdrop-blur-sm"
+              style={{ '--tw-ring-color': theme.accent } as React.CSSProperties}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all text-gray-900 bg-white/90 backdrop-blur-sm"
               required
             />
           </div>
@@ -201,7 +211,8 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="seu@email.com"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-gray-900 bg-white/90 backdrop-blur-sm"
+              style={{ '--tw-ring-color': theme.accent } as React.CSSProperties}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all text-gray-900 bg-white/90 backdrop-blur-sm"
               required
             />
           </div>
@@ -210,7 +221,8 @@ export default function LeadFormScreen({ formId, formFields }: Props) {
         <button
           type="submit"
           disabled={sending}
-          className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-xl shadow-purple-500/30 hover:shadow-2xl hover:shadow-purple-500/40 transition-all disabled:opacity-50"
+          style={{ background: theme.yesBtn }}
+          className="w-full py-4 text-white font-bold text-lg rounded-2xl shadow-xl transition-all disabled:opacity-50"
         >
           {sending ? 'Enviando...' : 'Enviar meus dados'}
         </button>

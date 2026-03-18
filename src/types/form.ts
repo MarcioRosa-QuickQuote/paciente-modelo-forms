@@ -24,6 +24,7 @@ export interface FormData {
   whatsappMessage: string;
   finalScreenType: FinalScreenType;
   formFields: FormFields;
+  theme: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,6 +44,7 @@ export interface FormInput {
   whatsappMessage: string;
   finalScreenType: FinalScreenType;
   formFields: FormFields;
+  theme: string;
 }
 
 export interface Lead {

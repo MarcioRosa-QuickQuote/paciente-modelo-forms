@@ -86,6 +86,7 @@ export interface FormRow {
   whatsapp_message: string;
   final_screen_type: string;
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
+  theme: string;
   created_at: string;
   updated_at: string;
 }
@@ -108,6 +109,7 @@ interface CreateFormInput {
   whatsapp_message: string;
   final_screen_type: string;
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
+  theme: string;
 }
 
 // Responses
@@ -207,6 +209,7 @@ export function rowToFormData(row: FormRow) {
     whatsappMessage: row.whatsapp_message || '',
     finalScreenType: (row.final_screen_type as 'whatsapp' | 'form') || 'whatsapp',
     formFields: row.form_fields || defaultFields,
+    theme: row.theme || 'purple',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

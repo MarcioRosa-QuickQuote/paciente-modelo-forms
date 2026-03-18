@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import YesNoButtons from './yes-no-buttons';
+import { Theme } from '@/lib/themes';
 
 interface Props {
   procedureName: string;
@@ -10,9 +11,10 @@ interface Props {
   afterImage: string;
   onYes: () => void;
   onNo: () => void;
+  theme: Theme;
 }
 
-export default function StepBeforeAfter({ procedureName, beforeImage, afterImage, onYes, onNo }: Props) {
+export default function StepBeforeAfter({ procedureName, beforeImage, afterImage, onYes, onNo, theme }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
       {/* Before/After Images */}
@@ -49,7 +51,10 @@ export default function StepBeforeAfter({ procedureName, beforeImage, afterImage
                     className="object-cover"
                   />
                 </div>
-                <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <span
+                  className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs font-bold px-3 py-1 rounded-full"
+                  style={{ background: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+                >
                   DEPOIS
                 </span>
               </div>
@@ -88,6 +93,7 @@ export default function StepBeforeAfter({ procedureName, beforeImage, afterImage
           onNo={onNo}
           yesText="Sim, quero!"
           noText="Não"
+          theme={theme}
         />
       </motion.div>
     </div>

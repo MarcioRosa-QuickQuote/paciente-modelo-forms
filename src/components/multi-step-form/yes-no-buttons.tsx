@@ -1,22 +1,27 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Theme } from '@/lib/themes';
 
 interface YesNoButtonsProps {
   onYes: () => void;
   onNo: () => void;
   yesText?: string;
   noText?: string;
+  theme: Theme;
 }
 
-export default function YesNoButtons({ onYes, onNo, yesText = 'Sim', noText = 'Não' }: YesNoButtonsProps) {
+export default function YesNoButtons({ onYes, onNo, yesText = 'Sim', noText = 'Não', theme }: YesNoButtonsProps) {
   return (
     <div className="flex gap-4 w-full max-w-sm mx-auto">
       <motion.button
         onClick={onYes}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="flex-1 py-4 px-6 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold text-lg rounded-2xl shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-shadow"
+        style={{ background: theme.yesBtn }}
+        onMouseEnter={e => (e.currentTarget.style.background = theme.yesBtnHover)}
+        onMouseLeave={e => (e.currentTarget.style.background = theme.yesBtn)}
+        className="flex-1 py-4 px-6 text-white font-bold text-lg rounded-2xl shadow-lg transition-shadow"
       >
         {yesText}
       </motion.button>

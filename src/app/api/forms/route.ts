@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
       whatsapp_message: data.whatsappMessage || '',
       final_screen_type: data.finalScreenType || 'whatsapp',
       form_fields: data.formFields || { name: true, whatsapp: true, email: true },
+      theme: data.theme || 'purple',
     });
 
     return NextResponse.json({ id, slug }, { status: 201 });
