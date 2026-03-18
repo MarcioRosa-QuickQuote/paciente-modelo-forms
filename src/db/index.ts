@@ -237,10 +237,10 @@ export async function getClinicSettings(userId: string) {
     .single();
 
   if (error && error.code !== 'PGRST116') throw error;
-  return data as { clinic_logo: string; pixel_id: string } | null;
+  return data as { clinic_logo: string; pixel_id: string; capi_token: string } | null;
 }
 
-export async function upsertClinicSettings(userId: string, settings: { clinic_logo: string; pixel_id: string }) {
+export async function upsertClinicSettings(userId: string, settings: { clinic_logo: string; pixel_id: string; capi_token: string }) {
   const supabase = getSupabase();
   const { error } = await supabase
     .from('user_settings')
@@ -255,7 +255,7 @@ export async function getClinicSettingsByUserId(userId: string) {
     .select('*')
     .eq('user_id', userId)
     .single();
-  return data as { clinic_logo: string; pixel_id: string } | null;
+  return data as { clinic_logo: string; pixel_id: string; capi_token: string } | null;
 }
 
 export function rowToFormData(row: FormRow) {

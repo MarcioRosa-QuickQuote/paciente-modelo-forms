@@ -1,0 +1,63 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getFormById, getClinicSettingsByUserId, rowToFormData } from '@/db';
+import crypto from 'crypto';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { formId, eventName = 'Lead', eventSourceUrl, clientIp, clientUserAgent, eventId } = body;
+
+    if (!formId) return NextResponse.json({ error: 'formId obrigatório' }, { status: 400 });
+
+    // Load form and its owner
+    const row = await getFormById(formId);
+    if (!row) return NextResponse.json({ error: 'Formulário não encontrado' }, { status: 404 });
+
+    const formData = rowToFormData(row);
+    if (!formData.userId) return NextResponse.json({ skipped: true });
+
+    // Load settings for this user
+    const settings = await getClinicSettingsByUserId(formData.userId);
+    const pixelId = settings?.pixel_id;
+    const capiToken = settings?.capi_token;
+
+    if (!pixelId || !capiToken) return NextResponse.json({ skipped: true });
+
+    // Build Conversions API payload
+    const eventTime = Math.floor(Date.now() / 1000);
+    const payload = {
+      data: [
+        {
+          event_name: eventName,
+          event_time: eventTime,
+          event_id: eventId || crypto.randomUUID(),
+          action_source: 'website',
+          event_source_url: eventSourceUrl || '',
+          user_data: {
+            client_ip_address: clientIp || '',
+            client_user_agent: clientUserAgent || '',
+          },
+        },
+      ],
+    };
+
+    const url = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${capiToken}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      console.error('Meta CAPI error:', result);
+      return NextResponse.json({ error: 'Erro ao enviar para Meta' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, result });
+  } catch (error) {
+    console.error('Meta CAPI error:', error);
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
+  }
+}

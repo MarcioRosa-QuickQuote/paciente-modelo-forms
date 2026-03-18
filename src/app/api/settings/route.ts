@@ -17,16 +17,17 @@ async function getUserIdFromRequest(request: NextRequest): Promise<string> {
 export async function GET(request: NextRequest) {
   try {
     const userId = await getUserIdFromRequest(request);
-    if (!userId) return NextResponse.json({ clinicLogo: '', pixelId: '' });
+    if (!userId) return NextResponse.json({ clinicLogo: '', pixelId: '', capiToken: '' });
 
     const settings = await getClinicSettings(userId);
     return NextResponse.json({
       clinicLogo: settings?.clinic_logo || '',
       pixelId: settings?.pixel_id || '',
+      capiToken: settings?.capi_token || '',
     });
   } catch (error) {
     console.error('Error fetching settings:', error);
-    return NextResponse.json({ clinicLogo: '', pixelId: '' });
+    return NextResponse.json({ clinicLogo: '', pixelId: '', capiToken: '' });
   }
 }
 
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
     await upsertClinicSettings(userId, {
       clinic_logo: body.clinicLogo || '',
       pixel_id: body.pixelId || '',
+      capi_token: body.capiToken || '',
     });
 
     return NextResponse.json({ success: true });

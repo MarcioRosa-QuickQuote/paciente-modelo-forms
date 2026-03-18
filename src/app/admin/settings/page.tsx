@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase-client';
 export default function SettingsPage() {
   const [clinicLogo, setClinicLogo] = useState('');
   const [pixelId, setPixelId] = useState('');
+  const [capiToken, setCapiToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -24,6 +26,7 @@ export default function SettingsPage() {
         const data = await res.json();
         setClinicLogo(data.clinicLogo || '');
         setPixelId(data.pixelId || '');
+        setCapiToken(data.capiToken || '');
       }
     }
     loadSettings();
@@ -56,7 +59,7 @@ export default function SettingsPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token || ''}`,
         },
-        body: JSON.stringify({ clinicLogo, pixelId }),
+        body: JSON.stringify({ clinicLogo, pixelId, capiToken }),
       });
       if (res.ok) {
         setSaved(true);
@@ -78,15 +81,14 @@ export default function SettingsPage() {
         <p className="text-gray-500 mt-1">Personalize sua conta e seus formulários</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Identidade Visual</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Será exibida no topo dos seus formulários públicos</p>
-        </div>
-
-        <div className="p-6 space-y-6">
-          {/* Logo da Clínica */}
-          <div>
+      <div className="space-y-6">
+        {/* Identidade Visual */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-base font-semibold text-gray-900">Identidade Visual</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Exibida no topo dos seus formulários públicos</p>
+          </div>
+          <div className="p-6">
             <label className="block text-sm font-medium text-gray-700 mb-3">Logomarca da Clínica</label>
             <div className="flex items-start gap-4">
               <div
@@ -111,8 +113,7 @@ export default function SettingsPage() {
                 )}
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Formatos aceitos: PNG, JPG, WebP</p>
-                <p className="text-sm text-gray-500 mt-1">Recomendado: fundo transparente (PNG)</p>
+                <p className="text-sm text-gray-500">PNG, JPG ou WebP. Recomendado: fundo transparente (PNG)</p>
                 {clinicLogo && (
                   <button onClick={() => setClinicLogo('')} className="mt-2 text-sm text-red-500 hover:text-red-700 transition-colors">
                     Remover logo
@@ -123,29 +124,104 @@ export default function SettingsPage() {
             <input ref={logoRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
               onChange={e => { const f = e.target.files?.[0]; if (f) uploadLogo(f); }} />
           </div>
+        </div>
 
-          {/* Meta Pixel */}
-          <div className="pt-4 border-t border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900 mb-1">Meta Pixel (Facebook)</h3>
-            <p className="text-sm text-gray-500 mb-3">
-              Conecte seu Pixel para rastrear conversões no Facebook/Instagram Ads.
-              O evento <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">Lead</code> será disparado quando o paciente completar o formulário.
-            </p>
-            <label className="block text-sm font-medium text-gray-700 mb-2">ID do Pixel</label>
-            <input
-              type="text"
-              value={pixelId}
-              onChange={e => setPixelId(e.target.value)}
-              placeholder="Ex: 1234567890123456"
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900"
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Encontre no Gerenciador de Eventos do Facebook → Configurações → ID do Pixel
-            </p>
+        {/* Meta Pixel + CAPI */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-base font-semibold text-gray-900">Meta Ads (Facebook & Instagram)</h2>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Recomendado</span>
+            </div>
+            <p className="text-sm text-gray-500">Configure o rastreamento para otimizar suas campanhas de anúncios</p>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Pixel ID */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ID do Pixel</label>
+              <p className="text-xs text-gray-400 mb-2">
+                Rastreamento no navegador do usuário. Encontre em Gerenciador de Eventos → Configurações.
+              </p>
+              <input
+                type="text"
+                value={pixelId}
+                onChange={e => setPixelId(e.target.value)}
+                placeholder="Ex: 1234567890123456"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900"
+              />
+            </div>
+
+            {/* CAPI Token */}
+            <div className="pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-2 mb-1">
+                <label className="block text-sm font-medium text-gray-700">Token da API de Conversões (CAPI)</label>
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Server-side</span>
+              </div>
+              <p className="text-xs text-gray-400 mb-2">
+                Envia o evento <code className="bg-gray-100 px-1 py-0.5 rounded">Lead</code> direto do servidor — não pode ser bloqueado por ad blockers nem pelo iOS.
+                Complementa o Pixel e melhora a qualidade das conversões.
+                Encontre em Gerenciador de Eventos → Configurações → API de Conversões → Gerar Token de Acesso.
+              </p>
+
+              {/* Visual de qualidade de rastreamento */}
+              <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-xl">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Sem CAPI (só Pixel)</span>
+                    <span className="text-xs font-semibold text-orange-600">~60% dos eventos</span>
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full w-[60%] bg-orange-400 rounded-full" />
+                  </div>
+                </div>
+                <span className="text-gray-300">→</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Com Pixel + CAPI</span>
+                    <span className="text-xs font-semibold text-green-600">~95% dos eventos</span>
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full w-[95%] bg-green-500 rounded-full" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative">
+                <input
+                  type={showToken ? 'text' : 'password'}
+                  value={capiToken}
+                  onChange={e => setCapiToken(e.target.value)}
+                  placeholder="EAAMxxxxxxxx..."
+                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900 font-mono text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                  title={showToken ? 'Ocultar token' : 'Mostrar token'}
+                >
+                  {showToken ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-orange-600 mt-1.5">
+                ⚠️ Nunca compartilhe este token — ele dá acesso à sua conta de anúncios.
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+        {/* Save button */}
+        <div className="flex items-center justify-end gap-3">
           {saved && (
             <span className="text-green-600 text-sm font-medium flex items-center gap-1">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

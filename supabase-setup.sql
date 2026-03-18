@@ -77,6 +77,10 @@ CREATE TABLE IF NOT EXISTS user_settings (
   user_id TEXT PRIMARY KEY,
   clinic_logo TEXT DEFAULT '',
   pixel_id TEXT DEFAULT '',
+  capi_token TEXT DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Se a tabela já existe, adicione a coluna:
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS capi_token TEXT DEFAULT '';

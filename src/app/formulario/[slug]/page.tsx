@@ -43,11 +43,13 @@ export default async function FormularioPage({ params }: PageProps) {
   // Load clinic settings for this form's owner
   let clinicLogo = '';
   let pixelId = '';
+  let capiToken = '';
   if (formData.userId) {
     const settings = await getClinicSettingsByUserId(formData.userId);
     clinicLogo = settings?.clinic_logo || '';
     pixelId = settings?.pixel_id || '';
+    capiToken = settings?.capi_token || '';
   }
 
-  return <MultiStepForm formData={formData} clinicLogo={clinicLogo} pixelId={pixelId} />;
+  return <MultiStepForm formData={formData} clinicLogo={clinicLogo} pixelId={pixelId} capiToken={capiToken} />;
 }

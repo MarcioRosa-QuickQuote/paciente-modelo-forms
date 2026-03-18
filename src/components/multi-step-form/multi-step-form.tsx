@@ -36,9 +36,10 @@ interface Props {
   formData: FormData;
   clinicLogo?: string;
   pixelId?: string;
+  capiToken?: string;
 }
 
-export default function MultiStepForm({ formData, clinicLogo, pixelId }: Props) {
+export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken }: Props) {
   const [screen, setScreen] = useState<Screen>('step1');
   const theme = getTheme(formData.theme);
 
@@ -60,21 +61,40 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId }: Props) 
     }).catch(() => {});
   }, [formData.id]);
 
-  const firePixelEvent = useCallback((eventName: string) => {
+  const firePixelEvent = useCallback((eventName: string, eventId: string) => {
     if (!pixelId) return;
     try {
       // @ts-expect-error fbq is injected by Meta Pixel
       if (typeof window !== 'undefined' && window.fbq) {
         // @ts-expect-error fbq is injected by Meta Pixel
-        window.fbq('track', eventName);
+        window.fbq('track', eventName, {}, { eventID: eventId });
       }
     } catch {}
   }, [pixelId]);
 
+  const fireCapiEvent = useCallback((eventName: string, eventId: string) => {
+    if (!capiToken) return;
+    fetch('/api/meta-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        formId: formData.id,
+        eventName,
+        eventId,
+        eventSourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+        clientUserAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
+      }),
+    }).catch(() => {});
+  }, [capiToken, formData.id]);
+
   function handleYes(nextScreen: Screen) {
     const stepNum = STEP_MAP[screen];
     if (stepNum) trackResponse(stepNum, 'sim');
-    if (nextScreen === 'celebration') firePixelEvent('Lead');
+    if (nextScreen === 'celebration') {
+      const eventId = crypto.randomUUID();
+      firePixelEvent('Lead', eventId);
+      fireCapiEvent('Lead', eventId);
+    }
     setScreen(nextScreen);
   }
 
