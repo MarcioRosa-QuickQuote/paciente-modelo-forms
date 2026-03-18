@@ -37,23 +37,21 @@ export default function StepAvailability({ procedureName, availableDays, procedu
         className="text-center mb-10"
       >
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6">
-          {procedureDuration
-            ? <>
-                Tem disponibilidade em um dos dias abaixo<br />
-                tendo em vista que o procedimento dura em média {procedureDuration}?
-              </>
-            : <>
-                Tem disponibilidade em um dos dias abaixo?
-              </>
-          }
+          Você teria disponibilidade em algum desses dias?
         </h1>
 
         <div
-          className="inline-flex items-center gap-2 rounded-2xl px-6 py-4"
+          className="inline-flex items-center gap-2 rounded-2xl px-6 py-4 mb-6"
           style={{ background: theme.accentLight, border: `1px solid ${theme.accent}20` }}
         >
           <p className="text-lg font-semibold" style={{ color: theme.accent }}>{availableDays}</p>
         </div>
+
+        {procedureDuration && (
+          <p className="text-gray-500 text-base">
+            O procedimento dura cerca de {procedureDuration}.
+          </p>
+        )}
       </motion.div>
 
       {/* Buttons */}
