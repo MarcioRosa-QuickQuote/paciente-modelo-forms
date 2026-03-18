@@ -247,7 +247,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
   return (
     <div className="max-w-6xl mx-auto">
-    <div className="xl:grid xl:grid-cols-[1fr_380px] xl:gap-6 xl:items-start">
+    <div className="xl:grid xl:grid-cols-[1fr_460px] xl:gap-6 xl:items-start">
     <form onSubmit={handleSubmit}>
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-100">

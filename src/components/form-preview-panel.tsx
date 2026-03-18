@@ -16,11 +16,10 @@ type ViewMode = 'mobile' | 'desktop';
 
 // ── Helper UI ─────────────────────────────────────────────────────────────────
 
-function Btn({ gradient, text, outlined, small }: { gradient?: string; text: string; outlined?: boolean; small?: boolean }) {
-  const py = small ? 'py-2' : 'py-2.5';
+function Btn({ gradient, text, outlined }: { gradient?: string; text: string; outlined?: boolean }) {
   return (
     <div
-      className={`flex-1 ${py} px-3 text-center font-bold rounded-xl ${small ? 'text-xs' : 'text-sm'} ${outlined ? 'bg-gray-100 text-gray-600' : 'text-white'}`}
+      className={`flex-1 py-2.5 px-3 text-center font-bold rounded-xl text-sm ${outlined ? 'bg-gray-100 text-gray-600' : 'text-white'}`}
       style={!outlined ? { background: gradient } : {}}
     >
       {text}
@@ -92,8 +91,8 @@ function PreviewFoto({ form, photos, theme, desktop }: { form: FormInput; photos
       )}
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={yesText} small={!desktop} />
-        <Btn text="Não" outlined small={!desktop} />
+        <Btn gradient={theme.yesBtn} text={yesText} />
+        <Btn text="Não" outlined />
       </div>
     </div>
   );
@@ -123,8 +122,8 @@ function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; the
       )}
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Sim, tenho!" small={!desktop} />
-        <Btn text="Não" outlined small={!desktop} />
+        <Btn gradient={theme.yesBtn} text="Sim, tenho!" />
+        <Btn text="Não" outlined />
       </div>
     </div>
   );
@@ -160,8 +159,8 @@ function PreviewPreco({ form, theme, desktop }: { form: FormInput; theme: Theme;
       </div>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Sim!" small={!desktop} />
-        <Btn text="Não" outlined small={!desktop} />
+        <Btn gradient={theme.yesBtn} text="Sim!" />
+        <Btn text="Não" outlined />
       </div>
     </div>
   );
@@ -187,8 +186,8 @@ function PreviewTaxa({ form, theme, desktop }: { form: FormInput; theme: Theme; 
       </p>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Aceito o valor" small={!desktop} />
-        <Btn text="Não" outlined small={!desktop} />
+        <Btn gradient={theme.yesBtn} text="Aceito o valor" />
+        <Btn text="Não" outlined />
       </div>
     </div>
   );
@@ -208,8 +207,8 @@ function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Them
       </p>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} small={!desktop} />
-        <Btn text={step.noText || 'Não'} outlined small={!desktop} />
+        <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} />
+        <Btn text={step.noText || 'Não'} outlined />
       </div>
     </div>
   );
@@ -313,7 +312,7 @@ export default function FormPreviewPanel({ form, photos, steps }: Props) {
           {viewMode === 'mobile' ? (
             /* ── Phone frame ── */
             <div>
-              <div className="relative rounded-[28px] border-[6px] border-gray-800 overflow-hidden bg-white mx-auto" style={{ maxWidth: '300px' }}>
+              <div className="relative rounded-[32px] border-[7px] border-gray-800 overflow-hidden bg-white mx-auto" style={{ maxWidth: '400px' }}>
                 {/* Status bar */}
                 <div className="flex items-center justify-between px-4 py-1.5 bg-white">
                   <span className="text-[10px] font-semibold text-gray-800">9:41</span>
@@ -327,7 +326,7 @@ export default function FormPreviewPanel({ form, photos, steps }: Props) {
                   <div className="h-full transition-all duration-300"
                     style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`, width: steps.length > 0 ? `${((safeIndex + 1) / steps.length) * 100}%` : '0%' }} />
                 </div>
-                <div className="overflow-y-auto" style={{ maxHeight: '540px', minHeight: '200px' }}>
+                <div className="overflow-y-auto" style={{ maxHeight: '660px', minHeight: '300px' }}>
                   {renderStep(false)}
                 </div>
               </div>
@@ -345,7 +344,7 @@ export default function FormPreviewPanel({ form, photos, steps }: Props) {
                 </div>
               </div>
               {/* Page content */}
-              <div className="bg-white overflow-y-auto" style={{ maxHeight: '540px', minHeight: '200px' }}>
+              <div className="bg-white overflow-y-auto" style={{ maxHeight: '660px', minHeight: '300px' }}>
                 {/* Progress bar */}
                 <div className="h-[3px] bg-gray-100">
                   <div className="h-full transition-all duration-300"
