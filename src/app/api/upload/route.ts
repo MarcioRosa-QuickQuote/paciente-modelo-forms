@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -22,15 +22,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Arquivo muito grande. Máximo 5MB' }, { status: 400 });
     }
 
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     const ext = file.name.split('.').pop() || 'jpg';
-    const filename = `paciente-modelo/${uuidv4()}.${ext}`;
+    const filename = `${uuidv4()}.${ext}`;
 
-    const blob = await put(filename, file, {
-      access: 'public',
-      contentType: file.type,
-    });
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    return NextResponse.json({ url: blob.url });
+    const { error } = await supabase.storage
+      .from('images')
+      .upload(filename, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return NextResponse.json({ error: 'Erro ao fazer upload' }, { status: 500 });
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('images')
+      .getPublicUrl(filename);
+
+    return NextResponse.json({ url: urlData.publicUrl });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json({ error: 'Erro ao fazer upload' }, { status: 500 });
