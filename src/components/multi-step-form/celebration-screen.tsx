@@ -5,13 +5,14 @@ import { useEffect, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
 
 interface Props {
+  formId: string;
   whatsappNumber: string;
   procedureName: string;
 }
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function CelebrationScreen({ whatsappNumber, procedureName }: Props) {
+export default function CelebrationScreen({ formId, whatsappNumber, procedureName }: Props) {
   const hasLaunched = useRef(false);
 
   const launchConfetti = useCallback(() => {
@@ -127,6 +128,13 @@ export default function CelebrationScreen({ whatsappNumber, procedureName }: Pro
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => {
+          fetch('/api/responses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ formId, step: 5, answer: 'sim' }),
+          }).catch(() => {});
+        }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.8 }}

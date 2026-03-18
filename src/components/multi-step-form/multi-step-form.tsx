@@ -141,6 +141,7 @@ export default function MultiStepForm({ formData }: Props) {
 
           {screen === 'celebration' && (
             <CelebrationScreen
+              formId={formData.id}
               whatsappNumber={formData.whatsappNumber}
               procedureName={formData.procedureName}
             />

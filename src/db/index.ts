@@ -129,6 +129,7 @@ export async function getFormStats(formId: string) {
     2: { sim: 0, nao: 0 },
     3: { sim: 0, nao: 0 },
     4: { sim: 0, nao: 0 },
+    5: { sim: 0, nao: 0 },
   };
 
   for (const row of data || []) {
