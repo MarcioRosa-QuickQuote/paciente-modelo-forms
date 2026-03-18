@@ -31,12 +31,22 @@ function formatPhone(value: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)} ${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
 }
 
+interface TemplateData {
+  procedureName?: string;
+  headline?: string;
+  supportText?: string;
+  professionalName?: string;
+  procedureDuration?: string;
+  theme?: string;
+}
+
 interface FormEditorProps {
   initialData?: FormData;
   mode: 'create' | 'edit';
+  templateData?: TemplateData;
 }
 
-export default function FormEditor({ initialData, mode }: FormEditorProps) {
+export default function FormEditor({ initialData, mode, templateData }: FormEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<string | null>(null);
@@ -72,26 +82,26 @@ export default function FormEditor({ initialData, mode }: FormEditorProps) {
 
   const [form, setForm] = useState<FormInput>({
     name: initialData?.name || '',
-    procedureName: initialData?.procedureName || '',
+    procedureName: initialData?.procedureName || templateData?.procedureName || '',
     availableDays: initialData?.availableDays || '',
     regularPrice: initialData?.regularPrice || 0,
     modelPrice: initialData?.modelPrice || 0,
     feeAmount: initialData?.feeAmount || 0,
     installmentCount: initialData?.installmentCount || 0,
     installmentAmount: initialData?.installmentAmount || 0,
-    procedureDuration: initialData?.procedureDuration || '',
-    professionalName: initialData?.professionalName || '',
+    procedureDuration: initialData?.procedureDuration || templateData?.procedureDuration || '',
+    professionalName: initialData?.professionalName || templateData?.professionalName || '',
     instagramHandle: initialData?.instagramHandle || '',
     whatsappNumber: initialData?.whatsappNumber ? formatPhone(initialData.whatsappNumber) : '',
     beforeImage: initialData?.beforeImage || '',
     afterImage: initialData?.afterImage || '',
     photos: buildInitialPhotos(),
-    headline: initialData?.headline || '',
-    supportText: initialData?.supportText || '',
+    headline: initialData?.headline || templateData?.headline || '',
+    supportText: initialData?.supportText || templateData?.supportText || '',
     whatsappMessage: initialData?.whatsappMessage || '',
     finalScreenType: initialData?.finalScreenType || 'whatsapp',
     formFields: initialData?.formFields || { name: true, whatsapp: true, email: true },
-    theme: initialData?.theme || 'purple',
+    theme: initialData?.theme || templateData?.theme || 'purple',
   });
 
   const [regularPriceDisplay, setRegularPriceDisplay] = useState(formatBRL(form.regularPrice));
