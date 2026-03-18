@@ -1,15 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
 import FormEditor from '@/components/form-editor';
 import TemplateSelector from '@/components/template-selector';
 import { getTemplate } from '@/lib/templates';
 
-export default function NewFormPage() {
-  const searchParams = useSearchParams();
-  const templateId = searchParams.get('template');
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(templateId);
+function NewFormContent() {
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   if (!selectedTemplateId) {
     return <TemplateSelector onSelect={setSelectedTemplateId} />;
@@ -21,5 +18,13 @@ export default function NewFormPage() {
       mode="create"
       templateData={template?.data}
     />
+  );
+}
+
+export default function NewFormPage() {
+  return (
+    <Suspense>
+      <NewFormContent />
+    </Suspense>
   );
 }

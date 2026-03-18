@@ -20,11 +20,13 @@ interface Props {
 export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme }: Props) {
   const discount = Math.round(((regularPrice - modelPrice) / regularPrice) * 100);
   const hasInstallment = installmentCount > 0 && installmentAmount > 0;
-  const [showInstallment, setShowInstallment] = useState(false);
 
-  // Toggle between cash and installment every 2.5s
+  // Parcelado aparece primeiro (true = mostrando parcelado)
+  const [showInstallment, setShowInstallment] = useState(hasInstallment);
+
   useEffect(() => {
     if (!hasInstallment) return;
+    setShowInstallment(true);
     const timer = setInterval(() => {
       setShowInstallment(prev => !prev);
     }, 2500);
@@ -67,47 +69,50 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         </p>
       </motion.div>
 
-      {/* Price Card */}
+      {/* Price Card — altura fixa para evitar pulo de layout */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.4 }}
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-        className="rounded-3xl p-8 mb-10 text-center shadow-xl w-full max-w-sm overflow-hidden"
+        className="rounded-3xl px-8 pt-6 pb-6 mb-10 text-center shadow-xl w-full max-w-sm"
       >
-        <p className="text-white/80 text-sm font-medium mb-2">Valor especial paciente modelo</p>
+        <p className="text-white/80 text-sm font-medium mb-3">Valor especial paciente modelo</p>
 
-        <AnimatePresence mode="wait">
-          {!hasInstallment || !showInstallment ? (
-            <motion.div
-              key="cash"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-            >
-              <p className="text-white text-5xl font-extrabold mb-2">{formatCurrency(modelPrice)}</p>
-              {hasInstallment && (
-                <p className="text-white/70 text-sm">à vista</p>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="installment"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-            >
-              <p className="text-white text-4xl font-extrabold mb-1">
-                {installmentCount}x de {formatCurrency(installmentAmount)}
-              </p>
-              <p className="text-white/70 text-sm">parcelado</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Área de preço com altura fixa para não pular */}
+        <div className="h-20 flex flex-col items-center justify-center">
+          <AnimatePresence mode="wait">
+            {hasInstallment && showInstallment ? (
+              <motion.div key="installment"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35 }}
+                className="text-center"
+              >
+                <p className="text-white text-4xl font-extrabold leading-none">
+                  {installmentCount}x de {formatCurrency(installmentAmount)}
+                </p>
+                <p className="text-white/70 text-sm mt-1">no cartão</p>
+              </motion.div>
+            ) : (
+              <motion.div key="cash"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35 }}
+                className="text-center"
+              >
+                <p className="text-white text-4xl font-extrabold leading-none">
+                  {formatCurrency(modelPrice)}
+                </p>
+                {hasInstallment && <p className="text-white/70 text-sm mt-1">à vista</p>}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-1 mt-3">
+        <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-1 mt-2">
           <p className="text-white text-sm font-bold">{discount}% de desconto</p>
         </div>
       </motion.div>
