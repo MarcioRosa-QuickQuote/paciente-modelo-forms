@@ -1,11 +1,62 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { supabase } from '@/lib/supabase-client';
+import type { User } from '@supabase/supabase-js';
+
+const PUBLIC_PATHS = ['/admin/login', '/admin/ativar'];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!loading && !user && !PUBLIC_PATHS.includes(pathname)) {
+      router.push('/admin/login');
+    }
+  }, [loading, user, pathname, router]);
+
+  // Public pages (login, ativar) - render without header
+  if (PUBLIC_PATHS.includes(pathname)) {
+    return <>{children}</>;
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Not authenticated - don't render admin content
+  if (!user) {
+    return null;
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push('/admin/login');
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30">
@@ -43,6 +94,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               >
                 + Novo Formulário
               </Link>
+              <button
+                onClick={handleLogout}
+                className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all ml-1"
+                title="Sair"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
             </nav>
           </div>
         </div>
