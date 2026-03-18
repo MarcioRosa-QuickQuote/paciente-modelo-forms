@@ -36,11 +36,10 @@ export default function StepFee({ feeAmount, onYes, onNo }: Props) {
           Para reservarmos o seu horário na agenda, solicitamos uma pequena taxa de{' '}
           <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent font-extrabold">
             {formatCurrency(feeAmount)}
-          </span>
-          , que será abatido do valor do procedimento.
+          </span>.
         </h1>
         <p className="text-lg text-gray-600 leading-relaxed">
-          Você concorda com isso para participar dessa experiência humanizada com a segurança que você merece?
+          Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento.
         </p>
       </motion.div>
 

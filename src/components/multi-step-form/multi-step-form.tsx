@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormData } from '@/types/form';
 import StepBeforeAfter from './step-before-after';
@@ -12,11 +12,18 @@ import CelebrationScreen from './celebration-screen';
 
 type Screen = 'step1' | 'step2' | 'step3' | 'step4' | 'rejected' | 'celebration';
 
-const slideVariants = {
-  enter: { x: 300, opacity: 0 },
-  center: { x: 0, opacity: 1 },
-  exit: { x: -300, opacity: 0 },
-};
+function getRandomDirection() {
+  const directions = [
+    { enter: { x: 300, y: 0, opacity: 0 }, exit: { x: -300, y: 0, opacity: 0 } },       // direita
+    { enter: { x: -300, y: 0, opacity: 0 }, exit: { x: 300, y: 0, opacity: 0 } },        // esquerda
+    { enter: { x: 0, y: 300, opacity: 0 }, exit: { x: 0, y: -300, opacity: 0 } },        // baixo
+    { enter: { x: 0, y: -300, opacity: 0 }, exit: { x: 0, y: 300, opacity: 0 } },        // cima
+    { enter: { x: 200, y: 200, opacity: 0 }, exit: { x: -200, y: -200, opacity: 0 } },   // diagonal
+    { enter: { scale: 0.5, opacity: 0 }, exit: { scale: 1.5, opacity: 0 } },              // zoom
+    { enter: { x: -200, y: 150, opacity: 0 }, exit: { x: 200, y: -150, opacity: 0 } },   // diagonal inversa
+  ];
+  return directions[Math.floor(Math.random() * directions.length)];
+}
 
 interface Props {
   formData: FormData;
@@ -24,6 +31,16 @@ interface Props {
 
 export default function MultiStepForm({ formData }: Props) {
   const [screen, setScreen] = useState<Screen>('step1');
+
+  const variants = useMemo(() => {
+    const dir = getRandomDirection();
+    return {
+      enter: { ...dir.enter },
+      center: { x: 0, y: 0, scale: 1, opacity: 1 },
+      exit: { ...dir.exit },
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
 
   function handleNo() {
     setScreen('rejected');
@@ -52,11 +69,11 @@ export default function MultiStepForm({ formData }: Props) {
       <AnimatePresence mode="wait">
         <motion.div
           key={screen}
-          variants={slideVariants}
+          variants={variants}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           {screen === 'step1' && (
             <StepBeforeAfter
@@ -104,7 +121,6 @@ export default function MultiStepForm({ formData }: Props) {
 
           {screen === 'celebration' && (
             <CelebrationScreen
-              professionalName={formData.professionalName}
               whatsappNumber={formData.whatsappNumber}
               procedureName={formData.procedureName}
             />

@@ -66,7 +66,11 @@ export default function StepBeforeAfter({ procedureName, beforeImage, afterImage
         className="text-center mb-10"
       >
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-          Deseja ser paciente modelo de{' '}
+          Deseja ser{' '}
+          <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent">
+            paciente modelo
+          </span>{' '}
+          de{' '}
           <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
             {procedureName}
           </span>

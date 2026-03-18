@@ -36,15 +36,21 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, o
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-6"
       >
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2">
           Sabendo que um paciente de{' '}
           <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
             {procedureName}
           </span>{' '}
           pagaria em média{' '}
-          <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>
-          , por se tratar de paciente modelo, com uma condição especial, teria disponibilidade de investir:
+          <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>.
         </h1>
+        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4">
+          E por ser{' '}
+          <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent font-bold">
+            paciente modelo
+          </span>{' '}
+          ganharia uma condição especial, teria disponibilidade de investir:
+        </p>
       </motion.div>
 
       {/* Price Card */}
