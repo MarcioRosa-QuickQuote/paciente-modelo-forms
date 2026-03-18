@@ -22,8 +22,9 @@ const STEP_LABELS: Record<number, string> = {
 export default function FormStats({ formId }: { formId: string }) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
 
-  useEffect(() => {
+  function fetchStats() {
     fetch(`/api/stats/${formId}`)
       .then(r => r.json())
       .then(data => {
@@ -31,7 +32,31 @@ export default function FormStats({ formId }: { formId: string }) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formId]);
+
+  async function handleClear() {
+    if (!confirm('Tem certeza que deseja zerar todas as respostas deste formulário?')) return;
+    setClearing(true);
+    try {
+      await fetch(`/api/stats/${formId}`, { method: 'DELETE' });
+      setStats({
+        '1': { sim: 0, nao: 0 },
+        '2': { sim: 0, nao: 0 },
+        '3': { sim: 0, nao: 0 },
+        '4': { sim: 0, nao: 0 },
+        '5': { sim: 0, nao: 0 },
+      });
+    } catch {
+      alert('Erro ao zerar respostas');
+    } finally {
+      setClearing(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -55,9 +80,18 @@ export default function FormStats({ formId }: { formId: string }) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-gray-100">
-        <h3 className="text-lg font-bold text-gray-900">Respostas do Formulário</h3>
-        <p className="text-sm text-gray-400 mt-1">Acompanhe o desempenho de cada etapa</p>
+      <div className="p-6 border-b border-gray-100 flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-bold text-gray-900">Respostas do Formulário</h3>
+          <p className="text-sm text-gray-400 mt-1">Acompanhe o desempenho de cada etapa</p>
+        </div>
+        <button
+          onClick={handleClear}
+          disabled={clearing}
+          className="px-4 py-2 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-all disabled:opacity-50"
+        >
+          {clearing ? 'Zerando...' : 'Zerar respostas'}
+        </button>
       </div>
 
       {/* Summary cards */}

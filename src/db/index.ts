@@ -105,6 +105,12 @@ interface CreateFormInput {
 }
 
 // Responses
+export async function clearResponses(formId: string) {
+  const supabase = getSupabase();
+  const { error } = await supabase.from('responses').delete().eq('form_id', formId);
+  if (error) throw error;
+}
+
 export async function saveResponse(formId: string, step: number, answer: 'sim' | 'nao') {
   const supabase = getSupabase();
   const { error } = await supabase.from('responses').insert({
