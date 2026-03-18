@@ -31,3 +31,12 @@ CREATE POLICY "Allow public uploads" ON storage.objects
 -- 4. Permitir leitura pública das imagens
 CREATE POLICY "Allow public reads" ON storage.objects
   FOR SELECT USING (bucket_id = 'images');
+
+-- 5. Criar tabela de respostas (tracking)
+CREATE TABLE responses (
+  id SERIAL PRIMARY KEY,
+  form_id TEXT NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+  step INTEGER NOT NULL,
+  answer TEXT NOT NULL CHECK (answer IN ('sim', 'nao')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

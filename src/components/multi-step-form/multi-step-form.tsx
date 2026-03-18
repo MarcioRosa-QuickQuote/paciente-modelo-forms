@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormData } from '@/types/form';
 import StepBeforeAfter from './step-before-after';
@@ -14,16 +14,20 @@ type Screen = 'step1' | 'step2' | 'step3' | 'step4' | 'rejected' | 'celebration'
 
 function getRandomDirection() {
   const directions = [
-    { enter: { x: 300, y: 0, opacity: 0 }, exit: { x: -300, y: 0, opacity: 0 } },       // direita
-    { enter: { x: -300, y: 0, opacity: 0 }, exit: { x: 300, y: 0, opacity: 0 } },        // esquerda
-    { enter: { x: 0, y: 300, opacity: 0 }, exit: { x: 0, y: -300, opacity: 0 } },        // baixo
-    { enter: { x: 0, y: -300, opacity: 0 }, exit: { x: 0, y: 300, opacity: 0 } },        // cima
-    { enter: { x: 200, y: 200, opacity: 0 }, exit: { x: -200, y: -200, opacity: 0 } },   // diagonal
-    { enter: { scale: 0.5, opacity: 0 }, exit: { scale: 1.5, opacity: 0 } },              // zoom
-    { enter: { x: -200, y: 150, opacity: 0 }, exit: { x: 200, y: -150, opacity: 0 } },   // diagonal inversa
+    { enter: { x: 300, y: 0, opacity: 0 }, exit: { x: -300, y: 0, opacity: 0 } },
+    { enter: { x: -300, y: 0, opacity: 0 }, exit: { x: 300, y: 0, opacity: 0 } },
+    { enter: { x: 0, y: 300, opacity: 0 }, exit: { x: 0, y: -300, opacity: 0 } },
+    { enter: { x: 0, y: -300, opacity: 0 }, exit: { x: 0, y: 300, opacity: 0 } },
+    { enter: { x: 200, y: 200, opacity: 0 }, exit: { x: -200, y: -200, opacity: 0 } },
+    { enter: { scale: 0.5, opacity: 0 }, exit: { scale: 1.5, opacity: 0 } },
+    { enter: { x: -200, y: 150, opacity: 0 }, exit: { x: 200, y: -150, opacity: 0 } },
   ];
   return directions[Math.floor(Math.random() * directions.length)];
 }
+
+const STEP_MAP: Record<string, number> = {
+  step1: 1, step2: 2, step3: 3, step4: 4,
+};
 
 interface Props {
   formData: FormData;
@@ -42,7 +46,23 @@ export default function MultiStepForm({ formData }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
+  const trackResponse = useCallback((step: number, answer: 'sim' | 'nao') => {
+    fetch('/api/responses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ formId: formData.id, step, answer }),
+    }).catch(() => {});
+  }, [formData.id]);
+
+  function handleYes(nextScreen: Screen) {
+    const stepNum = STEP_MAP[screen];
+    if (stepNum) trackResponse(stepNum, 'sim');
+    setScreen(nextScreen);
+  }
+
   function handleNo() {
+    const stepNum = STEP_MAP[screen];
+    if (stepNum) trackResponse(stepNum, 'nao');
     setScreen('rejected');
   }
 
@@ -80,7 +100,7 @@ export default function MultiStepForm({ formData }: Props) {
               procedureName={formData.procedureName}
               beforeImage={formData.beforeImage}
               afterImage={formData.afterImage}
-              onYes={() => setScreen('step2')}
+              onYes={() => handleYes('step2')}
               onNo={handleNo}
             />
           )}
@@ -89,7 +109,7 @@ export default function MultiStepForm({ formData }: Props) {
             <StepAvailability
               procedureName={formData.procedureName}
               availableDays={formData.availableDays}
-              onYes={() => setScreen('step3')}
+              onYes={() => handleYes('step3')}
               onNo={handleNo}
             />
           )}
@@ -99,7 +119,7 @@ export default function MultiStepForm({ formData }: Props) {
               procedureName={formData.procedureName}
               regularPrice={formData.regularPrice}
               modelPrice={formData.modelPrice}
-              onYes={() => setScreen('step4')}
+              onYes={() => handleYes('step4')}
               onNo={handleNo}
             />
           )}
@@ -107,7 +127,7 @@ export default function MultiStepForm({ formData }: Props) {
           {screen === 'step4' && (
             <StepFee
               feeAmount={formData.feeAmount}
-              onYes={() => setScreen('celebration')}
+              onYes={() => handleYes('celebration')}
               onNo={handleNo}
             />
           )}

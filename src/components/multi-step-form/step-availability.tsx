@@ -36,10 +36,10 @@ export default function StepAvailability({ procedureName, availableDays, onYes, 
           Tem disponibilidade para fazer o procedimento de{' '}
           {procedureName} nos dias
         </h1>
-        <div className="inline-block bg-blue-50 border border-blue-100 rounded-2xl px-6 py-4">
+        <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-2xl px-6 py-4">
           <p className="text-lg font-semibold text-blue-700">{availableDays}</p>
+          <span className="text-2xl font-bold text-gray-900">?</span>
         </div>
-        <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-3">?</p>
       </motion.div>
 
       {/* Buttons */}

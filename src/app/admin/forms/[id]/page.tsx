@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from 'react';
 import FormEditor from '@/components/form-editor';
+import FormStats from '@/components/form-stats';
 import { FormData } from '@/types/form';
 
 export default function EditFormPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +30,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
       </div>
     );
   }
@@ -42,5 +43,10 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
     );
   }
 
-  return <FormEditor initialData={form} mode="edit" />;
+  return (
+    <div className="space-y-8">
+      <FormStats formId={id} />
+      <FormEditor initialData={form} mode="edit" />
+    </div>
+  );
 }

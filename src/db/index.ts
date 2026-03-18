@@ -104,6 +104,42 @@ interface CreateFormInput {
   is_active: boolean;
 }
 
+// Responses
+export async function saveResponse(formId: string, step: number, answer: 'sim' | 'nao') {
+  const supabase = getSupabase();
+  const { error } = await supabase.from('responses').insert({
+    form_id: formId,
+    step,
+    answer,
+  });
+  if (error) throw error;
+}
+
+export async function getFormStats(formId: string) {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('responses')
+    .select('step, answer')
+    .eq('form_id', formId);
+
+  if (error) throw error;
+
+  const stats: Record<number, { sim: number; nao: number }> = {
+    1: { sim: 0, nao: 0 },
+    2: { sim: 0, nao: 0 },
+    3: { sim: 0, nao: 0 },
+    4: { sim: 0, nao: 0 },
+  };
+
+  for (const row of data || []) {
+    if (stats[row.step]) {
+      stats[row.step][row.answer as 'sim' | 'nao']++;
+    }
+  }
+
+  return stats;
+}
+
 export function rowToFormData(row: FormRow) {
   return {
     id: row.id,

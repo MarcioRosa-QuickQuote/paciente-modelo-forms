@@ -46,7 +46,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, o
         </h1>
         <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4">
           E por ser{' '}
-          <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent font-bold">
+          <span className="font-bold">
             paciente modelo
           </span>{' '}
           ganharia uma condição especial, teria disponibilidade de investir:
