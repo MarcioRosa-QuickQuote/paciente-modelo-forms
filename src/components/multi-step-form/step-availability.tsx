@@ -7,12 +7,13 @@ import { Theme } from '@/lib/themes';
 interface Props {
   procedureName: string;
   availableDays: string;
+  procedureDuration: string;
   onYes: () => void;
   onNo: () => void;
   theme: Theme;
 }
 
-export default function StepAvailability({ procedureName, availableDays, onYes, onNo, theme }: Props) {
+export default function StepAvailability({ procedureName, availableDays, procedureDuration, onYes, onNo, theme }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
       {/* Icon */}
@@ -35,16 +36,26 @@ export default function StepAvailability({ procedureName, availableDays, onYes, 
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-10"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-2">
           Tem disponibilidade para fazer o procedimento de{' '}
-          {procedureName} nos dias
+          <span className="bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
+            {procedureName}
+          </span>{' '}
+          em um dos dias abaixo
         </h1>
+        {procedureDuration && (
+          <p className="text-base text-gray-500 mb-3">
+            tendo em vista que o procedimento dura em média{' '}
+            <span className="font-semibold text-gray-700">{procedureDuration}</span>?
+          </p>
+        )}
         <div
-          className="inline-flex items-center gap-2 rounded-2xl px-6 py-4"
+          className="inline-flex items-center gap-2 rounded-2xl px-6 py-4 mt-2"
           style={{ background: theme.accentLight, border: `1px solid ${theme.accent}20` }}
         >
           <p className="text-lg font-semibold" style={{ color: theme.accent }}>{availableDays}</p>
-          <span className="text-2xl font-bold text-gray-900">?</span>
+          {!procedureDuration && <span className="text-2xl font-bold text-gray-900">?</span>}
         </div>
       </motion.div>
 

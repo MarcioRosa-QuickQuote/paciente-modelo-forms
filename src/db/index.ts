@@ -11,13 +11,15 @@ export async function initializeDb() {
   // Table is created via Supabase SQL Editor — no auto-migration needed
 }
 
-export async function getAllForms(): Promise<FormRow[]> {
+export async function getAllForms(userId?: string): Promise<FormRow[]> {
   const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('forms')
-    .select('*')
-    .order('created_at', { ascending: false });
+  let query = supabase.from('forms').select('*').order('created_at', { ascending: false });
 
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return data as FormRow[];
 }
@@ -77,16 +79,23 @@ export interface FormRow {
   regular_price: number;
   model_price: number;
   fee_amount: number;
+  installment_count: number;
+  installment_amount: number;
+  procedure_duration: string;
   professional_name: string;
   instagram_handle: string;
   whatsapp_number: string;
   before_image: string;
   after_image: string;
+  photos: { before: string; after: string }[];
+  headline: string;
+  support_text: string;
   is_active: boolean;
   whatsapp_message: string;
   final_screen_type: string;
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -100,16 +109,23 @@ interface CreateFormInput {
   regular_price: number;
   model_price: number;
   fee_amount: number;
+  installment_count: number;
+  installment_amount: number;
+  procedure_duration: string;
   professional_name: string;
   instagram_handle: string;
   whatsapp_number: string;
   before_image: string;
   after_image: string;
+  photos: { before: string; after: string }[];
+  headline: string;
+  support_text: string;
   is_active: boolean;
   whatsapp_message: string;
   final_screen_type: string;
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
+  user_id: string;
 }
 
 // Responses
@@ -211,8 +227,50 @@ export async function deleteLead(id: number) {
   if (error) throw error;
 }
 
+// Clinic Settings
+export async function getClinicSettings(userId: string) {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('user_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') throw error;
+  return data as { clinic_logo: string; pixel_id: string } | null;
+}
+
+export async function upsertClinicSettings(userId: string, settings: { clinic_logo: string; pixel_id: string }) {
+  const supabase = getSupabase();
+  const { error } = await supabase
+    .from('user_settings')
+    .upsert({ user_id: userId, ...settings, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+  if (error) throw error;
+}
+
+export async function getClinicSettingsByUserId(userId: string) {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from('user_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  return data as { clinic_logo: string; pixel_id: string } | null;
+}
+
 export function rowToFormData(row: FormRow) {
   const defaultFields = { name: true, whatsapp: true, email: true };
+
+  // Build photos array: use photos column if set, else fall back to before/after
+  let photos: { before: string; after: string }[] = [];
+  if (row.photos && Array.isArray(row.photos) && row.photos.length > 0) {
+    photos = row.photos;
+  } else if (row.before_image || row.after_image) {
+    photos = [{ before: row.before_image || '', after: row.after_image || '' }];
+  } else {
+    photos = [{ before: '', after: '' }];
+  }
+
   return {
     id: row.id,
     name: row.name,
@@ -222,16 +280,23 @@ export function rowToFormData(row: FormRow) {
     regularPrice: Number(row.regular_price),
     modelPrice: Number(row.model_price),
     feeAmount: Number(row.fee_amount),
+    installmentCount: Number(row.installment_count) || 0,
+    installmentAmount: Number(row.installment_amount) || 0,
+    procedureDuration: row.procedure_duration || '',
     professionalName: row.professional_name,
     instagramHandle: row.instagram_handle,
     whatsappNumber: row.whatsapp_number,
-    beforeImage: row.before_image,
-    afterImage: row.after_image,
+    beforeImage: row.before_image || '',
+    afterImage: row.after_image || '',
+    photos,
+    headline: row.headline || '',
+    supportText: row.support_text || '',
     isActive: row.is_active,
     whatsappMessage: row.whatsapp_message || '',
     finalScreenType: (row.final_screen_type as 'whatsapp' | 'form') || 'whatsapp',
     formFields: row.form_fields || defaultFields,
     theme: row.theme || 'purple',
+    userId: row.user_id || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

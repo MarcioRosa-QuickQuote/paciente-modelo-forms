@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getFormBySlug, rowToFormData, initializeDb } from '@/db';
+import { getFormBySlug, rowToFormData, initializeDb, getClinicSettingsByUserId } from '@/db';
 import MultiStepForm from '@/components/multi-step-form/multi-step-form';
 import type { Metadata } from 'next';
 
@@ -19,11 +19,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const form = rowToFormData(row);
 
   return {
-    title: `Paciente Modelo - ${form.procedureName}`,
-    description: `Seja paciente modelo de ${form.procedureName} com ${form.professionalName}`,
+    title: `${form.procedureName} - Paciente Modelo`,
+    description: form.headline || `Seja paciente modelo de ${form.procedureName} com ${form.professionalName}`,
     openGraph: {
-      title: `Paciente Modelo - ${form.procedureName}`,
-      description: `Seja paciente modelo de ${form.procedureName} com ${form.professionalName}`,
+      title: `${form.procedureName} - Paciente Modelo`,
+      description: form.headline || `Seja paciente modelo de ${form.procedureName} com ${form.professionalName}`,
       type: 'website',
     },
   };
@@ -40,5 +40,14 @@ export default async function FormularioPage({ params }: PageProps) {
 
   const formData = rowToFormData(row);
 
-  return <MultiStepForm formData={formData} />;
+  // Load clinic settings for this form's owner
+  let clinicLogo = '';
+  let pixelId = '';
+  if (formData.userId) {
+    const settings = await getClinicSettingsByUserId(formData.userId);
+    clinicLogo = settings?.clinic_logo || '';
+    pixelId = settings?.pixel_id || '';
+  }
+
+  return <MultiStepForm formData={formData} clinicLogo={clinicLogo} pixelId={pixelId} />;
 }

@@ -52,11 +52,23 @@ export async function PUT(
     if (data.regularPrice !== undefined) updateData.regular_price = data.regularPrice;
     if (data.modelPrice !== undefined) updateData.model_price = data.modelPrice;
     if (data.feeAmount !== undefined) updateData.fee_amount = data.feeAmount;
+    if (data.installmentCount !== undefined) updateData.installment_count = data.installmentCount;
+    if (data.installmentAmount !== undefined) updateData.installment_amount = data.installmentAmount;
+    if (data.procedureDuration !== undefined) updateData.procedure_duration = data.procedureDuration;
     if (data.professionalName !== undefined) updateData.professional_name = data.professionalName;
     if (data.instagramHandle !== undefined) updateData.instagram_handle = data.instagramHandle;
     if (data.whatsappNumber !== undefined) updateData.whatsapp_number = data.whatsappNumber;
+    if (data.photos !== undefined) {
+      updateData.photos = data.photos;
+      if (data.photos.length > 0) {
+        updateData.before_image = data.photos[0].before;
+        updateData.after_image = data.photos[0].after;
+      }
+    }
     if (data.beforeImage !== undefined) updateData.before_image = data.beforeImage;
     if (data.afterImage !== undefined) updateData.after_image = data.afterImage;
+    if (data.headline !== undefined) updateData.headline = data.headline;
+    if (data.supportText !== undefined) updateData.support_text = data.supportText;
     if (data.whatsappMessage !== undefined) updateData.whatsapp_message = data.whatsappMessage;
     if (data.finalScreenType !== undefined) updateData.final_screen_type = data.finalScreenType;
     if (data.formFields !== undefined) updateData.form_fields = data.formFields;

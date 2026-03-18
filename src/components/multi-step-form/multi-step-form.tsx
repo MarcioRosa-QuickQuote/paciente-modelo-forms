@@ -11,6 +11,7 @@ import StepFee from './step-fee';
 import RejectionScreen from './rejection-screen';
 import CelebrationScreen from './celebration-screen';
 import LeadFormScreen from './lead-form-screen';
+import Image from 'next/image';
 
 type Screen = 'step1' | 'step2' | 'step3' | 'step4' | 'rejected' | 'celebration';
 
@@ -33,9 +34,11 @@ const STEP_MAP: Record<string, number> = {
 
 interface Props {
   formData: FormData;
+  clinicLogo?: string;
+  pixelId?: string;
 }
 
-export default function MultiStepForm({ formData }: Props) {
+export default function MultiStepForm({ formData, clinicLogo, pixelId }: Props) {
   const [screen, setScreen] = useState<Screen>('step1');
   const theme = getTheme(formData.theme);
 
@@ -57,9 +60,21 @@ export default function MultiStepForm({ formData }: Props) {
     }).catch(() => {});
   }, [formData.id]);
 
+  const firePixelEvent = useCallback((eventName: string) => {
+    if (!pixelId) return;
+    try {
+      // @ts-expect-error fbq is injected by Meta Pixel
+      if (typeof window !== 'undefined' && window.fbq) {
+        // @ts-expect-error fbq is injected by Meta Pixel
+        window.fbq('track', eventName);
+      }
+    } catch {}
+  }, [pixelId]);
+
   function handleYes(nextScreen: Screen) {
     const stepNum = STEP_MAP[screen];
     if (stepNum) trackResponse(stepNum, 'sim');
+    if (nextScreen === 'celebration') firePixelEvent('Lead');
     setScreen(nextScreen);
   }
 
@@ -69,14 +84,40 @@ export default function MultiStepForm({ formData }: Props) {
     setScreen('rejected');
   }
 
+  const showHeader = !['rejected', 'celebration'].includes(screen);
+
   return (
     <div className="min-h-[100dvh] bg-white overflow-hidden">
+      {/* Meta Pixel */}
+      {pixelId && (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+              n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+              document,'script','https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '${pixelId}');
+              fbq('track', 'PageView');
+            `,
+          }}
+        />
+      )}
+
+      {/* Clinic Logo */}
+      {clinicLogo && showHeader && (
+        <div className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-3 pb-2 bg-white/80 backdrop-blur-sm">
+          <Image src={clinicLogo} alt="Logo da Clínica" width={120} height={40} className="h-10 w-auto object-contain" />
+        </div>
+      )}
+
       {/* Progress bar */}
-      {!['rejected', 'celebration'].includes(screen) && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-100">
+      {showHeader && (
+        <div className={`fixed left-0 right-0 z-50 h-1 bg-gray-100 ${clinicLogo ? 'top-[56px]' : 'top-0'}`}>
           <motion.div
             style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})` }}
-          className="h-full"
+            className="h-full"
             initial={{ width: '0%' }}
             animate={{
               width:
@@ -90,81 +131,87 @@ export default function MultiStepForm({ formData }: Props) {
         </div>
       )}
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={screen}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          {screen === 'step1' && (
-            <StepBeforeAfter
-              procedureName={formData.procedureName}
-              beforeImage={formData.beforeImage}
-              afterImage={formData.afterImage}
-              onYes={() => handleYes('step2')}
-              onNo={handleNo}
-              theme={theme}
-            />
-          )}
+      <div className={clinicLogo && showHeader ? 'pt-14' : ''}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={screen}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            {screen === 'step1' && (
+              <StepBeforeAfter
+                procedureName={formData.procedureName}
+                photos={formData.photos}
+                headline={formData.headline}
+                supportText={formData.supportText}
+                onYes={() => handleYes('step2')}
+                onNo={handleNo}
+                theme={theme}
+              />
+            )}
 
-          {screen === 'step2' && (
-            <StepAvailability
-              procedureName={formData.procedureName}
-              availableDays={formData.availableDays}
-              onYes={() => handleYes('step3')}
-              onNo={handleNo}
-              theme={theme}
-            />
-          )}
+            {screen === 'step2' && (
+              <StepAvailability
+                procedureName={formData.procedureName}
+                availableDays={formData.availableDays}
+                procedureDuration={formData.procedureDuration}
+                onYes={() => handleYes('step3')}
+                onNo={handleNo}
+                theme={theme}
+              />
+            )}
 
-          {screen === 'step3' && (
-            <StepPricing
-              procedureName={formData.procedureName}
-              regularPrice={formData.regularPrice}
-              modelPrice={formData.modelPrice}
-              onYes={() => handleYes('step4')}
-              onNo={handleNo}
-              theme={theme}
-            />
-          )}
+            {screen === 'step3' && (
+              <StepPricing
+                procedureName={formData.procedureName}
+                regularPrice={formData.regularPrice}
+                modelPrice={formData.modelPrice}
+                installmentCount={formData.installmentCount}
+                installmentAmount={formData.installmentAmount}
+                onYes={() => handleYes('step4')}
+                onNo={handleNo}
+                theme={theme}
+              />
+            )}
 
-          {screen === 'step4' && (
-            <StepFee
-              feeAmount={formData.feeAmount}
-              onYes={() => handleYes('celebration')}
-              onNo={handleNo}
-              theme={theme}
-            />
-          )}
+            {screen === 'step4' && (
+              <StepFee
+                feeAmount={formData.feeAmount}
+                onYes={() => handleYes('celebration')}
+                onNo={handleNo}
+                theme={theme}
+              />
+            )}
 
-          {screen === 'rejected' && (
-            <RejectionScreen
-              professionalName={formData.professionalName}
-              instagramHandle={formData.instagramHandle}
-              theme={theme}
-            />
-          )}
+            {screen === 'rejected' && (
+              <RejectionScreen
+                professionalName={formData.professionalName}
+                instagramHandle={formData.instagramHandle}
+                theme={theme}
+              />
+            )}
 
-          {screen === 'celebration' && formData.finalScreenType === 'form' ? (
-            <LeadFormScreen
-              formId={formData.id}
-              formFields={formData.formFields}
-              theme={theme}
-            />
-          ) : screen === 'celebration' && (
-            <CelebrationScreen
-              formId={formData.id}
-              whatsappNumber={formData.whatsappNumber}
-              procedureName={formData.procedureName}
-              whatsappMessage={formData.whatsappMessage}
-              theme={theme}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+            {screen === 'celebration' && formData.finalScreenType === 'form' ? (
+              <LeadFormScreen
+                formId={formData.id}
+                formFields={formData.formFields}
+                theme={theme}
+              />
+            ) : screen === 'celebration' && (
+              <CelebrationScreen
+                formId={formData.id}
+                whatsappNumber={formData.whatsappNumber}
+                procedureName={formData.procedureName}
+                whatsappMessage={formData.whatsappMessage}
+                theme={theme}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

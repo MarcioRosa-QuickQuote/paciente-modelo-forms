@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
@@ -9,13 +10,26 @@ interface Props {
   procedureName: string;
   regularPrice: number;
   modelPrice: number;
+  installmentCount: number;
+  installmentAmount: number;
   onYes: () => void;
   onNo: () => void;
   theme: Theme;
 }
 
-export default function StepPricing({ procedureName, regularPrice, modelPrice, onYes, onNo, theme }: Props) {
+export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme }: Props) {
   const discount = Math.round(((regularPrice - modelPrice) / regularPrice) * 100);
+  const hasInstallment = installmentCount > 0 && installmentAmount > 0;
+  const [showInstallment, setShowInstallment] = useState(false);
+
+  // Toggle between cash and installment every 2.5s
+  useEffect(() => {
+    if (!hasInstallment) return;
+    const timer = setInterval(() => {
+      setShowInstallment(prev => !prev);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [hasInstallment]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
@@ -41,10 +55,8 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, o
       >
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2">
           Sabendo que um paciente de{' '}
-          <span
-            className="bg-clip-text text-transparent"
-            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-          >
+          <span className="bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
             {procedureName}
           </span>{' '}
           pagaria em média{' '}
@@ -61,11 +73,41 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, o
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.4 }}
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-        className="rounded-3xl p-8 mb-10 text-center shadow-xl w-full max-w-sm"
+        className="rounded-3xl p-8 mb-10 text-center shadow-xl w-full max-w-sm overflow-hidden"
       >
-        <p className="text-white/80 text-sm font-medium mb-1">Valor especial paciente modelo</p>
-        <p className="text-white text-5xl font-extrabold mb-2">{formatCurrency(modelPrice)}</p>
-        <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-1">
+        <p className="text-white/80 text-sm font-medium mb-2">Valor especial paciente modelo</p>
+
+        <AnimatePresence mode="wait">
+          {!hasInstallment || !showInstallment ? (
+            <motion.div
+              key="cash"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <p className="text-white text-5xl font-extrabold mb-2">{formatCurrency(modelPrice)}</p>
+              {hasInstallment && (
+                <p className="text-white/70 text-sm">à vista</p>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="installment"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <p className="text-white text-4xl font-extrabold mb-1">
+                {installmentCount}x de {formatCurrency(installmentAmount)}
+              </p>
+              <p className="text-white/70 text-sm">parcelado</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-1 mt-3">
           <p className="text-white text-sm font-bold">{discount}% de desconto</p>
         </div>
       </motion.div>

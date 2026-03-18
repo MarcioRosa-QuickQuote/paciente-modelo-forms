@@ -34,12 +34,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [loading, user, pathname, router]);
 
-  // Public pages (login, ativar) - render without header
   if (PUBLIC_PATHS.includes(pathname)) {
     return <>{children}</>;
   }
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30 flex items-center justify-center">
@@ -48,10 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Not authenticated - don't render admin content
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -65,50 +60,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/admin" className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={36}
-                height={36}
-                className="rounded-lg"
-              />
+              <Image src="/logo.png" alt="Logo" width={36} height={36} className="rounded-lg" />
               <div className="hidden sm:block">
-                <span className="font-bold text-gray-900 text-lg tracking-tight">Paciente Modelo</span>
+                <span className="font-bold text-gray-900 text-lg tracking-tight">Formulário de Conversão</span>
                 <span className="text-xs text-gray-400 block -mt-1">Painel de Gerenciamento</span>
               </div>
             </Link>
             <nav className="flex items-center gap-2">
-              <Link
-                href="/admin"
+              <Link href="/admin"
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  pathname === '/admin'
-                    ? 'bg-[#6B1C3A]/10 text-[#6B1C3A] shadow-sm'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
+                  pathname === '/admin' ? 'bg-[#6B1C3A]/10 text-[#6B1C3A] shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                }`}>
                 Dashboard
               </Link>
-              <Link
-                href="/admin/leads"
+              <Link href="/admin/leads"
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  pathname === '/admin/leads'
-                    ? 'bg-[#6B1C3A]/10 text-[#6B1C3A] shadow-sm'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
+                  pathname === '/admin/leads' ? 'bg-[#6B1C3A]/10 text-[#6B1C3A] shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                }`}>
                 Leads
               </Link>
-              <Link
-                href="/admin/forms/new"
-                className="px-5 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl text-sm font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 hover:shadow-xl hover:shadow-[#6B1C3A]/30 active:scale-95"
-              >
+              <Link href="/admin/settings"
+                className={`p-2.5 rounded-xl transition-all duration-200 ${
+                  pathname === '/admin/settings' ? 'bg-[#6B1C3A]/10 text-[#6B1C3A]' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+                title="Configurações">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </Link>
+              <Link href="/admin/forms/new"
+                className="px-5 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl text-sm font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20">
                 + Novo Formulário
               </Link>
-              <button
-                onClick={handleLogout}
+              <button onClick={handleLogout}
                 className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all ml-1"
-                title="Sair"
-              >
+                title="Sair">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
@@ -118,7 +105,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
