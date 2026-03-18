@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FormData, FormInput, PhotoPair } from '@/types/form';
+import { FormData, FormInput, PhotoPair, FormStep } from '@/types/form';
 import { generateSlug } from '@/lib/utils';
 import { THEMES } from '@/lib/themes';
 import { supabase } from '@/lib/supabase-client';
@@ -11,6 +11,14 @@ import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import 'react-day-picker/style.css';
+import FormStepBuilder from './form-step-builder';
+
+const DEFAULT_STEPS: FormStep[] = [
+  { id: 'default-foto', type: 'foto' },
+  { id: 'default-disponibilidade', type: 'disponibilidade' },
+  { id: 'default-preco', type: 'preco' },
+  { id: 'default-taxa', type: 'taxa' },
+];
 
 function formatBRL(value: number): string {
   if (!value) return '';
@@ -80,6 +88,13 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
   const [photos, setPhotos] = useState<PhotoPair[]>(buildInitialPhotos());
 
+  const buildInitialSteps = (): FormStep[] => {
+    if (initialData?.steps?.length) return initialData.steps;
+    return DEFAULT_STEPS.map(s => ({ ...s, id: crypto.randomUUID() }));
+  };
+
+  const [steps, setSteps] = useState<FormStep[]>(buildInitialSteps());
+
   const [form, setForm] = useState<FormInput>({
     name: initialData?.name || '',
     procedureName: initialData?.procedureName || templateData?.procedureName || '',
@@ -102,6 +117,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     finalScreenType: initialData?.finalScreenType || 'whatsapp',
     formFields: initialData?.formFields || { name: true, whatsapp: true, email: true },
     theme: initialData?.theme || templateData?.theme || 'purple',
+    steps: [],
   });
 
   const [regularPriceDisplay, setRegularPriceDisplay] = useState(formatBRL(form.regularPrice));
@@ -200,6 +216,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
         photos,
         beforeImage: firstPhoto.before,
         afterImage: firstPhoto.after,
+        steps,
       };
 
       const url = mode === 'create' ? '/api/forms' : `/api/forms/${initialData?.id}`;
@@ -468,6 +485,15 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Etapas do Formulário */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-gray-900">Etapas do Formulário</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Arraste para reordenar. Clique em + para adicionar etapas.</p>
+            </div>
+            <FormStepBuilder steps={steps} onChange={setSteps} />
           </div>
 
           {/* Tema de Cores */}

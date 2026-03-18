@@ -9,6 +9,7 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
   const { id } = use(params);
   const [form, setForm] = useState<FormData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
     async function fetchForm() {
@@ -44,8 +45,29 @@ export default function EditFormPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div className="space-y-8">
-      <FormStats formId={id} />
+    <div className="space-y-6">
+      {/* Stats toggle */}
+      <div>
+        <button
+          onClick={() => setShowStats(prev => !prev)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+            showStats
+              ? 'bg-[#6B1C3A]/10 text-[#6B1C3A] border-[#6B1C3A]/20'
+              : 'bg-white text-gray-600 border-gray-200 hover:border-[#6B1C3A]/30 hover:text-[#6B1C3A]'
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          {showStats ? 'Ocultar estatísticas' : 'Ver estatísticas'}
+        </button>
+        {showStats && (
+          <div className="mt-4">
+            <FormStats formId={id} />
+          </div>
+        )}
+      </div>
+
       <FormEditor initialData={form} mode="edit" />
     </div>
   );

@@ -2,18 +2,25 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FormData } from '@/types/form';
+import { FormData, FormStep } from '@/types/form';
 import { getTheme } from '@/lib/themes';
 import StepBeforeAfter from './step-before-after';
 import StepAvailability from './step-availability';
 import StepPricing from './step-pricing';
 import StepFee from './step-fee';
+import StepCustom from './step-custom';
 import RejectionScreen from './rejection-screen';
 import CelebrationScreen from './celebration-screen';
 import LeadFormScreen from './lead-form-screen';
 import Image from 'next/image';
 
-type Screen = 'step1' | 'step2' | 'step3' | 'step4' | 'rejected' | 'celebration';
+// Default steps used when no custom steps are configured (legacy behavior)
+const DEFAULT_STEPS: FormStep[] = [
+  { id: 'foto', type: 'foto' },
+  { id: 'disponibilidade', type: 'disponibilidade' },
+  { id: 'preco', type: 'preco' },
+  { id: 'taxa', type: 'taxa' },
+];
 
 function getRandomDirection() {
   const directions = [
@@ -28,9 +35,8 @@ function getRandomDirection() {
   return directions[Math.floor(Math.random() * directions.length)];
 }
 
-const STEP_MAP: Record<string, number> = {
-  step1: 1, step2: 2, step3: 3, step4: 4,
-};
+type SpecialScreen = 'rejected' | 'celebration';
+type ScreenState = { type: 'step'; index: number } | { type: 'special'; screen: SpecialScreen };
 
 interface Props {
   formData: FormData;
@@ -40,8 +46,11 @@ interface Props {
 }
 
 export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken }: Props) {
-  const [screen, setScreen] = useState<Screen>('step1');
+  const steps = formData.steps?.length > 0 ? formData.steps : DEFAULT_STEPS;
+  const [state, setState] = useState<ScreenState>({ type: 'step', index: 0 });
   const theme = getTheme(formData.theme);
+
+  const screenKey = state.type === 'step' ? `step-${state.index}` : state.screen;
 
   const variants = useMemo(() => {
     const dir = getRandomDirection();
@@ -51,13 +60,13 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       exit: { ...dir.exit },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
+  }, [screenKey]);
 
-  const trackResponse = useCallback((step: number, answer: 'sim' | 'nao') => {
+  const trackResponse = useCallback((stepIndex: number, answer: 'sim' | 'nao') => {
     fetch('/api/responses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ formId: formData.id, step, answer }),
+      body: JSON.stringify({ formId: formData.id, step: stepIndex + 1, answer }),
     }).catch(() => {});
   }, [formData.id]);
 
@@ -87,24 +96,94 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
     }).catch(() => {});
   }, [capiToken, formData.id]);
 
-  function handleYes(nextScreen: Screen) {
-    const stepNum = STEP_MAP[screen];
-    if (stepNum) trackResponse(stepNum, 'sim');
-    if (nextScreen === 'celebration') {
+  function handleYes() {
+    if (state.type !== 'step') return;
+    trackResponse(state.index, 'sim');
+    const nextIndex = state.index + 1;
+    if (nextIndex >= steps.length) {
       const eventId = crypto.randomUUID();
       firePixelEvent('Lead', eventId);
       fireCapiEvent('Lead', eventId);
+      setState({ type: 'special', screen: 'celebration' });
+    } else {
+      setState({ type: 'step', index: nextIndex });
     }
-    setScreen(nextScreen);
   }
 
   function handleNo() {
-    const stepNum = STEP_MAP[screen];
-    if (stepNum) trackResponse(stepNum, 'nao');
-    setScreen('rejected');
+    if (state.type !== 'step') return;
+    trackResponse(state.index, 'nao');
+    setState({ type: 'special', screen: 'rejected' });
   }
 
-  const showHeader = !['rejected', 'celebration'].includes(screen);
+  const progressPercent = state.type === 'step'
+    ? Math.round(((state.index + 1) / steps.length) * 100)
+    : 100;
+
+  const showHeader = state.type !== 'special';
+
+  function renderStep(step: FormStep) {
+    switch (step.type) {
+      case 'foto':
+        return (
+          <StepBeforeAfter
+            procedureName={formData.procedureName}
+            photos={formData.photos}
+            headline={formData.headline}
+            supportText={formData.supportText}
+            onYes={handleYes}
+            onNo={handleNo}
+            theme={theme}
+          />
+        );
+      case 'disponibilidade':
+        return (
+          <StepAvailability
+            procedureName={formData.procedureName}
+            availableDays={formData.availableDays}
+            procedureDuration={formData.procedureDuration}
+            onYes={handleYes}
+            onNo={handleNo}
+            theme={theme}
+          />
+        );
+      case 'preco':
+        return (
+          <StepPricing
+            procedureName={formData.procedureName}
+            regularPrice={formData.regularPrice}
+            modelPrice={formData.modelPrice}
+            installmentCount={formData.installmentCount}
+            installmentAmount={formData.installmentAmount}
+            onYes={handleYes}
+            onNo={handleNo}
+            theme={theme}
+          />
+        );
+      case 'taxa':
+        return (
+          <StepFee
+            feeAmount={formData.feeAmount}
+            onYes={handleYes}
+            onNo={handleNo}
+            theme={theme}
+          />
+        );
+      case 'pergunta':
+        return (
+          <StepCustom
+            question={step.question || 'Você está de acordo?'}
+            yesText={step.yesText}
+            noText={step.noText}
+            onYes={handleYes}
+            onNo={handleNo}
+            theme={theme}
+          />
+        );
+      default:
+        return null;
+    }
+  }
 
   return (
     <div className="min-h-[100dvh] bg-white overflow-hidden">
@@ -139,13 +218,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})` }}
             className="h-full"
             initial={{ width: '0%' }}
-            animate={{
-              width:
-                screen === 'step1' ? '25%' :
-                screen === 'step2' ? '50%' :
-                screen === 'step3' ? '75%' :
-                '100%',
-            }}
+            animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
           />
         </div>
@@ -154,59 +227,16 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       <div className={clinicLogo && showHeader ? 'pt-14' : ''}>
         <AnimatePresence mode="wait">
           <motion.div
-            key={screen}
+            key={screenKey}
             variants={variants}
             initial="enter"
             animate="center"
             exit="exit"
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            {screen === 'step1' && (
-              <StepBeforeAfter
-                procedureName={formData.procedureName}
-                photos={formData.photos}
-                headline={formData.headline}
-                supportText={formData.supportText}
-                onYes={() => handleYes('step2')}
-                onNo={handleNo}
-                theme={theme}
-              />
-            )}
+            {state.type === 'step' && renderStep(steps[state.index])}
 
-            {screen === 'step2' && (
-              <StepAvailability
-                procedureName={formData.procedureName}
-                availableDays={formData.availableDays}
-                procedureDuration={formData.procedureDuration}
-                onYes={() => handleYes('step3')}
-                onNo={handleNo}
-                theme={theme}
-              />
-            )}
-
-            {screen === 'step3' && (
-              <StepPricing
-                procedureName={formData.procedureName}
-                regularPrice={formData.regularPrice}
-                modelPrice={formData.modelPrice}
-                installmentCount={formData.installmentCount}
-                installmentAmount={formData.installmentAmount}
-                onYes={() => handleYes('step4')}
-                onNo={handleNo}
-                theme={theme}
-              />
-            )}
-
-            {screen === 'step4' && (
-              <StepFee
-                feeAmount={formData.feeAmount}
-                onYes={() => handleYes('celebration')}
-                onNo={handleNo}
-                theme={theme}
-              />
-            )}
-
-            {screen === 'rejected' && (
+            {state.type === 'special' && state.screen === 'rejected' && (
               <RejectionScreen
                 professionalName={formData.professionalName}
                 instagramHandle={formData.instagramHandle}
@@ -214,13 +244,13 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
               />
             )}
 
-            {screen === 'celebration' && formData.finalScreenType === 'form' ? (
+            {state.type === 'special' && state.screen === 'celebration' && formData.finalScreenType === 'form' ? (
               <LeadFormScreen
                 formId={formData.id}
                 formFields={formData.formFields}
                 theme={theme}
               />
-            ) : screen === 'celebration' && (
+            ) : state.type === 'special' && state.screen === 'celebration' && (
               <CelebrationScreen
                 formId={formData.id}
                 whatsappNumber={formData.whatsappNumber}

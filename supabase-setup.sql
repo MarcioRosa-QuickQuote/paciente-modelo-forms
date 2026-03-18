@@ -84,3 +84,6 @@ CREATE TABLE IF NOT EXISTS user_settings (
 
 -- Se a tabela já existe, adicione a coluna:
 ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS capi_token TEXT DEFAULT '';
+
+-- 10. Adicionar coluna de etapas configuráveis
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS steps JSONB DEFAULT '[]';

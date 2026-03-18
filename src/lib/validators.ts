@@ -26,6 +26,13 @@ export const formInputSchema = z.object({
     email: z.boolean(),
   }).default({ name: true, whatsapp: true, email: true }),
   theme: z.string().default('purple'),
+  steps: z.array(z.object({
+    id: z.string(),
+    type: z.enum(['foto', 'disponibilidade', 'preco', 'taxa', 'pergunta']),
+    question: z.string().optional(),
+    yesText: z.string().optional(),
+    noText: z.string().optional(),
+  })).default([]),
 });
 
 export type FormInputSchema = z.infer<typeof formInputSchema>;

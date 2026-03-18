@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       form_fields: data.formFields || { name: true, whatsapp: true, email: true },
       theme: data.theme || 'purple',
       user_id: userId,
+      steps: data.steps || [],
     });
 
     return NextResponse.json({ id, slug }, { status: 201 });

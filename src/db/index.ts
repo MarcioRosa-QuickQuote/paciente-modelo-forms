@@ -96,6 +96,7 @@ export interface FormRow {
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
   user_id: string;
+  steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
   created_at: string;
   updated_at: string;
 }
@@ -126,6 +127,7 @@ interface CreateFormInput {
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
   user_id: string;
+  steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
 }
 
 // Responses
@@ -297,6 +299,7 @@ export function rowToFormData(row: FormRow) {
     formFields: row.form_fields || defaultFields,
     theme: row.theme || 'purple',
     userId: row.user_id || '',
+    steps: Array.isArray(row.steps) ? row.steps : [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

@@ -73,6 +73,7 @@ export async function PUT(
     if (data.finalScreenType !== undefined) updateData.final_screen_type = data.finalScreenType;
     if (data.formFields !== undefined) updateData.form_fields = data.formFields;
     if (data.theme !== undefined) updateData.theme = data.theme;
+    if (data.steps !== undefined) updateData.steps = data.steps;
 
     await updateForm(id, updateData);
 

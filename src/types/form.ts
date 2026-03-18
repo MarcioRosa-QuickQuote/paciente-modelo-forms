@@ -1,5 +1,15 @@
 export type FinalScreenType = 'whatsapp' | 'form';
 
+export type FormStepType = 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta';
+
+export interface FormStep {
+  id: string;
+  type: FormStepType;
+  question?: string;   // only for 'pergunta' type
+  yesText?: string;    // only for 'pergunta' type
+  noText?: string;     // only for 'pergunta' type
+}
+
 export interface FormFields {
   name: boolean;
   whatsapp: boolean;
@@ -37,6 +47,7 @@ export interface FormData {
   formFields: FormFields;
   theme: string;
   userId: string;
+  steps: FormStep[];
   createdAt: string;
   updatedAt: string;
 }
@@ -63,6 +74,7 @@ export interface FormInput {
   finalScreenType: FinalScreenType;
   formFields: FormFields;
   theme: string;
+  steps: FormStep[];
 }
 
 export interface Lead {
