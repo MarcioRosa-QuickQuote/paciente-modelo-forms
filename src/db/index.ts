@@ -83,6 +83,9 @@ export interface FormRow {
   before_image: string;
   after_image: string;
   is_active: boolean;
+  whatsapp_message: string;
+  final_screen_type: string;
+  form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   created_at: string;
   updated_at: string;
 }
@@ -102,6 +105,9 @@ interface CreateFormInput {
   before_image: string;
   after_image: string;
   is_active: boolean;
+  whatsapp_message: string;
+  final_screen_type: string;
+  form_fields: { name: boolean; whatsapp: boolean; email: boolean };
 }
 
 // Responses
@@ -147,7 +153,42 @@ export async function getFormStats(formId: string) {
   return stats;
 }
 
+// Leads
+export async function saveLead(formId: string, name: string, whatsapp: string, email: string) {
+  const supabase = getSupabase();
+  const { error } = await supabase.from('leads').insert({
+    form_id: formId,
+    name,
+    whatsapp,
+    email,
+  });
+  if (error) throw error;
+}
+
+export async function getLeads(formId?: string) {
+  const supabase = getSupabase();
+  let query = supabase
+    .from('leads')
+    .select('*, forms(name)')
+    .order('created_at', { ascending: false });
+
+  if (formId) {
+    query = query.eq('form_id', formId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteLead(id: number) {
+  const supabase = getSupabase();
+  const { error } = await supabase.from('leads').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export function rowToFormData(row: FormRow) {
+  const defaultFields = { name: true, whatsapp: true, email: true };
   return {
     id: row.id,
     name: row.name,
@@ -163,6 +204,9 @@ export function rowToFormData(row: FormRow) {
     beforeImage: row.before_image,
     afterImage: row.after_image,
     isActive: row.is_active,
+    whatsappMessage: row.whatsapp_message || '',
+    finalScreenType: (row.final_screen_type as 'whatsapp' | 'form') || 'whatsapp',
+    formFields: row.form_fields || defaultFields,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

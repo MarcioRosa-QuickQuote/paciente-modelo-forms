@@ -32,11 +32,26 @@ CREATE POLICY "Allow public uploads" ON storage.objects
 CREATE POLICY "Allow public reads" ON storage.objects
   FOR SELECT USING (bucket_id = 'images');
 
--- 5. Criar tabela de respostas (tracking)
+-- 5. Novos campos na tabela forms (rodar se já existe)
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS whatsapp_message TEXT DEFAULT '';
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS final_screen_type TEXT DEFAULT 'whatsapp';
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS form_fields JSONB DEFAULT '{"name": true, "whatsapp": true, "email": true}';
+
+-- 6. Criar tabela de respostas (tracking)
 CREATE TABLE responses (
   id SERIAL PRIMARY KEY,
   form_id TEXT NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
   step INTEGER NOT NULL,
   answer TEXT NOT NULL CHECK (answer IN ('sim', 'nao')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 7. Criar tabela de leads
+CREATE TABLE IF NOT EXISTS leads (
+  id SERIAL PRIMARY KEY,
+  form_id TEXT NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+  name TEXT DEFAULT '',
+  whatsapp TEXT DEFAULT '',
+  email TEXT DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

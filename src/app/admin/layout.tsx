@@ -89,6 +89,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 Dashboard
               </Link>
               <Link
+                href="/admin/leads"
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/leads'
+                    ? 'bg-[#6B1C3A]/10 text-[#6B1C3A] shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Leads
+              </Link>
+              <Link
                 href="/admin/forms/new"
                 className="px-5 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl text-sm font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 hover:shadow-xl hover:shadow-[#6B1C3A]/30 active:scale-95"
               >

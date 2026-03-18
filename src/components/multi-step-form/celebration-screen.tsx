@@ -8,11 +8,12 @@ interface Props {
   formId: string;
   whatsappNumber: string;
   procedureName: string;
+  whatsappMessage?: string;
 }
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function CelebrationScreen({ formId, whatsappNumber, procedureName }: Props) {
+export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage }: Props) {
   const hasLaunched = useRef(false);
 
   const launchConfetti = useCallback(() => {
@@ -60,8 +61,9 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
     }
   }, [launchConfetti]);
 
+  const defaultMessage = `Olá! Tenho interesse em ser paciente modelo para ${procedureName}!`;
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(
-    `Olá! Tenho interesse em ser paciente modelo para ${procedureName}!`
+    whatsappMessage || defaultMessage
   )}`;
 
   return (

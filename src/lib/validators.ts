@@ -12,6 +12,13 @@ export const formInputSchema = z.object({
   whatsappNumber: z.string().min(1, 'WhatsApp é obrigatório'),
   beforeImage: z.string().default(''),
   afterImage: z.string().default(''),
+  whatsappMessage: z.string().default(''),
+  finalScreenType: z.enum(['whatsapp', 'form']).default('whatsapp'),
+  formFields: z.object({
+    name: z.boolean(),
+    whatsapp: z.boolean(),
+    email: z.boolean(),
+  }).default({ name: true, whatsapp: true, email: true }),
 });
 
 export type FormInputSchema = z.infer<typeof formInputSchema>;

@@ -9,6 +9,7 @@ import StepPricing from './step-pricing';
 import StepFee from './step-fee';
 import RejectionScreen from './rejection-screen';
 import CelebrationScreen from './celebration-screen';
+import LeadFormScreen from './lead-form-screen';
 
 type Screen = 'step1' | 'step2' | 'step3' | 'step4' | 'rejected' | 'celebration';
 
@@ -139,11 +140,17 @@ export default function MultiStepForm({ formData }: Props) {
             />
           )}
 
-          {screen === 'celebration' && (
+          {screen === 'celebration' && formData.finalScreenType === 'form' ? (
+            <LeadFormScreen
+              formId={formData.id}
+              formFields={formData.formFields}
+            />
+          ) : screen === 'celebration' && (
             <CelebrationScreen
               formId={formData.id}
               whatsappNumber={formData.whatsappNumber}
               procedureName={formData.procedureName}
+              whatsappMessage={formData.whatsappMessage}
             />
           )}
         </motion.div>

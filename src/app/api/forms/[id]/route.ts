@@ -57,6 +57,9 @@ export async function PUT(
     if (data.whatsappNumber !== undefined) updateData.whatsapp_number = data.whatsappNumber;
     if (data.beforeImage !== undefined) updateData.before_image = data.beforeImage;
     if (data.afterImage !== undefined) updateData.after_image = data.afterImage;
+    if (data.whatsappMessage !== undefined) updateData.whatsapp_message = data.whatsappMessage;
+    if (data.finalScreenType !== undefined) updateData.final_screen_type = data.finalScreenType;
+    if (data.formFields !== undefined) updateData.form_fields = data.formFields;
 
     await updateForm(id, updateData);
 
