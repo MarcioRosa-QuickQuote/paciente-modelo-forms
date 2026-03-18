@@ -71,9 +71,7 @@ export default function StepBeforeAfter({ procedureName, beforeImage, afterImage
             paciente modelo
           </span>{' '}
           de{' '}
-          <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-            {procedureName}
-          </span>
+          {procedureName}
           ?
         </h1>
       </motion.div>
