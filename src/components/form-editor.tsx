@@ -13,6 +13,7 @@ import { ptBR } from 'date-fns/locale';
 import 'react-day-picker/style.css';
 import FormStepBuilder from './form-step-builder';
 import FormPreviewPanel from './form-preview-panel';
+import RichTextField from './rich-text-field';
 
 const DEFAULT_STEPS: FormStep[] = [
   { id: 'default-foto', type: 'foto' },
@@ -246,7 +247,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
   return (
     <div className="max-w-6xl mx-auto">
-    <div className="xl:grid xl:grid-cols-[1fr_300px] xl:gap-6 xl:items-start">
+    <div className="xl:grid xl:grid-cols-[1fr_380px] xl:gap-6 xl:items-start">
     <form onSubmit={handleSubmit}>
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-100">
@@ -279,20 +280,34 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Headline da 1ª tela
-              <span className="ml-2 text-xs text-gray-400 font-normal">Pergunta principal para o usuário</span>
+              <span className="ml-2 text-xs text-gray-400 font-normal">
+                Pergunta principal · selecione texto para colorir
+              </span>
             </label>
-            <input type="text" value={form.headline} onChange={e => updateField('headline', e.target.value)}
-              placeholder="Ex: Suas orelhas te incomodam?" className={inputClass} />
+            <RichTextField
+              value={form.headline}
+              onChange={v => updateField('headline', v)}
+              placeholder="Ex: Suas orelhas te incomodam?"
+              singleLine
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
+            />
           </div>
 
           {/* Texto de apoio */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Texto de apoio
-              <span className="ml-2 text-xs text-gray-400 font-normal">Exibido abaixo das fotos</span>
+              <span className="ml-2 text-xs text-gray-400 font-normal">
+                Abaixo das fotos · selecione texto para colorir
+              </span>
             </label>
-            <input type="text" value={form.supportText} onChange={e => updateField('supportText', e.target.value)}
-              placeholder="Ex: Corrija orelha de abano sem cirurgia, sem cortes e sem cicatriz." className={inputClass} />
+            <RichTextField
+              value={form.supportText}
+              onChange={v => updateField('supportText', v)}
+              placeholder="Ex: Corrija orelha de abano sem cirurgia, sem cortes e sem cicatriz."
+              singleLine
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
+            />
           </div>
 
           {/* Dias Disponíveis */}

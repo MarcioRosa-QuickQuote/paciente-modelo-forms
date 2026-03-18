@@ -12,10 +12,15 @@ interface Props {
   steps: FormStep[];
 }
 
-function Btn({ gradient, text, outlined }: { gradient?: string; text: string; outlined?: boolean }) {
+type ViewMode = 'mobile' | 'desktop';
+
+// ── Helper UI ─────────────────────────────────────────────────────────────────
+
+function Btn({ gradient, text, outlined, small }: { gradient?: string; text: string; outlined?: boolean; small?: boolean }) {
+  const py = small ? 'py-2' : 'py-2.5';
   return (
     <div
-      className={`flex-1 py-2.5 px-3 text-center font-bold text-xs rounded-xl ${outlined ? 'bg-gray-100 text-gray-600' : 'text-white'}`}
+      className={`flex-1 ${py} px-3 text-center font-bold rounded-xl ${small ? 'text-xs' : 'text-sm'} ${outlined ? 'bg-gray-100 text-gray-600' : 'text-white'}`}
       style={!outlined ? { background: gradient } : {}}
     >
       {text}
@@ -23,9 +28,9 @@ function Btn({ gradient, text, outlined }: { gradient?: string; text: string; ou
   );
 }
 
-function Icon({ iconBg, children }: { iconBg: string; children: React.ReactNode }) {
+function StepIcon({ iconBg, children }: { iconBg: string; children: React.ReactNode }) {
   return (
-    <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 shadow-md flex-shrink-0" style={{ background: iconBg }}>
+    <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 shadow-md flex-shrink-0" style={{ background: iconBg }}>
       {children}
     </div>
   );
@@ -33,25 +38,31 @@ function Icon({ iconBg, children }: { iconBg: string; children: React.ReactNode 
 
 // ── Step previews ─────────────────────────────────────────────────────────────
 
-function PreviewFoto({ form, photos, theme }: { form: FormInput; photos: PhotoPair[]; theme: Theme }) {
+function PreviewFoto({ form, photos, theme, desktop }: { form: FormInput; photos: PhotoPair[]; theme: Theme; desktop: boolean }) {
   const validPhotos = photos.filter(p => p.before || p.after);
   const photo = validPhotos[0] || { before: '', after: '' };
-  const headline = form.headline || `Deseja ser paciente modelo de ${form.procedureName || '...'}?`;
-  const yesText = form.headline ? 'Quero corrigir!' : 'Sim, quero!';
+  const headline = form.headline || `Deseja ser <span style="background: linear-gradient(to right, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span> de ${form.procedureName || '...'}?`;
+  const yesText = form.headline?.replace(/<[^>]+>/g, '') ? 'Quero corrigir!' : 'Sim, quero!';
 
   return (
-    <div className="flex flex-col items-center px-3 py-5 gap-3">
-      <h3 className="text-sm font-bold text-gray-900 text-center leading-tight">{headline}</h3>
+    <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8 gap-5' : 'px-3 py-5 gap-3'}`}>
+      <h3
+        className={`font-bold text-gray-900 text-center leading-tight ${desktop ? 'text-xl' : 'text-sm'}`}
+        dangerouslySetInnerHTML={{ __html: headline }}
+      />
 
       {validPhotos.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2 w-full">
+        <div className={`grid grid-cols-2 w-full ${desktop ? 'gap-4' : 'gap-2'}`}>
           {(['before', 'after'] as const).map(type => (
             photo[type] ? (
               <div key={type} className="relative aspect-[3/4] rounded-xl overflow-hidden">
                 <Image src={photo[type]} alt={type} fill className="object-cover" />
                 <span
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 text-white text-[9px] font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: type === 'before' ? 'rgba(0,0,0,0.6)' : `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+                  className="absolute bottom-1 left-1/2 -translate-x-1/2 text-white font-bold px-2 py-0.5 rounded-full"
+                  style={{
+                    fontSize: desktop ? '11px' : '9px',
+                    background: type === 'before' ? 'rgba(0,0,0,0.6)' : `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})`
+                  }}
                 >
                   {type === 'before' ? 'ANTES' : 'DEPOIS'}
                 </span>
@@ -64,7 +75,7 @@ function PreviewFoto({ form, photos, theme }: { form: FormInput; photos: PhotoPa
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 w-full">
+        <div className={`grid grid-cols-2 w-full ${desktop ? 'gap-4' : 'gap-2'}`}>
           {['ANTES', 'DEPOIS'].map(label => (
             <div key={label} className="aspect-[3/4] bg-gray-100 rounded-xl flex items-center justify-center">
               <span className="text-[10px] text-gray-400 font-medium">{label}</span>
@@ -74,27 +85,30 @@ function PreviewFoto({ form, photos, theme }: { form: FormInput; photos: PhotoPa
       )}
 
       {form.supportText && (
-        <p className="text-[11px] text-gray-500 text-center">{form.supportText}</p>
+        <p
+          className={`text-gray-500 text-center ${desktop ? 'text-sm' : 'text-[11px]'}`}
+          dangerouslySetInnerHTML={{ __html: form.supportText }}
+        />
       )}
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={yesText} />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text={yesText} small={!desktop} />
+        <Btn text="Não" outlined small={!desktop} />
       </div>
     </div>
   );
 }
 
-function PreviewDisponibilidade({ form, theme }: { form: FormInput; theme: Theme }) {
+function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
   return (
-    <div className="flex flex-col items-center px-3 py-5">
-      <Icon iconBg={theme.iconBg}>
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
+      <StepIcon iconBg={theme.iconBg}>
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
-      </Icon>
+      </StepIcon>
 
-      <p className="text-xs font-bold text-gray-900 text-center mb-3 leading-snug">
+      <p className={`font-bold text-gray-900 text-center mb-4 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
         {form.procedureDuration
           ? <>Tem disponibilidade em um dos dias abaixo<br />tendo em vista que o procedimento dura em média {form.procedureDuration}?</>
           : 'Tem disponibilidade em um dos dias abaixo?'
@@ -102,188 +116,249 @@ function PreviewDisponibilidade({ form, theme }: { form: FormInput; theme: Theme
       </p>
 
       {form.availableDays && (
-        <div className="rounded-xl px-3 py-2 mb-3 w-full text-center text-[11px] font-semibold" style={{ background: theme.accentLight, color: theme.accent }}>
+        <div className="rounded-xl px-3 py-2 mb-4 w-full text-center font-semibold"
+          style={{ background: theme.accentLight, color: theme.accent, fontSize: desktop ? '13px' : '11px' }}>
           {form.availableDays}
         </div>
       )}
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Sim, tenho!" />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text="Sim, tenho!" small={!desktop} />
+        <Btn text="Não" outlined small={!desktop} />
       </div>
     </div>
   );
 }
 
-function PreviewPreco({ form, theme }: { form: FormInput; theme: Theme }) {
+function PreviewPreco({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
   const hasInstallment = form.installmentCount > 0 && form.installmentAmount > 0;
   const discount = form.regularPrice > 0 ? Math.round(((form.regularPrice - form.modelPrice) / form.regularPrice) * 100) : 0;
 
   return (
-    <div className="flex flex-col items-center px-3 py-5">
-      <Icon iconBg={theme.iconBg}>
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
+      <StepIcon iconBg={theme.iconBg}>
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-      </Icon>
+      </StepIcon>
 
-      <p className="text-xs font-bold text-gray-900 text-center mb-3 leading-snug">
+      <p className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
         Normalmente custa <span className="line-through text-gray-400">{formatCurrency(form.regularPrice)}</span>.<br />
         Como paciente modelo você pagaria:
       </p>
 
-      <div className="rounded-2xl px-5 py-3 mb-3 text-center shadow-lg w-full" style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-        <p className="text-white/80 text-[10px] mb-1">Valor especial paciente modelo</p>
-        <p className="text-white text-2xl font-extrabold">{formatCurrency(form.modelPrice)}</p>
+      <div className="rounded-2xl px-5 py-4 mb-3 text-center shadow-lg w-full"
+        style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
+        <p className="text-white/80 text-xs mb-1">Valor especial paciente modelo</p>
+        <p className={`text-white font-extrabold ${desktop ? 'text-3xl' : 'text-2xl'}`}>{formatCurrency(form.modelPrice)}</p>
         {hasInstallment && (
-          <p className="text-white/80 text-[10px] mt-0.5">ou {form.installmentCount}x de {formatCurrency(form.installmentAmount)}</p>
+          <p className="text-white/80 text-xs mt-0.5">ou {form.installmentCount}x de {formatCurrency(form.installmentAmount)}</p>
         )}
         {discount > 0 && (
-          <span className="inline-block bg-white/20 rounded-full px-2 py-0.5 text-white text-[10px] font-bold mt-1">{discount}% off</span>
+          <span className="inline-block bg-white/20 rounded-full px-2 py-0.5 text-white text-xs font-bold mt-1">{discount}% off</span>
         )}
       </div>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Sim!" />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text="Sim!" small={!desktop} />
+        <Btn text="Não" outlined small={!desktop} />
       </div>
     </div>
   );
 }
 
-function PreviewTaxa({ form, theme }: { form: FormInput; theme: Theme }) {
+function PreviewTaxa({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
   return (
-    <div className="flex flex-col items-center px-3 py-5">
-      <Icon iconBg={theme.iconBg}>
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
+      <StepIcon iconBg={theme.iconBg}>
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
-      </Icon>
+      </StepIcon>
 
-      <p className="text-xs font-bold text-gray-900 text-center mb-2 leading-snug">
+      <p className={`font-bold text-gray-900 text-center mb-2 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
         Para garantir sua vaga, pedimos um valor simbólico:
       </p>
-      <p className="text-3xl font-black mb-1" style={{ color: theme.accent }}>{formatCurrency(form.feeAmount)}</p>
-      <p className="text-[10px] text-gray-400 text-center mb-4">
-        Esse valor confirma seu comprometimento e garante sua vaga.
+      <p className={`font-black mb-1 ${desktop ? 'text-4xl' : 'text-3xl'}`} style={{ color: theme.accent }}>
+        {formatCurrency(form.feeAmount)}
+      </p>
+      <p className={`text-gray-400 text-center mb-4 ${desktop ? 'text-sm' : 'text-[10px]'}`}>
+        Confirma seu comprometimento e garante sua vaga.
       </p>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Aceito o valor" />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text="Aceito o valor" small={!desktop} />
+        <Btn text="Não" outlined small={!desktop} />
       </div>
     </div>
   );
 }
 
-function PreviewPergunta({ step, theme }: { step: FormStep; theme: Theme }) {
+function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Theme; desktop: boolean }) {
   return (
-    <div className="flex flex-col items-center px-3 py-5">
-      <Icon iconBg={theme.iconBg}>
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
+      <StepIcon iconBg={theme.iconBg}>
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-      </Icon>
+      </StepIcon>
 
-      <p className="text-sm font-bold text-gray-900 text-center mb-6 leading-snug">
+      <p className={`font-bold text-gray-900 text-center mb-6 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}>
         {step.question || <span className="text-gray-400 italic">Pergunta personalizada...</span>}
       </p>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} />
-        <Btn text={step.noText || 'Não'} outlined />
+        <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} small={!desktop} />
+        <Btn text={step.noText || 'Não'} outlined small={!desktop} />
       </div>
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Main Component ────────────────────────────────────────────────────────────
 
 const STEP_LABELS: Record<string, string> = {
-  foto: 'Fotos',
-  disponibilidade: 'Disponibilidade',
-  preco: 'Preço',
-  taxa: 'Taxa',
-  pergunta: 'Pergunta',
+  foto: 'Fotos', disponibilidade: 'Disponibilidade',
+  preco: 'Preço', taxa: 'Taxa', pergunta: 'Pergunta',
 };
 
 export default function FormPreviewPanel({ form, photos, steps }: Props) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('mobile');
   const theme = getTheme(form.theme);
-  const safeIndex = Math.min(currentStep, Math.max(0, steps.length - 1));
+  const safeIndex = steps.length > 0 ? Math.min(currentStep, steps.length - 1) : 0;
   const step = steps[safeIndex];
 
-  function renderStep() {
+  function renderStep(desktop: boolean) {
     if (!step) return (
-      <div className="flex flex-col items-center justify-center h-48 text-gray-400 px-4 text-center">
+      <div className="flex flex-col items-center justify-center h-40 text-gray-400 px-4 text-center">
         <p className="text-xs">Adicione etapas para ver a pré-visualização</p>
       </div>
     );
     switch (step.type) {
-      case 'foto': return <PreviewFoto form={form} photos={photos} theme={theme} />;
-      case 'disponibilidade': return <PreviewDisponibilidade form={form} theme={theme} />;
-      case 'preco': return <PreviewPreco form={form} theme={theme} />;
-      case 'taxa': return <PreviewTaxa form={form} theme={theme} />;
-      case 'pergunta': return <PreviewPergunta step={step} theme={theme} />;
+      case 'foto': return <PreviewFoto form={form} photos={photos} theme={theme} desktop={desktop} />;
+      case 'disponibilidade': return <PreviewDisponibilidade form={form} theme={theme} desktop={desktop} />;
+      case 'preco': return <PreviewPreco form={form} theme={theme} desktop={desktop} />;
+      case 'taxa': return <PreviewTaxa form={form} theme={theme} desktop={desktop} />;
+      case 'pergunta': return <PreviewPergunta step={step} theme={theme} desktop={desktop} />;
     }
   }
 
   return (
     <div className="sticky top-6">
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
+        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold text-gray-800">Pré-visualização</p>
             <p className="text-xs text-gray-400">
               {step ? STEP_LABELS[step.type] : '—'} · {steps.length > 0 ? `${safeIndex + 1}/${steps.length}` : '0/0'}
             </p>
           </div>
-          <div className="flex items-center gap-0.5">
-            <button
-              type="button"
-              onClick={() => setCurrentStep(p => Math.max(0, p - 1))}
-              disabled={safeIndex === 0}
-              className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentStep(p => Math.min(steps.length - 1, p + 1))}
-              disabled={safeIndex >= steps.length - 1}
-              className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+
+          <div className="flex items-center gap-2">
+            {/* Mobile / Desktop toggle */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('mobile')}
+                title="Mobile"
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'mobile' ? 'bg-white shadow text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('desktop')}
+                title="Desktop"
+                className={`p-1.5 rounded-md transition-all ${viewMode === 'desktop' ? 'bg-white shadow text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Step navigation */}
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(p => Math.max(0, p - 1))}
+                disabled={safeIndex === 0}
+                className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentStep(p => Math.min(steps.length - 1, p + 1))}
+                disabled={safeIndex >= steps.length - 1}
+                className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Phone mockup */}
+        {/* Preview area */}
         <div className="p-3">
-          <div className="relative rounded-[24px] border-[5px] border-gray-800 overflow-hidden bg-white shadow-inner">
-            {/* Progress bar */}
-            <div className="h-[3px] bg-gray-100">
-              <div
-                className="h-full transition-all duration-300"
-                style={{
-                  background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`,
-                  width: steps.length > 0 ? `${((safeIndex + 1) / steps.length) * 100}%` : '0%',
-                }}
-              />
+          {viewMode === 'mobile' ? (
+            /* ── Phone frame ── */
+            <div>
+              <div className="relative rounded-[28px] border-[6px] border-gray-800 overflow-hidden bg-white mx-auto" style={{ maxWidth: '300px' }}>
+                {/* Status bar */}
+                <div className="flex items-center justify-between px-4 py-1.5 bg-white">
+                  <span className="text-[10px] font-semibold text-gray-800">9:41</span>
+                  <div className="flex items-center gap-1">
+                    <svg className="w-3 h-3 text-gray-800" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                    <svg className="w-3 h-3 text-gray-800" fill="currentColor" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="h-[3px] bg-gray-100">
+                  <div className="h-full transition-all duration-300"
+                    style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`, width: steps.length > 0 ? `${((safeIndex + 1) / steps.length) * 100}%` : '0%' }} />
+                </div>
+                <div className="overflow-y-auto" style={{ maxHeight: '540px', minHeight: '200px' }}>
+                  {renderStep(false)}
+                </div>
+              </div>
             </div>
-
-            {/* Step content */}
-            <div className="overflow-y-auto" style={{ maxHeight: '520px', minHeight: '200px' }}>
-              {renderStep()}
+          ) : (
+            /* ── Desktop / browser frame ── */
+            <div className="rounded-xl border-2 border-gray-300 overflow-hidden bg-gray-100">
+              {/* Browser chrome */}
+              <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-200 border-b border-gray-300">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                <div className="flex-1 mx-3 bg-white rounded-md px-2 py-0.5 text-[10px] text-gray-400">
+                  formulario/{form.name ? form.name.toLowerCase().replace(/\s+/g, '-') : 'meu-formulario'}
+                </div>
+              </div>
+              {/* Page content */}
+              <div className="bg-white overflow-y-auto" style={{ maxHeight: '540px', minHeight: '200px' }}>
+                {/* Progress bar */}
+                <div className="h-[3px] bg-gray-100">
+                  <div className="h-full transition-all duration-300"
+                    style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`, width: steps.length > 0 ? `${((safeIndex + 1) / steps.length) * 100}%` : '0%' }} />
+                </div>
+                <div className="max-w-md mx-auto">
+                  {renderStep(true)}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Dots */}
+          {/* Step dots */}
           {steps.length > 1 && (
             <div className="flex justify-center gap-1.5 mt-3">
               {steps.map((_, i) => (

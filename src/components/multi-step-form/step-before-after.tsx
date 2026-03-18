@@ -43,19 +43,10 @@ export default function StepBeforeAfter({ procedureName, photos, headline, suppo
         transition={{ duration: 0.5 }}
         className="text-center mb-6 w-full max-w-sm"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-          {headline ? (
-            headlineText
-          ) : (
-            <>
-              Deseja ser{' '}
-              <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent">
-                paciente modelo
-              </span>{' '}
-              de {procedureName}?
-            </>
-          )}
-        </h1>
+        <h1
+          className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight"
+          dangerouslySetInnerHTML={{ __html: headline || `Deseja ser <span style="background: linear-gradient(to right, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span> de ${procedureName}?` }}
+        />
       </motion.div>
 
       {/* 2. FOTOS (meio) */}
@@ -117,10 +108,9 @@ export default function StepBeforeAfter({ procedureName, photos, headline, suppo
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-center text-gray-600 text-sm mb-6 max-w-sm"
-        >
-          {supportText}
-        </motion.p>
+          className="text-center text-gray-600 text-sm mb-6"
+          dangerouslySetInnerHTML={{ __html: supportText }}
+        />
       )}
 
       {/* 4. BOTÕES */}
