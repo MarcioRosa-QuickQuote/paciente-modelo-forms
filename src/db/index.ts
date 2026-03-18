@@ -129,6 +129,28 @@ export async function saveResponse(formId: string, step: number, answer: 'sim' |
   if (error) throw error;
 }
 
+export async function getAllStats() {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('responses')
+    .select('form_id, step, answer');
+
+  if (error) throw error;
+
+  const result: Record<string, Record<number, { sim: number; nao: number }>> = {};
+
+  for (const row of data || []) {
+    if (!result[row.form_id]) {
+      result[row.form_id] = { 1: { sim: 0, nao: 0 }, 2: { sim: 0, nao: 0 }, 3: { sim: 0, nao: 0 }, 4: { sim: 0, nao: 0 }, 5: { sim: 0, nao: 0 } };
+    }
+    if (result[row.form_id][row.step]) {
+      result[row.form_id][row.step][row.answer as 'sim' | 'nao']++;
+    }
+  }
+
+  return result;
+}
+
 export async function getFormStats(formId: string) {
   const supabase = getSupabase();
   const { data, error } = await supabase
