@@ -25,7 +25,9 @@ export default function FormStats({ formId }: { formId: string }) {
   useEffect(() => {
     fetch(`/api/stats/${formId}`)
       .then(r => r.json())
-      .then(data => setStats(data))
+      .then(data => {
+        if (data && !data.error) setStats(data);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [formId]);
@@ -38,7 +40,13 @@ export default function FormStats({ formId }: { formId: string }) {
     );
   }
 
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+        <p className="text-gray-400 text-sm">Tabela de respostas não encontrada. Rode o SQL no Supabase.</p>
+      </div>
+    );
+  }
 
   const totalResponses = (stats['1']?.sim || 0) + (stats['1']?.nao || 0);
   const conversions = stats['4']?.sim || 0;
