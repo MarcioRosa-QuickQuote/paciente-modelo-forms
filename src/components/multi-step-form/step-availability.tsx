@@ -39,10 +39,11 @@ export default function StepAvailability({ procedureName, availableDays, procedu
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6">
           {procedureDuration
             ? <>
-                Tem disponibilidade para fazer o procedimento de {procedureName} em um dos dias abaixo, tendo em vista que o procedimento dura em média {procedureDuration}?
+                Tem disponibilidade em um dos dias abaixo<br />
+                tendo em vista que o procedimento dura em média {procedureDuration}?
               </>
             : <>
-                Tem disponibilidade para fazer o procedimento de {procedureName} em um dos dias abaixo?
+                Tem disponibilidade em um dos dias abaixo?
               </>
           }
         </h1>

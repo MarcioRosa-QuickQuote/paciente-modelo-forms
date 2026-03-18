@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import 'react-day-picker/style.css';
 import FormStepBuilder from './form-step-builder';
+import FormPreviewPanel from './form-preview-panel';
 
 const DEFAULT_STEPS: FormStep[] = [
   { id: 'default-foto', type: 'foto' },
@@ -244,7 +245,9 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   const inputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+    <div className="max-w-6xl mx-auto">
+    <div className="xl:grid xl:grid-cols-[1fr_300px] xl:gap-6 xl:items-start">
+    <form onSubmit={handleSubmit}>
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -600,5 +603,12 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
         </div>
       </div>
     </form>
+
+    {/* Live preview — only on large screens */}
+    <div className="hidden xl:block">
+      <FormPreviewPanel form={form} photos={photos} steps={steps} />
+    </div>
+    </div>
+    </div>
   );
 }
