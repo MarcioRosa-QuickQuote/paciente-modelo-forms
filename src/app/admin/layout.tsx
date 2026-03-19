@@ -66,6 +66,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="text-xs text-gray-400 block -mt-1">Painel de Gerenciamento</span>
               </div>
             </Link>
+            {process.env.NEXT_PUBLIC_LAST_COMMIT && (
+              <span className="hidden md:block text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-lg font-mono">
+                {(() => {
+                  const d = new Date(process.env.NEXT_PUBLIC_LAST_COMMIT!);
+                  return `${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+                })()}
+              </span>
+            )}
             <nav className="flex items-center gap-2">
               <Link href="/admin"
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
