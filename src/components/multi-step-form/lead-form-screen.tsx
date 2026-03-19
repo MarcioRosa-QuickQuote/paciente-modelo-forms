@@ -10,11 +10,12 @@ interface Props {
   formId: string;
   formFields: FormFields;
   theme: Theme;
+  onTrackEvent?: (eventName: string) => void;
 }
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function LeadFormScreen({ formId, formFields, theme }: Props) {
+export default function LeadFormScreen({ formId, formFields, theme, onTrackEvent }: Props) {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [email, setEmail] = useState('');
@@ -64,6 +65,7 @@ export default function LeadFormScreen({ formId, formFields, theme }: Props) {
           body: JSON.stringify({ formId, step: 5, answer: 'sim' }),
         }).catch(() => {});
 
+        onTrackEvent?.('CompleteRegistration');
         setSent(true);
         launchConfetti();
       } else {

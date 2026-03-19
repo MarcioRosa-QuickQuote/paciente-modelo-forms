@@ -11,11 +11,12 @@ interface Props {
   procedureName: string;
   whatsappMessage?: string;
   theme: Theme;
+  onTrackEvent?: (eventName: string) => void;
 }
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage, theme }: Props) {
+export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage, theme, onTrackEvent }: Props) {
   const hasLaunched = useRef(false);
 
   const launchConfetti = useCallback(() => {
@@ -116,6 +117,7 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ formId, step: 5, answer: 'sim' }),
           }).catch(() => {});
+          onTrackEvent?.('Contact');
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

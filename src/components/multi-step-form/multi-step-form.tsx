@@ -96,6 +96,12 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
     }).catch(() => {});
   }, [capiToken, formData.id]);
 
+  const trackEvent = useCallback((eventName: string) => {
+    const eventId = crypto.randomUUID();
+    firePixelEvent(eventName, eventId);
+    fireCapiEvent(eventName, eventId);
+  }, [firePixelEvent, fireCapiEvent]);
+
   function handleYes() {
     if (state.type !== 'step') return;
     trackResponse(state.index, 'sim');
@@ -249,6 +255,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
                 formId={formData.id}
                 formFields={formData.formFields}
                 theme={theme}
+                onTrackEvent={trackEvent}
               />
             ) : state.type === 'special' && state.screen === 'celebration' && (
               <CelebrationScreen
@@ -257,6 +264,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
                 procedureName={formData.procedureName}
                 whatsappMessage={formData.whatsappMessage}
                 theme={theme}
+                onTrackEvent={trackEvent}
               />
             )}
           </motion.div>
