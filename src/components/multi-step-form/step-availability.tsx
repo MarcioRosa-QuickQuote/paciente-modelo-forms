@@ -40,11 +40,16 @@ export default function StepAvailability({ procedureName, availableDays, procedu
           Você teria disponibilidade em algum desses dias?
         </h1>
 
-        <div
-          className="inline-flex items-center gap-2 rounded-2xl px-6 py-4 mb-6"
-          style={{ background: theme.accentLight, border: `1px solid ${theme.accent}20` }}
-        >
-          <p className="text-lg font-semibold" style={{ color: theme.accent }}>{availableDays}</p>
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
+          {availableDays.split(', ').map((day, i) => (
+            <span
+              key={i}
+              className="rounded-2xl px-5 py-3 text-base font-semibold"
+              style={{ background: theme.accentLight, color: theme.accent, border: `1px solid ${theme.accent}20` }}
+            >
+              {day}
+            </span>
+          ))}
         </div>
 
         {procedureDuration && (

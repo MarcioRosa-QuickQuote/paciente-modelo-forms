@@ -36,7 +36,7 @@ export default function StepFee({ feeAmount, onYes, onNo, theme }: Props) {
         className="text-center mb-6"
       >
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-4">
-          Para reservarmos o seu horário na agenda, solicitamos um valor simbólico de{' '}
+          Para reservar seu horário na agenda, solicitamos um valor simbólico de{' '}
           <span
             className="bg-clip-text text-transparent font-extrabold"
             style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}

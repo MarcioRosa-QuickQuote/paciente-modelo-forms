@@ -112,9 +112,13 @@ function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; the
       </p>
 
       {form.availableDays && (
-        <div className="rounded-xl px-3 py-2 mb-3 w-full text-center font-semibold"
-          style={{ background: theme.accentLight, color: theme.accent, fontSize: desktop ? '13px' : '11px' }}>
-          {form.availableDays}
+        <div className="flex flex-wrap justify-center gap-1.5 mb-3">
+          {form.availableDays.split(', ').map((day, i) => (
+            <span key={i} className="rounded-xl px-3 py-1.5 font-semibold"
+              style={{ background: theme.accentLight, color: theme.accent, fontSize: desktop ? '12px' : '10px' }}>
+              {day}
+            </span>
+          ))}
         </div>
       )}
 
