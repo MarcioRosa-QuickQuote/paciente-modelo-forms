@@ -10,6 +10,8 @@ interface Props {
   form: FormInput;
   photos: PhotoPair[];
   steps: FormStep[];
+  currentIndex?: number;
+  onCurrentIndexChange?: (index: number) => void;
 }
 
 type ViewMode = 'mobile' | 'desktop';
@@ -228,11 +230,14 @@ const STEP_LABELS: Record<string, string> = {
   preco: 'Preço', taxa: 'Taxa', pergunta: 'Pergunta',
 };
 
-export default function FormPreviewPanel({ form, photos, steps }: Props) {
-  const [currentStep, setCurrentStep] = useState(0);
+export default function FormPreviewPanel({ form, photos, steps, currentIndex, onCurrentIndexChange }: Props) {
+  const [internalStep, setInternalStep] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('mobile');
   const theme = getTheme(form.theme);
-  const safeIndex = steps.length > 0 ? Math.min(currentStep, steps.length - 1) : 0;
+  const controlled = currentIndex !== undefined && onCurrentIndexChange !== undefined;
+  const activeIndex = controlled ? currentIndex : internalStep;
+  const setActiveIndex = controlled ? onCurrentIndexChange! : setInternalStep;
+  const safeIndex = steps.length > 0 ? Math.min(activeIndex, steps.length - 1) : 0;
   const step = steps[safeIndex];
 
   function renderStep(desktop: boolean) {
@@ -292,7 +297,7 @@ export default function FormPreviewPanel({ form, photos, steps }: Props) {
             <div className="flex items-center gap-0.5">
               <button
                 type="button"
-                onClick={() => setCurrentStep(p => Math.max(0, p - 1))}
+                onClick={() => setActiveIndex(Math.max(0, safeIndex - 1))}
                 disabled={safeIndex === 0}
                 className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
               >
@@ -302,7 +307,7 @@ export default function FormPreviewPanel({ form, photos, steps }: Props) {
               </button>
               <button
                 type="button"
-                onClick={() => setCurrentStep(p => Math.min(steps.length - 1, p + 1))}
+                onClick={() => setActiveIndex(Math.min(steps.length - 1, safeIndex + 1))}
                 disabled={safeIndex >= steps.length - 1}
                 className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
               >
@@ -375,7 +380,7 @@ export default function FormPreviewPanel({ form, photos, steps }: Props) {
                 <button
                   key={i}
                   type="button"
-                  onClick={() => setCurrentStep(i)}
+                  onClick={() => setActiveIndex(i)}
                   className="w-1.5 h-1.5 rounded-full transition-all"
                   style={{ background: i === safeIndex ? theme.gradientFrom : '#d1d5db' }}
                 />

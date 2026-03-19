@@ -12,14 +12,15 @@ import {
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
   useSortable,
   arrayMove,
+  sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FormStep, FormStepType } from '@/types/form';
-import { formatCurrency } from '@/lib/utils';
+
+// ─── Step Type Definitions ────────────────────────────────────────────────────
 
 const STEP_TYPES: { type: FormStepType; label: string; description: string; icon: React.ReactNode }[] = [
   {
@@ -78,7 +79,7 @@ function getStepInfo(type: FormStepType) {
   return STEP_TYPES.find(s => s.type === type) || STEP_TYPES[0];
 }
 
-// ─── Step Form Fields ─────────────────────────────────────────────────────────
+// ─── Interfaces ───────────────────────────────────────────────────────────────
 
 interface StepFormData {
   headline: string;
@@ -90,22 +91,24 @@ interface StepFormData {
   feeAmount: number;
 }
 
-// ─── Sortable Step Card ───────────────────────────────────────────────────────
-
-interface SortableStepProps {
-  step: FormStep;
-  index: number;
-  total: number;
-  formData: StepFormData;
-  onRemove: () => void;
-  onUpdate: (updated: FormStep) => void;
+interface FormStepBuilderProps {
+  steps: FormStep[];
+  onChange: (steps: FormStep[]) => void;
+  form: StepFormData;
   onFormChange: (field: keyof StepFormData, value: string | number) => void;
+  currentIndex: number;
+  onCurrentIndexChange: (index: number) => void;
 }
 
-function SortableStep({ step, index, total, formData, onRemove, onUpdate, onFormChange }: SortableStepProps) {
-  const [expanded, setExpanded] = useState(false);
-  const info = getStepInfo(step.type);
+// ─── Sortable Dot ─────────────────────────────────────────────────────────────
 
+interface SortableDotProps {
+  id: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function SortableDot({ id, isActive, onClick }: SortableDotProps) {
   const {
     attributes,
     listeners,
@@ -113,258 +116,29 @@ function SortableStep({ step, index, total, formData, onRemove, onUpdate, onForm
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: step.id });
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 999 : undefined,
   };
 
-  const inputClass = "w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6B1C3A]/30 focus:border-[#6B1C3A]/50 outline-none text-sm text-gray-900 bg-white";
-  const labelClass = "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1";
-
   return (
-    <div ref={setNodeRef} style={style} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-      {/* Header row */}
-      <div className="flex items-center gap-3 p-3">
-        {/* Drag handle */}
-        <button
-          type="button"
-          className="flex-shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 touch-none"
-          {...attributes}
-          {...listeners}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-
-        {/* Step number */}
-        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#6B1C3A]/10 text-[#6B1C3A] text-xs font-bold flex items-center justify-center">
-          {index + 1}
-        </div>
-
-        {/* Icon + label */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-gray-500 flex-shrink-0">{info.icon}</span>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-800 truncate">{info.label}</p>
-            {step.type === 'pergunta' && step.question && (
-              <p className="text-xs text-gray-400 truncate">{step.question}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Expand toggle */}
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className={`p-1.5 rounded-lg transition-colors ${expanded ? 'text-[#6B1C3A] bg-[#6B1C3A]/10' : 'text-gray-400 hover:text-[#6B1C3A] hover:bg-gray-100'}`}
-            title="Editar campos"
-          >
-            <svg
-              className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          {total > 1 && (
-            <button
-              type="button"
-              onClick={onRemove}
-              className="p-1.5 text-gray-300 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
-              title="Remover etapa"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Expanded section */}
-      {expanded && (
-        <div className="px-4 pb-4 pt-2 border-t border-gray-100 bg-gray-50/50 space-y-4">
-
-          {/* FOTO */}
-          {step.type === 'foto' && (
-            <>
-              <div>
-                <label className={labelClass}>Título principal</label>
-                <input
-                  type="text"
-                  value={formData.headline}
-                  onChange={e => onFormChange('headline', e.target.value)}
-                  placeholder="Ex: Suas orelhas te incomodam?"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Texto de apoio</label>
-                <textarea
-                  rows={2}
-                  value={formData.supportText}
-                  onChange={e => onFormChange('supportText', e.target.value)}
-                  placeholder="Ex: Procedimento feito em consultório, sem internação."
-                  className={inputClass + ' resize-none'}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Botão Sim</label>
-                  <input type="text" value={step.yesText || ''} onChange={e => onUpdate({ ...step, yesText: e.target.value })} placeholder="Quero corrigir!" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Botão Não</label>
-                  <input type="text" value={step.noText || ''} onChange={e => onUpdate({ ...step, noText: e.target.value })} placeholder="Não" className={inputClass} />
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* DISPONIBILIDADE */}
-          {step.type === 'disponibilidade' && (
-            <>
-              <div>
-                <label className={labelClass}>Dias disponíveis</label>
-                <input
-                  type="text"
-                  value={formData.availableDays}
-                  onChange={e => onFormChange('availableDays', e.target.value)}
-                  placeholder="Ex: 30/03/2026, 31/03/2026"
-                  className={inputClass}
-                />
-                <p className="text-[10px] text-gray-400 mt-1">Separe as datas por vírgula</p>
-              </div>
-              <div>
-                <label className={labelClass}>Duração do procedimento</label>
-                <input
-                  type="text"
-                  value={formData.procedureDuration}
-                  onChange={e => onFormChange('procedureDuration', e.target.value)}
-                  placeholder="Ex: 2h"
-                  className={inputClass}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Botão Sim</label>
-                  <input type="text" value={step.yesText || ''} onChange={e => onUpdate({ ...step, yesText: e.target.value })} placeholder="Sim, tenho!" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Botão Não</label>
-                  <input type="text" value={step.noText || ''} onChange={e => onUpdate({ ...step, noText: e.target.value })} placeholder="Não" className={inputClass} />
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* PREÇO */}
-          {step.type === 'preco' && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Preço normal (R$)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={formData.regularPrice || ''}
-                    onChange={e => onFormChange('regularPrice', parseFloat(e.target.value) || 0)}
-                    placeholder="0,00"
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>Preço modelo (R$)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={formData.modelPrice || ''}
-                    onChange={e => onFormChange('modelPrice', parseFloat(e.target.value) || 0)}
-                    placeholder="0,00"
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Botão Sim</label>
-                  <input type="text" value={step.yesText || ''} onChange={e => onUpdate({ ...step, yesText: e.target.value })} placeholder="Sim!" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Botão Não</label>
-                  <input type="text" value={step.noText || ''} onChange={e => onUpdate({ ...step, noText: e.target.value })} placeholder="Não" className={inputClass} />
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* TAXA */}
-          {step.type === 'taxa' && (
-            <>
-              <div>
-                <label className={labelClass}>Valor da taxa (R$)</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={formData.feeAmount || ''}
-                  onChange={e => onFormChange('feeAmount', parseFloat(e.target.value) || 0)}
-                  placeholder="0,00"
-                  className={inputClass}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Botão Sim</label>
-                  <input type="text" value={step.yesText || ''} onChange={e => onUpdate({ ...step, yesText: e.target.value })} placeholder="Sim, concordo!" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Botão Não</label>
-                  <input type="text" value={step.noText || ''} onChange={e => onUpdate({ ...step, noText: e.target.value })} placeholder="Não" className={inputClass} />
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* PERGUNTA */}
-          {step.type === 'pergunta' && (
-            <>
-              <div>
-                <label className={labelClass}>Pergunta</label>
-                <textarea
-                  rows={2}
-                  value={step.question || ''}
-                  onChange={e => onUpdate({ ...step, question: e.target.value })}
-                  placeholder="Ex: Você está disposto a fazer uma sessão de fotos para o nosso portfólio?"
-                  className={inputClass + ' resize-none'}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>Botão Sim</label>
-                  <input type="text" value={step.yesText || ''} onChange={e => onUpdate({ ...step, yesText: e.target.value })} placeholder="Sim, topo!" className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Botão Não</label>
-                  <input type="text" value={step.noText || ''} onChange={e => onUpdate({ ...step, noText: e.target.value })} placeholder="Não, obrigado" className={inputClass} />
-                </div>
-              </div>
-            </>
-          )}
-
-        </div>
-      )}
-    </div>
+    <button
+      ref={setNodeRef}
+      style={style}
+      type="button"
+      onClick={onClick}
+      className={
+        isActive
+          ? 'w-5 h-2 rounded-full bg-[#6B1C3A] cursor-pointer transition-all'
+          : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-all'
+      }
+      {...attributes}
+      {...listeners}
+      aria-label={`Ir para etapa ${id}`}
+    />
   );
 }
 
@@ -377,7 +151,7 @@ interface AddStepPickerProps {
 
 function AddStepPicker({ onAdd, onClose }: AddStepPickerProps) {
   return (
-    <div className="border border-dashed border-[#6B1C3A]/40 rounded-xl p-4 bg-[#6B1C3A]/5">
+    <div className="border border-dashed border-[#6B1C3A]/40 rounded-xl p-4 bg-[#6B1C3A]/5 mt-3">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Escolha o tipo de etapa</p>
       <div className="space-y-2">
         {STEP_TYPES.map(({ type, label, description, icon }) => (
@@ -408,16 +182,267 @@ function AddStepPicker({ onAdd, onClose }: AddStepPickerProps) {
   );
 }
 
-// ─── Main Builder ─────────────────────────────────────────────────────────────
+// ─── Step Fields ──────────────────────────────────────────────────────────────
 
-interface FormStepBuilderProps {
-  steps: FormStep[];
-  onChange: (steps: FormStep[]) => void;
+interface StepFieldsProps {
+  step: FormStep;
   form: StepFormData;
   onFormChange: (field: keyof StepFormData, value: string | number) => void;
+  onUpdate: (updated: FormStep) => void;
 }
 
-export default function FormStepBuilder({ steps, onChange, form, onFormChange }: FormStepBuilderProps) {
+function StepFields({ step, form, onFormChange, onUpdate }: StepFieldsProps) {
+  const inputClass =
+    'w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6B1C3A]/30 focus:border-[#6B1C3A]/50 outline-none text-sm text-gray-900 bg-white';
+  const labelClass =
+    'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1';
+
+  return (
+    <div className="px-4 pb-4 pt-3 space-y-4 bg-white">
+
+      {/* FOTO */}
+      {step.type === 'foto' && (
+        <>
+          <div>
+            <label className={labelClass}>Título principal</label>
+            <input
+              type="text"
+              value={form.headline}
+              onChange={e => onFormChange('headline', e.target.value)}
+              placeholder="Ex: Suas orelhas te incomodam?"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Texto de apoio</label>
+            <textarea
+              rows={2}
+              value={form.supportText}
+              onChange={e => onFormChange('supportText', e.target.value)}
+              placeholder="Ex: Procedimento feito em consultório, sem internação."
+              className={inputClass + ' resize-none'}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Botão Sim</label>
+              <input
+                type="text"
+                value={step.yesText || ''}
+                onChange={e => onUpdate({ ...step, yesText: e.target.value })}
+                placeholder="Quero corrigir!"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Botão Não</label>
+              <input
+                type="text"
+                value={step.noText || ''}
+                onChange={e => onUpdate({ ...step, noText: e.target.value })}
+                placeholder="Não"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* DISPONIBILIDADE */}
+      {step.type === 'disponibilidade' && (
+        <>
+          <div>
+            <label className={labelClass}>Dias disponíveis</label>
+            <input
+              type="text"
+              value={form.availableDays}
+              onChange={e => onFormChange('availableDays', e.target.value)}
+              placeholder="Ex: 30/03/2026, 31/03/2026"
+              className={inputClass}
+            />
+            <p className="text-[10px] text-gray-400 mt-1">Separe as datas por vírgula</p>
+          </div>
+          <div>
+            <label className={labelClass}>Duração do procedimento</label>
+            <input
+              type="text"
+              value={form.procedureDuration}
+              onChange={e => onFormChange('procedureDuration', e.target.value)}
+              placeholder="Ex: 2h"
+              className={inputClass}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Botão Sim</label>
+              <input
+                type="text"
+                value={step.yesText || ''}
+                onChange={e => onUpdate({ ...step, yesText: e.target.value })}
+                placeholder="Sim, tenho!"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Botão Não</label>
+              <input
+                type="text"
+                value={step.noText || ''}
+                onChange={e => onUpdate({ ...step, noText: e.target.value })}
+                placeholder="Não"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* PREÇO */}
+      {step.type === 'preco' && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Preço normal (R$)</label>
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={form.regularPrice || ''}
+                onChange={e => onFormChange('regularPrice', parseFloat(e.target.value) || 0)}
+                placeholder="0,00"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Preço modelo (R$)</label>
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={form.modelPrice || ''}
+                onChange={e => onFormChange('modelPrice', parseFloat(e.target.value) || 0)}
+                placeholder="0,00"
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Botão Sim</label>
+              <input
+                type="text"
+                value={step.yesText || ''}
+                onChange={e => onUpdate({ ...step, yesText: e.target.value })}
+                placeholder="Sim!"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Botão Não</label>
+              <input
+                type="text"
+                value={step.noText || ''}
+                onChange={e => onUpdate({ ...step, noText: e.target.value })}
+                placeholder="Não"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* TAXA */}
+      {step.type === 'taxa' && (
+        <>
+          <div>
+            <label className={labelClass}>Valor da taxa (R$)</label>
+            <input
+              type="number"
+              min={0}
+              step={0.01}
+              value={form.feeAmount || ''}
+              onChange={e => onFormChange('feeAmount', parseFloat(e.target.value) || 0)}
+              placeholder="0,00"
+              className={inputClass}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Botão Sim</label>
+              <input
+                type="text"
+                value={step.yesText || ''}
+                onChange={e => onUpdate({ ...step, yesText: e.target.value })}
+                placeholder="Sim, concordo!"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Botão Não</label>
+              <input
+                type="text"
+                value={step.noText || ''}
+                onChange={e => onUpdate({ ...step, noText: e.target.value })}
+                placeholder="Não"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* PERGUNTA */}
+      {step.type === 'pergunta' && (
+        <>
+          <div>
+            <label className={labelClass}>Pergunta</label>
+            <textarea
+              rows={2}
+              value={step.question || ''}
+              onChange={e => onUpdate({ ...step, question: e.target.value })}
+              placeholder="Ex: Você está disposto a fazer uma sessão de fotos para o nosso portfólio?"
+              className={inputClass + ' resize-none'}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Botão Sim</label>
+              <input
+                type="text"
+                value={step.yesText || ''}
+                onChange={e => onUpdate({ ...step, yesText: e.target.value })}
+                placeholder="Sim, topo!"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Botão Não</label>
+              <input
+                type="text"
+                value={step.noText || ''}
+                onChange={e => onUpdate({ ...step, noText: e.target.value })}
+                placeholder="Não, obrigado"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+    </div>
+  );
+}
+
+// ─── Main Builder ─────────────────────────────────────────────────────────────
+
+export default function FormStepBuilder({
+  steps,
+  onChange,
+  form,
+  onFormChange,
+  currentIndex,
+  onCurrentIndexChange,
+}: FormStepBuilderProps) {
   const [showPicker, setShowPicker] = useState(false);
 
   const sensors = useSensors(
@@ -425,12 +450,21 @@ export default function FormStepBuilder({ steps, onChange, form, onFormChange }:
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  const currentStep = steps[currentIndex] ?? steps[0];
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = steps.findIndex(s => s.id === active.id);
     const newIndex = steps.findIndex(s => s.id === over.id);
-    onChange(arrayMove(steps, oldIndex, newIndex));
+    const reordered = arrayMove(steps, oldIndex, newIndex);
+    onChange(reordered);
+    // keep the current step focused after reorder
+    const movedStepId = steps[currentIndex]?.id;
+    if (movedStepId) {
+      const newCurrentIndex = reordered.findIndex(s => s.id === movedStepId);
+      if (newCurrentIndex !== -1) onCurrentIndexChange(newCurrentIndex);
+    }
   }
 
   function addStep(type: FormStepType) {
@@ -441,50 +475,134 @@ export default function FormStepBuilder({ steps, onChange, form, onFormChange }:
       noText: '',
       ...(type === 'pergunta' ? { question: '' } : {}),
     };
-    onChange([...steps, newStep]);
+    const newSteps = [...steps, newStep];
+    onChange(newSteps);
+    onCurrentIndexChange(newSteps.length - 1);
   }
 
-  function removeStep(id: string) {
-    onChange(steps.filter(s => s.id !== id));
+  function removeStep(index: number) {
+    const newSteps = steps.filter((_, i) => i !== index);
+    onChange(newSteps);
+    const newIndex = Math.min(index, newSteps.length - 1);
+    onCurrentIndexChange(newIndex);
   }
 
   function updateStep(id: string, updated: FormStep) {
-    onChange(steps.map(s => s.id === id ? updated : s));
+    onChange(steps.map(s => (s.id === id ? updated : s)));
   }
 
+  function goToPrev() {
+    if (currentIndex > 0) onCurrentIndexChange(currentIndex - 1);
+  }
+
+  function goToNext() {
+    if (currentIndex < steps.length - 1) onCurrentIndexChange(currentIndex + 1);
+  }
+
+  if (!currentStep) return null;
+
+  const info = getStepInfo(currentStep.type);
+
   return (
-    <div className="space-y-3">
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+
+      {/* ── Navigation bar ── */}
+      <div className="flex items-center gap-2 bg-white border-b border-gray-100 px-4 py-3">
+        {/* Left arrow */}
+        <button
+          type="button"
+          onClick={goToPrev}
+          disabled={currentIndex === 0}
+          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0"
+          aria-label="Etapa anterior"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* Step name + counter */}
+        <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
+          <span className="text-sm font-bold text-gray-900 truncate">{info.label}</span>
+          <span className="text-xs text-gray-400 flex-shrink-0">
+            {currentIndex + 1} / {steps.length}
+          </span>
+        </div>
+
+        {/* Right arrow */}
+        <button
+          type="button"
+          onClick={goToNext}
+          disabled={currentIndex === steps.length - 1}
+          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0"
+          aria-label="Próxima etapa"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Trash */}
+        {steps.length > 1 && (
+          <button
+            type="button"
+            onClick={() => removeStep(currentIndex)}
+            className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+            aria-label="Remover etapa"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        )}
+
+        {/* Add step button */}
+        <button
+          type="button"
+          onClick={() => setShowPicker(!showPicker)}
+          className="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-lg flex-shrink-0 hover:opacity-90 transition-opacity"
+        >
+          + Criar Tela
+        </button>
+      </div>
+
+      {/* ── Dots ── */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={steps.map(s => s.id)} strategy={verticalListSortingStrategy}>
-          {steps.map((step, index) => (
-            <SortableStep
-              key={step.id}
-              step={step}
-              index={index}
-              total={steps.length}
-              formData={form}
-              onRemove={() => removeStep(step.id)}
-              onUpdate={(updated) => updateStep(step.id, updated)}
-              onFormChange={onFormChange}
-            />
-          ))}
+        <SortableContext items={steps.map(s => s.id)} strategy={horizontalListSortingStrategy}>
+          <div className="px-4 py-2 flex items-center gap-1.5 border-b border-gray-100">
+            {steps.map((step, index) => (
+              <SortableDot
+                key={step.id}
+                id={step.id}
+                isActive={index === currentIndex}
+                onClick={() => onCurrentIndexChange(index)}
+              />
+            ))}
+          </div>
         </SortableContext>
       </DndContext>
 
-      {showPicker ? (
-        <AddStepPicker onAdd={addStep} onClose={() => setShowPicker(false)} />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowPicker(true)}
-          className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm font-medium text-gray-400 hover:border-[#6B1C3A]/40 hover:text-[#6B1C3A] hover:bg-[#6B1C3A]/5 transition-all flex items-center justify-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Adicionar etapa
-        </button>
+      {/* ── Step fields ── */}
+      <StepFields
+        step={currentStep}
+        form={form}
+        onFormChange={onFormChange}
+        onUpdate={(updated) => updateStep(currentStep.id, updated)}
+      />
+
+      {/* ── Add Step Picker ── */}
+      {showPicker && (
+        <div className="px-4 pb-4">
+          <AddStepPicker
+            onAdd={(type) => {
+              addStep(type);
+              setShowPicker(false);
+            }}
+            onClose={() => setShowPicker(false)}
+          />
+        </div>
       )}
+
     </div>
   );
 }

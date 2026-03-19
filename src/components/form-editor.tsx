@@ -96,6 +96,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   };
 
   const [steps, setSteps] = useState<FormStep[]>(buildInitialSteps());
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const [form, setForm] = useState<FormInput>({
     name: initialData?.name || '',
@@ -524,6 +525,8 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                 feeAmount: form.feeAmount,
               }}
               onFormChange={(field, value) => updateField(field as keyof typeof form, value as never)}
+              currentIndex={currentStepIndex}
+              onCurrentIndexChange={setCurrentStepIndex}
             />
           </div>
 
@@ -634,7 +637,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
     {/* Live preview — only on large screens */}
     <div className="hidden xl:block">
-      <FormPreviewPanel form={form} photos={photos} steps={steps} />
+      <FormPreviewPanel form={form} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
     </div>
     </div>
     </div>
