@@ -232,22 +232,27 @@ function SortableStep({ step, index, total, formData, onRemove, onUpdate, onForm
           {/* DISPONIBILIDADE */}
           {step.type === 'disponibilidade' && (
             <>
-              {formData.availableDays && (
-                <div>
-                  <label className={labelClass}>Dias configurados</label>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {formData.availableDays.split(', ').filter(Boolean).map((day, i) => (
-                      <span key={i} className="px-2.5 py-1 bg-[#6B1C3A]/10 text-[#6B1C3A] text-xs font-medium rounded-full">{day}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {formData.procedureDuration && (
-                <div>
-                  <label className={labelClass}>Duração</label>
-                  <p className="text-sm text-gray-600">{formData.procedureDuration}</p>
-                </div>
-              )}
+              <div>
+                <label className={labelClass}>Dias disponíveis</label>
+                <input
+                  type="text"
+                  value={formData.availableDays}
+                  onChange={e => onFormChange('availableDays', e.target.value)}
+                  placeholder="Ex: 30/03/2026, 31/03/2026"
+                  className={inputClass}
+                />
+                <p className="text-[10px] text-gray-400 mt-1">Separe as datas por vírgula</p>
+              </div>
+              <div>
+                <label className={labelClass}>Duração do procedimento</label>
+                <input
+                  type="text"
+                  value={formData.procedureDuration}
+                  onChange={e => onFormChange('procedureDuration', e.target.value)}
+                  placeholder="Ex: 2h"
+                  className={inputClass}
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Botão Sim</label>
@@ -264,18 +269,32 @@ function SortableStep({ step, index, total, formData, onRemove, onUpdate, onForm
           {/* PREÇO */}
           {step.type === 'preco' && (
             <>
-              {(formData.regularPrice > 0 || formData.modelPrice > 0) && (
-                <div className="flex gap-4">
-                  <div>
-                    <label className={labelClass}>Preço normal</label>
-                    <p className="text-sm text-gray-500 line-through">{formatCurrency(formData.regularPrice)}</p>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Preço modelo</label>
-                    <p className="text-sm font-bold text-[#6B1C3A]">{formatCurrency(formData.modelPrice)}</p>
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelClass}>Preço normal (R$)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={formData.regularPrice || ''}
+                    onChange={e => onFormChange('regularPrice', parseFloat(e.target.value) || 0)}
+                    placeholder="0,00"
+                    className={inputClass}
+                  />
                 </div>
-              )}
+                <div>
+                  <label className={labelClass}>Preço modelo (R$)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={formData.modelPrice || ''}
+                    onChange={e => onFormChange('modelPrice', parseFloat(e.target.value) || 0)}
+                    placeholder="0,00"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Botão Sim</label>
@@ -292,12 +311,18 @@ function SortableStep({ step, index, total, formData, onRemove, onUpdate, onForm
           {/* TAXA */}
           {step.type === 'taxa' && (
             <>
-              {formData.feeAmount > 0 && (
-                <div>
-                  <label className={labelClass}>Taxa de reserva</label>
-                  <p className="text-sm font-bold text-[#6B1C3A]">{formatCurrency(formData.feeAmount)}</p>
-                </div>
-              )}
+              <div>
+                <label className={labelClass}>Valor da taxa (R$)</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.feeAmount || ''}
+                  onChange={e => onFormChange('feeAmount', parseFloat(e.target.value) || 0)}
+                  placeholder="0,00"
+                  className={inputClass}
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Botão Sim</label>
