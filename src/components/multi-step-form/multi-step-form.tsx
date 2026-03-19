@@ -141,6 +141,8 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             onYes={handleYes}
             onNo={handleNo}
             theme={theme}
+            yesText={step.yesText}
+            noText={step.noText}
           />
         );
       case 'disponibilidade':
@@ -152,6 +154,8 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             onYes={handleYes}
             onNo={handleNo}
             theme={theme}
+            yesText={step.yesText}
+            noText={step.noText}
           />
         );
       case 'preco':
@@ -165,6 +169,8 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             onYes={handleYes}
             onNo={handleNo}
             theme={theme}
+            yesText={step.yesText}
+            noText={step.noText}
           />
         );
       case 'taxa':
@@ -174,6 +180,8 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             onYes={handleYes}
             onNo={handleNo}
             theme={theme}
+            yesText={step.yesText}
+            noText={step.noText}
           />
         );
       case 'pergunta':

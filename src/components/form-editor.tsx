@@ -511,7 +511,20 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               <h3 className="text-base font-semibold text-gray-900">Etapas do Formulário</h3>
               <p className="text-xs text-gray-400 mt-0.5">Arraste para reordenar. Clique em + para adicionar etapas.</p>
             </div>
-            <FormStepBuilder steps={steps} onChange={setSteps} />
+            <FormStepBuilder
+              steps={steps}
+              onChange={setSteps}
+              form={{
+                headline: form.headline,
+                supportText: form.supportText,
+                availableDays: form.availableDays,
+                procedureDuration: form.procedureDuration,
+                regularPrice: form.regularPrice,
+                modelPrice: form.modelPrice,
+                feeAmount: form.feeAmount,
+              }}
+              onFormChange={(field, value) => updateField(field as keyof typeof form, value as never)}
+            />
           </div>
 
           {/* Tema de Cores */}

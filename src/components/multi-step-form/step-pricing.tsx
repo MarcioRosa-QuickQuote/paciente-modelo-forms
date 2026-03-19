@@ -15,9 +15,11 @@ interface Props {
   onYes: () => void;
   onNo: () => void;
   theme: Theme;
+  yesText?: string;
+  noText?: string;
 }
 
-export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme }: Props) {
+export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme, yesText, noText }: Props) {
   const discount = Math.round(((regularPrice - modelPrice) / regularPrice) * 100);
   const hasInstallment = installmentCount > 0 && installmentAmount > 0;
 
@@ -129,7 +131,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         transition={{ duration: 0.6, delay: 0.6 }}
         className="w-full"
       >
-        <YesNoButtons onYes={onYes} onNo={onNo} yesText="Sim!" noText="Não" theme={theme} />
+        <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText || 'Sim!'} noText={noText || 'Não'} theme={theme} />
       </motion.div>
     </div>
   );

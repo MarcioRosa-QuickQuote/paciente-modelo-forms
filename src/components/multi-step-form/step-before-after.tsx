@@ -15,9 +15,11 @@ interface Props {
   onYes: () => void;
   onNo: () => void;
   theme: Theme;
+  yesText?: string;
+  noText?: string;
 }
 
-export default function StepBeforeAfter({ procedureName, photos, headline, supportText, onYes, onNo, theme }: Props) {
+export default function StepBeforeAfter({ procedureName, photos, headline, supportText, onYes, onNo, theme, yesText, noText }: Props) {
   const validPhotos = photos.filter(p => p.before || p.after);
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -31,7 +33,8 @@ export default function StepBeforeAfter({ procedureName, photos, headline, suppo
 
   const currentPhoto = validPhotos[photoIndex] || { before: '', after: '' };
   const headlineText = headline || `Deseja ser paciente modelo de ${procedureName}?`;
-  const yesText = headline ? 'Quero corrigir!' : 'Sim, quero!';
+  const resolvedYesText = yesText || (headline ? 'Quero corrigir!' : 'Sim, quero!');
+  const resolvedNoText = noText || 'Não';
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
@@ -120,7 +123,7 @@ export default function StepBeforeAfter({ procedureName, photos, headline, suppo
         transition={{ duration: 0.5, delay: 0.4 }}
         className="w-full"
       >
-        <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText} noText="Não" theme={theme} />
+        <YesNoButtons onYes={onYes} onNo={onNo} yesText={resolvedYesText} noText={resolvedNoText} theme={theme} />
       </motion.div>
     </div>
   );
