@@ -20,7 +20,7 @@ function TemplateCard({ template, onSelect }: { template: FormTemplate; onSelect
   return (
     <button
       onClick={() => onSelect(template.id)}
-      className="group text-left bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-[#6B1C3A]/30 transition-all duration-200 overflow-hidden w-full"
+      className="group text-left bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-[#6B1C3A]/30 transition-all duration-200 overflow-hidden w-full cursor-pointer"
     >
       <div className={`h-16 bg-gradient-to-br ${template.color} flex items-center px-4 gap-3`}>
         <span className="text-3xl">{template.icon}</span>
