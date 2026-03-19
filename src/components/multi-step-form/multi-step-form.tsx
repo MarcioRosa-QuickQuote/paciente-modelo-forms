@@ -76,10 +76,10 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       // @ts-expect-error fbq is injected by Meta Pixel
       if (typeof window !== 'undefined' && window.fbq) {
         // @ts-expect-error fbq is injected by Meta Pixel
-        window.fbq('track', eventName, {}, { eventID: eventId });
+        window.fbq('track', eventName, { content_name: formData.procedureName, content_ids: [formData.id] }, { eventID: eventId });
       }
     } catch {}
-  }, [pixelId]);
+  }, [pixelId, formData.procedureName, formData.id]);
 
   const fireCapiEvent = useCallback((eventName: string, eventId: string) => {
     if (!capiToken) return;
@@ -90,6 +90,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
         formId: formData.id,
         eventName,
         eventId,
+        contentName: formData.procedureName,
         eventSourceUrl: typeof window !== 'undefined' ? window.location.href : '',
         clientUserAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
       }),

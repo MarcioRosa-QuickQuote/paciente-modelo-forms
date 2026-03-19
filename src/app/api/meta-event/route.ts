@@ -5,7 +5,7 @@ import crypto from 'crypto';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { formId, eventName = 'Lead', eventSourceUrl, clientIp, clientUserAgent, eventId } = body;
+    const { formId, eventName = 'Lead', eventSourceUrl, clientIp, clientUserAgent, eventId, contentName } = body;
 
     if (!formId) return NextResponse.json({ error: 'formId obrigatório' }, { status: 400 });
 
@@ -36,6 +36,10 @@ export async function POST(request: NextRequest) {
           user_data: {
             client_ip_address: clientIp || '',
             client_user_agent: clientUserAgent || '',
+          },
+          custom_data: {
+            content_name: contentName || '',
+            content_ids: [formId],
           },
         },
       ],

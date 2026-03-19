@@ -65,7 +65,7 @@ export default function LeadFormScreen({ formId, formFields, theme, onTrackEvent
           body: JSON.stringify({ formId, step: 5, answer: 'sim' }),
         }).catch(() => {});
 
-        onTrackEvent?.('CompleteRegistration');
+        onTrackEvent?.('Contact');
         setSent(true);
         launchConfetti();
       } else {
