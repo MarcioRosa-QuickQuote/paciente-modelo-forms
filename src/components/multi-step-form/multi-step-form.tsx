@@ -83,19 +83,21 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
 
   const fireCapiEvent = useCallback((eventName: string, eventId: string) => {
     if (!capiToken) return;
-    fetch('/api/meta-event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        formId: formData.id,
-        eventName,
-        eventId,
-        contentName: formData.procedureName,
-        eventSourceUrl: typeof window !== 'undefined' ? window.location.href : '',
-        clientUserAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
-      }),
-    }).catch(() => {});
-  }, [capiToken, formData.id]);
+    const body = JSON.stringify({
+      formId: formData.id,
+      eventName,
+      eventId,
+      contentName: formData.procedureName,
+      eventSourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+      clientUserAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
+    });
+    // sendBeacon garante envio mesmo quando o browser navega/suspende a aba (ex: abrir WhatsApp)
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      navigator.sendBeacon('/api/meta-event', new Blob([body], { type: 'application/json' }));
+    } else {
+      fetch('/api/meta-event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }).catch(() => {});
+    }
+  }, [capiToken, formData.id, formData.procedureName]);
 
   const trackEvent = useCallback((eventName: string) => {
     const eventId = crypto.randomUUID();
