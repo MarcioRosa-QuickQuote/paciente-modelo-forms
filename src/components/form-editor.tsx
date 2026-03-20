@@ -27,11 +27,6 @@ function formatBRL(value: number): string {
   return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function parseBRL(value: string): number {
-  const cleaned = value.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
-  return parseFloat(cleaned) || 0;
-}
-
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, '');
   if (digits.length <= 2) return digits;
@@ -61,6 +56,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   const [saving, setSaving] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [configOpen, setConfigOpen] = useState(true);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Parse initial dates from string
@@ -203,6 +199,10 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     }
   }
 
+  function updateCurrentStep(updates: Partial<FormStep>) {
+    setSteps(steps.map((s, i) => i === currentStepIndex ? { ...s, ...updates } : s));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -248,13 +248,19 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   }
 
   const inputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
+  const stepInputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
+  const labelClass = "block text-sm font-medium text-gray-700 mb-2";
+
+  const currentStep = steps[currentStepIndex];
 
   return (
     <div className="max-w-6xl mx-auto">
     <div className="xl:grid xl:grid-cols-[1fr_460px] xl:gap-6 xl:items-start">
     <form onSubmit={handleSubmit}>
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+      <div className="space-y-4">
+
+        {/* ── Header card: title + slug ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900">
             {mode === 'create' ? 'Novo Formulário' : 'Editar Formulário'}
           </h2>
@@ -265,369 +271,716 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           )}
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Nome do formulário */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nome do Formulário</label>
-            <input type="text" value={form.name} onChange={e => updateField('name', e.target.value)}
-              placeholder="Ex: Botox Março 2026" className={inputClass} required />
-          </div>
+        {/* ── Configurações card (collapsible) ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setConfigOpen(v => !v)}
+            className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+          >
+            <span className="flex items-center gap-2 text-base font-semibold text-gray-900">
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Configurações gerais
+            </span>
+            <svg
+              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${configOpen ? 'rotate-180' : 'rotate-0'}`}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-          {/* Procedimento */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nome do Procedimento</label>
-            <input type="text" value={form.procedureName} onChange={e => updateField('procedureName', e.target.value)}
-              placeholder="Ex: Botox, Preenchimento Labial, Harmonização Facial" className={inputClass} required />
-          </div>
+          {configOpen && (
+            <div className="px-6 pb-6 space-y-6 border-t border-gray-100 pt-6">
 
-          {/* Headline */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Headline da 1ª tela
-              <span className="ml-2 text-xs text-gray-400 font-normal">
-                Pergunta principal · selecione texto para colorir
-              </span>
-            </label>
-            <RichTextField
-              value={form.headline}
-              onChange={v => updateField('headline', v)}
-              placeholder="Ex: Suas orelhas te incomodam?"
-              singleLine
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
-            />
-          </div>
+              {/* Nome do formulário */}
+              <div>
+                <label className={labelClass}>Nome do Formulário</label>
+                <input type="text" value={form.name} onChange={e => updateField('name', e.target.value)}
+                  placeholder="Ex: Botox Março 2026" className={inputClass} required />
+              </div>
 
-          {/* Texto de apoio */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Texto de apoio
-              <span className="ml-2 text-xs text-gray-400 font-normal">
-                Abaixo das fotos · selecione texto para colorir
-              </span>
-            </label>
-            <RichTextField
-              value={form.supportText}
-              onChange={v => updateField('supportText', v)}
-              placeholder="Ex: Corrija orelha de abano sem cirurgia, sem cortes e sem cicatriz."
-              singleLine
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
-            />
-          </div>
+              {/* Procedimento */}
+              <div>
+                <label className={labelClass}>Nome do Procedimento</label>
+                <input type="text" value={form.procedureName} onChange={e => updateField('procedureName', e.target.value)}
+                  placeholder="Ex: Botox, Preenchimento Labial, Harmonização Facial" className={inputClass} required />
+              </div>
 
-          {/* Dias Disponíveis */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Dias Disponíveis</label>
-            <div onClick={() => setShowCalendar(!showCalendar)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl cursor-pointer min-h-[48px] flex items-center gap-2 flex-wrap">
-              {selectedDates.length > 0 ? (
-                selectedDates.map((date, i) => (
-                  <span key={i} className="inline-flex items-center bg-[#6B1C3A]/10 text-[#6B1C3A] text-sm font-medium px-2.5 py-1 rounded-lg">
-                    {format(date, 'dd/MM/yyyy')}
-                  </span>
-                ))
-              ) : (
-                <span className="text-gray-400">Clique para selecionar as datas</span>
-              )}
-            </div>
-            {showCalendar && (
-              <div className="mt-2 border border-gray-200 rounded-xl p-4 bg-white shadow-lg">
-                <DayPicker mode="multiple" selected={selectedDates} onSelect={handleDateSelect} locale={ptBR}
-                  disabled={{ before: new Date() }}
-                  classNames={{
-                    today: 'font-bold text-[#6B1C3A]',
-                    selected: 'bg-[#6B1C3A] text-white rounded-full',
-                    chevron: 'fill-[#6B1C3A]',
-                  }} />
-                <div className="flex justify-end mt-2">
-                  <button type="button" onClick={() => setShowCalendar(false)}
-                    className="px-4 py-2 bg-[#6B1C3A] text-white rounded-lg text-sm font-medium hover:bg-[#5A1731] transition-colors">
-                    Confirmar
-                  </button>
+              {/* Profissional */}
+              <div>
+                <label className={labelClass}>Nome da Profissional</label>
+                <input type="text" value={form.professionalName} onChange={e => updateField('professionalName', e.target.value)}
+                  placeholder="Ex: Dra. Maria Silva" className={inputClass} required />
+              </div>
+
+              {/* Instagram e WhatsApp */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Instagram</label>
+                  <input type="text" value={form.instagramHandle} onChange={e => updateField('instagramHandle', e.target.value)}
+                    placeholder="@dra.mariasilva" className={inputClass} required />
+                </div>
+                <div>
+                  <label className={labelClass}>WhatsApp</label>
+                  <input type="text" inputMode="numeric" value={form.whatsappNumber}
+                    onChange={e => handlePhoneInput(e.target.value)}
+                    placeholder="(91) 9 8382-8928" className={inputClass} required />
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Duração do procedimento */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Duração do Procedimento</label>
-            <input type="text" value={form.procedureDuration} onChange={e => updateField('procedureDuration', e.target.value)}
-              placeholder="Ex: 2hr, 1h30min" className={inputClass} />
-          </div>
-
-          {/* Valores */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Valor Normal</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
-                <input type="text" inputMode="numeric" value={regularPriceDisplay}
-                  onChange={e => handleMoneyInput(e.target.value, setRegularPriceDisplay, 'regularPrice')}
-                  placeholder="0,00" className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Valor Paciente Modelo</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
-                <input type="text" inputMode="numeric" value={modelPriceDisplay}
-                  onChange={e => handleMoneyInput(e.target.value, setModelPriceDisplay, 'modelPrice')}
-                  placeholder="0,00" className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Taxa de Reserva</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
-                <input type="text" inputMode="numeric" value={feePriceDisplay}
-                  onChange={e => handleMoneyInput(e.target.value, setFeePriceDisplay, 'feeAmount')}
-                  placeholder="0,00" className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
-              </div>
-            </div>
-          </div>
-
-          {/* Parcelamento */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Parcelamento
-              <span className="ml-2 text-xs text-gray-400 font-normal">Deixe em 0 para não exibir parcelamento</span>
-            </label>
-            <div className="grid grid-cols-2 gap-4">
+              {/* Tema de Cores */}
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Número de parcelas</label>
-                <input type="number" min="0" max="48" value={form.installmentCount || ''}
-                  onChange={e => updateField('installmentCount', parseInt(e.target.value) || 0)}
-                  placeholder="Ex: 12" className={inputClass} />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Valor da parcela</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
-                  <input type="text" inputMode="numeric" value={installmentAmountDisplay}
-                    onChange={e => handleMoneyInput(e.target.value, setInstallmentAmountDisplay, 'installmentAmount')}
-                    placeholder="0,00" className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Profissional */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Profissional</label>
-            <input type="text" value={form.professionalName} onChange={e => updateField('professionalName', e.target.value)}
-              placeholder="Ex: Dra. Maria Silva" className={inputClass} required />
-          </div>
-
-          {/* Instagram e WhatsApp */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
-              <input type="text" value={form.instagramHandle} onChange={e => updateField('instagramHandle', e.target.value)}
-                placeholder="@dra.mariasilva" className={inputClass} required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
-              <input type="text" inputMode="numeric" value={form.whatsappNumber}
-                onChange={e => handlePhoneInput(e.target.value)}
-                placeholder="(91) 9 8382-8928" className={inputClass} required />
-            </div>
-          </div>
-
-          {/* Múltiplas Fotos Antes e Depois */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-medium text-gray-700">Fotos Antes e Depois</label>
-              <button type="button" onClick={addPhotoPair}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-lg text-sm font-medium hover:bg-[#6B1C3A]/20 transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                + Fotos
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {photos.map((photo, index) => (
-                <div key={index} className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Par {index + 1}
-                    </span>
-                    {photos.length > 1 && (
-                      <button type="button" onClick={() => removePhotoPair(index)}
-                        className="text-xs text-red-500 hover:text-red-700 transition-colors">
-                        Remover
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {(['before', 'after'] as const).map(type => (
-                      <div key={type}>
-                        <p className="text-xs text-gray-500 mb-2 text-center font-medium uppercase tracking-wide">
-                          {type === 'before' ? 'Antes' : 'Depois'}
-                        </p>
-                        <div
-                          onClick={() => {
-                            const key = `${index}-${type}`;
-                            if (!photoRefs.current[key]) return;
-                            photoRefs.current[key]!.click();
-                          }}
-                          className="relative aspect-[3/4] bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-[#6B1C3A]/50 transition-colors group"
-                        >
-                          {photo[type] ? (
-                            <Image src={photo[type]} alt={type} fill className="object-cover" />
-                          ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-[#6B1C3A] transition-colors">
-                              {uploadingIndex === `${index}-${type}` ? (
-                                <div className="w-8 h-8 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
-                              ) : (
-                                <>
-                                  <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                  </svg>
-                                  <span className="text-xs">Clique para enviar</span>
-                                </>
-                              )}
-                            </div>
-                          )}
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Tema de Cores</h3>
+                <div className="grid grid-cols-4 gap-3">
+                  {Object.values(THEMES).map((theme) => (
+                    <button key={theme.id} type="button" onClick={() => updateField('theme', theme.id)} title={theme.name}
+                      className={`relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                        form.theme === theme.id ? 'border-gray-800 shadow-md scale-105' : 'border-gray-200 hover:border-gray-400'
+                      }`}>
+                      <div className="w-10 h-10 rounded-full shadow-sm"
+                        style={{ background: `linear-gradient(135deg, ${theme.preview[0]}, ${theme.preview[1]})` }} />
+                      <span className="text-xs text-gray-600 font-medium text-center leading-tight">{theme.name}</span>
+                      {form.theme === theme.id && (
+                        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-gray-800 rounded-full flex items-center justify-center">
+                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
                         </div>
-                        <input
-                          ref={el => { photoRefs.current[`${index}-${type}`] = el; }}
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          className="hidden"
-                          onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (file) uploadPhotoImage(index, type, file);
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Etapas do Formulário */}
-          <div className="pt-4 border-t border-gray-100">
-            <div className="mb-4">
-              <h3 className="text-base font-semibold text-gray-900">Etapas do Formulário</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Arraste para reordenar. Clique em + para adicionar etapas.</p>
-            </div>
-            <FormStepBuilder
-              steps={steps}
-              onChange={setSteps}
-              form={{
-                headline: form.headline,
-                supportText: form.supportText,
-                availableDays: form.availableDays,
-                procedureDuration: form.procedureDuration,
-                regularPrice: form.regularPrice,
-                modelPrice: form.modelPrice,
-                feeAmount: form.feeAmount,
-              }}
-              onFormChange={(field, value) => updateField(field as keyof typeof form, value as never)}
-              currentIndex={currentStepIndex}
-              onCurrentIndexChange={setCurrentStepIndex}
-              customTexts={customTexts}
-              onCustomTextsChange={setCustomTexts}
-            />
-          </div>
-
-          {/* Tema de Cores */}
-          <div className="pt-4 border-t border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900 mb-4">Tema de Cores</h3>
-            <div className="grid grid-cols-4 gap-3">
-              {Object.values(THEMES).map((theme) => (
-                <button key={theme.id} type="button" onClick={() => updateField('theme', theme.id)} title={theme.name}
-                  className={`relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                    form.theme === theme.id ? 'border-gray-800 shadow-md scale-105' : 'border-gray-200 hover:border-gray-400'
-                  }`}>
-                  <div className="w-10 h-10 rounded-full shadow-sm"
-                    style={{ background: `linear-gradient(135deg, ${theme.preview[0]}, ${theme.preview[1]})` }} />
-                  <span className="text-xs text-gray-600 font-medium text-center leading-tight">{theme.name}</span>
-                  {form.theme === theme.id && (
-                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-gray-800 rounded-full flex items-center justify-center">
-                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Tela Final */}
-          <div className="pt-4 border-t border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900 mb-4">Configuração da Tela Final</h3>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Quando o paciente disser Sim em tudo, o que acontece?
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" onClick={() => updateField('finalScreenType', 'whatsapp')}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    form.finalScreenType === 'whatsapp' ? 'border-[#6B1C3A] bg-[#6B1C3A]/5' : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                    </svg>
-                    <span className="font-semibold text-sm text-gray-900">Botão do WhatsApp</span>
-                  </div>
-                  <p className="text-xs text-gray-500">Redireciona para o WhatsApp</p>
-                </button>
-                <button type="button" onClick={() => updateField('finalScreenType', 'form')}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    form.finalScreenType === 'form' ? 'border-[#6B1C3A] bg-[#6B1C3A]/5' : 'border-gray-200 hover:border-gray-300'
-                  }`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <svg className="w-5 h-5 text-[#6B1C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span className="font-semibold text-sm text-gray-900">Formulário de Dados</span>
-                  </div>
-                  <p className="text-xs text-gray-500">Preenche dados e envia pro painel</p>
-                </button>
-              </div>
-            </div>
-
-            {form.finalScreenType === 'whatsapp' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mensagem do WhatsApp</label>
-                <textarea value={form.whatsappMessage} onChange={e => updateField('whatsappMessage', e.target.value)}
-                  placeholder="Ex: Olá! Tenho interesse em ser paciente modelo para o procedimento!"
-                  rows={3} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900 resize-none" />
-                <p className="text-xs text-gray-400 mt-1">Deixe vazio para usar a mensagem padrão</p>
-              </div>
-            )}
-
-            {form.finalScreenType === 'form' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Campos do formulário de dados</label>
-                <div className="space-y-3">
-                  {(['name', 'whatsapp', 'email'] as const).map(field => (
-                    <div key={field} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-                      <span className="text-sm font-medium text-gray-700 capitalize">
-                        {field === 'name' ? 'Nome' : field === 'whatsapp' ? 'WhatsApp' : 'E-mail'}
-                      </span>
-                      <button type="button"
-                        onClick={() => updateField('formFields', { ...form.formFields, [field]: !form.formFields[field] })}
-                        className={`relative w-11 h-6 rounded-full transition-colors ${form.formFields[field] ? 'bg-[#6B1C3A]' : 'bg-gray-300'}`}>
-                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.formFields[field] ? 'translate-x-5' : 'translate-x-0'}`} />
-                      </button>
-                    </div>
+                      )}
+                    </button>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Tela Final */}
+              <div>
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Configuração da Tela Final</h3>
+                <div className="mb-6">
+                  <label className={labelClass}>
+                    Quando o paciente disser Sim em tudo, o que acontece?
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button type="button" onClick={() => updateField('finalScreenType', 'whatsapp')}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        form.finalScreenType === 'whatsapp' ? 'border-[#6B1C3A] bg-[#6B1C3A]/5' : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                        </svg>
+                        <span className="font-semibold text-sm text-gray-900">Botão do WhatsApp</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Redireciona para o WhatsApp</p>
+                    </button>
+                    <button type="button" onClick={() => updateField('finalScreenType', 'form')}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        form.finalScreenType === 'form' ? 'border-[#6B1C3A] bg-[#6B1C3A]/5' : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-5 h-5 text-[#6B1C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="font-semibold text-sm text-gray-900">Formulário de Dados</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Preenche dados e envia pro painel</p>
+                    </button>
+                  </div>
+                </div>
+
+                {form.finalScreenType === 'whatsapp' && (
+                  <div>
+                    <label className={labelClass}>Mensagem do WhatsApp</label>
+                    <textarea value={form.whatsappMessage} onChange={e => updateField('whatsappMessage', e.target.value)}
+                      placeholder="Ex: Olá! Tenho interesse em ser paciente modelo para o procedimento!"
+                      rows={3} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900 resize-none" />
+                    <p className="text-xs text-gray-400 mt-1">Deixe vazio para usar a mensagem padrão</p>
+                  </div>
+                )}
+
+                {form.finalScreenType === 'form' && (
+                  <div>
+                    <label className={labelClass}>Campos do formulário de dados</label>
+                    <div className="space-y-3">
+                      {(['name', 'whatsapp', 'email'] as const).map(field => (
+                        <div key={field} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+                          <span className="text-sm font-medium text-gray-700 capitalize">
+                            {field === 'name' ? 'Nome' : field === 'whatsapp' ? 'WhatsApp' : 'E-mail'}
+                          </span>
+                          <button type="button"
+                            onClick={() => updateField('formFields', { ...form.formFields, [field]: !form.formFields[field] })}
+                            className={`relative w-11 h-6 rounded-full transition-colors ${form.formFields[field] ? 'bg-[#6B1C3A]' : 'bg-gray-300'}`}>
+                            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.formFields[field] ? 'translate-x-5' : 'translate-x-0'}`} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
         </div>
 
-        {/* Submit */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+        {/* ── Step tabs card ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+
+          {/* Navigation bar + dots (from FormStepBuilder) */}
+          <FormStepBuilder
+            steps={steps}
+            onChange={setSteps}
+            currentIndex={currentStepIndex}
+            onCurrentIndexChange={setCurrentStepIndex}
+          />
+
+          {/* Divider */}
+          <div className="border-t border-gray-100" />
+
+          {/* Step content area */}
+          {currentStep && (
+            <div className="p-6 space-y-5">
+
+              {/* ── FOTO ── */}
+              {currentStep.type === 'foto' && (
+                <>
+                  <div>
+                    <label className={labelClass}>
+                      Headline da 1ª tela
+                      <span className="ml-2 text-xs text-gray-400 font-normal">
+                        Pergunta principal · selecione texto para colorir
+                      </span>
+                    </label>
+                    <RichTextField
+                      value={form.headline}
+                      onChange={v => updateField('headline', v)}
+                      placeholder="Ex: Suas orelhas te incomodam?"
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      Texto de apoio
+                      <span className="ml-2 text-xs text-gray-400 font-normal">
+                        Abaixo das fotos · selecione texto para colorir
+                      </span>
+                    </label>
+                    <RichTextField
+                      value={form.supportText}
+                      onChange={v => updateField('supportText', v)}
+                      placeholder="Ex: Corrija orelha de abano sem cirurgia, sem cortes e sem cicatriz."
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
+                    />
+                  </div>
+
+                  {/* Fotos Antes e Depois */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className={labelClass + ' mb-0'}>Fotos Antes e Depois</label>
+                      <button type="button" onClick={addPhotoPair}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-lg text-sm font-medium hover:bg-[#6B1C3A]/20 transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        + Fotos
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {photos.map((photo, index) => (
+                        <div key={index} className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                              Par {index + 1}
+                            </span>
+                            {photos.length > 1 && (
+                              <button type="button" onClick={() => removePhotoPair(index)}
+                                className="text-xs text-red-500 hover:text-red-700 transition-colors">
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            {(['before', 'after'] as const).map(type => (
+                              <div key={type}>
+                                <p className="text-xs text-gray-500 mb-2 text-center font-medium uppercase tracking-wide">
+                                  {type === 'before' ? 'Antes' : 'Depois'}
+                                </p>
+                                <div
+                                  onClick={() => {
+                                    const key = `${index}-${type}`;
+                                    if (!photoRefs.current[key]) return;
+                                    photoRefs.current[key]!.click();
+                                  }}
+                                  className="relative aspect-[3/4] bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-[#6B1C3A]/50 transition-colors group"
+                                >
+                                  {photo[type] ? (
+                                    <Image src={photo[type]} alt={type} fill className="object-cover" />
+                                  ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-[#6B1C3A] transition-colors">
+                                      {uploadingIndex === `${index}-${type}` ? (
+                                        <div className="w-8 h-8 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
+                                      ) : (
+                                        <>
+                                          <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                          </svg>
+                                          <span className="text-xs">Clique para enviar</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                                <input
+                                  ref={el => { photoRefs.current[`${index}-${type}`] = el; }}
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/webp"
+                                  className="hidden"
+                                  onChange={e => {
+                                    const file = e.target.files?.[0];
+                                    if (file) uploadPhotoImage(index, type, file);
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Botão Sim / Não */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Botão Sim</label>
+                      <input
+                        type="text"
+                        value={currentStep.yesText || ''}
+                        onChange={e => updateCurrentStep({ yesText: e.target.value })}
+                        placeholder="Quero corrigir!"
+                        className={stepInputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Botão Não</label>
+                      <input
+                        type="text"
+                        value={currentStep.noText || ''}
+                        onChange={e => updateCurrentStep({ noText: e.target.value })}
+                        placeholder="Não"
+                        className={stepInputClass}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ── DISPONIBILIDADE ── */}
+              {currentStep.type === 'disponibilidade' && (
+                <>
+                  <div>
+                    <label className={labelClass}>Pergunta principal</label>
+                    <input
+                      type="text"
+                      value={customTexts.availabilityQuestion || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, availabilityQuestion: e.target.value }))}
+                      placeholder="Você teria disponibilidade em algum desses dias?"
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Texto da duração</label>
+                    <input
+                      type="text"
+                      value={customTexts.durationNote || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, durationNote: e.target.value }))}
+                      placeholder={`O procedimento dura cerca de ${form.procedureDuration || '2h'}.`}
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Dias disponíveis</label>
+                    <div onClick={() => setShowCalendar(!showCalendar)}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl cursor-pointer min-h-[48px] flex items-center gap-2 flex-wrap">
+                      {selectedDates.length > 0 ? (
+                        selectedDates.map((date, i) => (
+                          <span key={i} className="inline-flex items-center bg-[#6B1C3A]/10 text-[#6B1C3A] text-sm font-medium px-2.5 py-1 rounded-lg">
+                            {format(date, 'dd/MM/yyyy')}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400">Clique para selecionar as datas</span>
+                      )}
+                    </div>
+                    {showCalendar && (
+                      <div className="mt-2 border border-gray-200 rounded-xl p-4 bg-white shadow-lg">
+                        <DayPicker mode="multiple" selected={selectedDates} onSelect={handleDateSelect} locale={ptBR}
+                          disabled={{ before: new Date() }}
+                          classNames={{
+                            today: 'font-bold text-[#6B1C3A]',
+                            selected: 'bg-[#6B1C3A] text-white rounded-full',
+                            chevron: 'fill-[#6B1C3A]',
+                          }} />
+                        <div className="flex justify-end mt-2">
+                          <button type="button" onClick={() => setShowCalendar(false)}
+                            className="px-4 py-2 bg-[#6B1C3A] text-white rounded-lg text-sm font-medium hover:bg-[#5A1731] transition-colors">
+                            Confirmar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Duração do procedimento</label>
+                    <input
+                      type="text"
+                      value={form.procedureDuration}
+                      onChange={e => updateField('procedureDuration', e.target.value)}
+                      placeholder="Ex: 2hr, 1h30min"
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Botão Sim</label>
+                      <input
+                        type="text"
+                        value={currentStep.yesText || ''}
+                        onChange={e => updateCurrentStep({ yesText: e.target.value })}
+                        placeholder="Sim, tenho!"
+                        className={stepInputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Botão Não</label>
+                      <input
+                        type="text"
+                        value={currentStep.noText || ''}
+                        onChange={e => updateCurrentStep({ noText: e.target.value })}
+                        placeholder="Não"
+                        className={stepInputClass}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ── PREÇO ── */}
+              {currentStep.type === 'preco' && (
+                <>
+                  <div>
+                    <label className={labelClass}>Contexto (1ª linha)</label>
+                    <textarea
+                      rows={2}
+                      value={customTexts.pricingContext || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, pricingContext: e.target.value }))}
+                      placeholder="Sabendo que um paciente de [procedimento] pagaria em média [preço]."
+                      className={stepInputClass + ' resize-none'}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Deixe vazio para usar texto padrão</p>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Pergunta principal</label>
+                    <textarea
+                      rows={2}
+                      value={customTexts.pricingQuestion || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, pricingQuestion: e.target.value }))}
+                      placeholder="E por ser PACIENTE MODELO ganharia uma condição especial..."
+                      className={stepInputClass + ' resize-none'}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Rótulo do card</label>
+                    <input
+                      type="text"
+                      value={customTexts.pricingLabel || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, pricingLabel: e.target.value }))}
+                      placeholder="Valor especial paciente modelo"
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>Valor Normal (R$)</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={regularPriceDisplay}
+                          onChange={e => handleMoneyInput(e.target.value, setRegularPriceDisplay, 'regularPrice')}
+                          placeholder="0,00"
+                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Valor Paciente Modelo (R$)</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={modelPriceDisplay}
+                          onChange={e => handleMoneyInput(e.target.value, setModelPriceDisplay, 'modelPrice')}
+                          placeholder="0,00"
+                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Parcelamento */}
+                  <div>
+                    <label className={labelClass}>
+                      Parcelamento
+                      <span className="ml-2 text-xs text-gray-400 font-normal">Deixe em 0 para não exibir parcelamento</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Número de parcelas</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="48"
+                          value={form.installmentCount || ''}
+                          onChange={e => updateField('installmentCount', parseInt(e.target.value) || 0)}
+                          placeholder="Ex: 12"
+                          className={stepInputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Valor da parcela</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={installmentAmountDisplay}
+                            onChange={e => handleMoneyInput(e.target.value, setInstallmentAmountDisplay, 'installmentAmount')}
+                            placeholder="0,00"
+                            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Botão Sim</label>
+                      <input
+                        type="text"
+                        value={currentStep.yesText || ''}
+                        onChange={e => updateCurrentStep({ yesText: e.target.value })}
+                        placeholder="Sim!"
+                        className={stepInputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Botão Não</label>
+                      <input
+                        type="text"
+                        value={currentStep.noText || ''}
+                        onChange={e => updateCurrentStep({ noText: e.target.value })}
+                        placeholder="Não"
+                        className={stepInputClass}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ── TAXA ── */}
+              {currentStep.type === 'taxa' && (
+                <>
+                  <div>
+                    <label className={labelClass}>Texto antes do valor</label>
+                    <input
+                      type="text"
+                      value={customTexts.feeTextPrefix || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, feeTextPrefix: e.target.value }))}
+                      placeholder="Para reservar seu horário na agenda, solicitamos um valor simbólico de"
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Texto secundário</label>
+                    <input
+                      type="text"
+                      value={customTexts.feeBenefitText || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, feeBenefitText: e.target.value }))}
+                      placeholder="Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento."
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Badge "Abatido"</label>
+                      <input
+                        type="text"
+                        value={customTexts.feeDeductedLabel || ''}
+                        onChange={e => setCustomTexts(prev => ({ ...prev, feeDeductedLabel: e.target.value }))}
+                        placeholder="Valor abatido"
+                        className={stepInputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Badge "Seguro"</label>
+                      <input
+                        type="text"
+                        value={customTexts.feeSafeLabel || ''}
+                        onChange={e => setCustomTexts(prev => ({ ...prev, feeSafeLabel: e.target.value }))}
+                        placeholder="Seguro"
+                        className={stepInputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Valor da Taxa (R$)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">R$</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={feePriceDisplay}
+                        onChange={e => handleMoneyInput(e.target.value, setFeePriceDisplay, 'feeAmount')}
+                        placeholder="0,00"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Botão Sim</label>
+                      <input
+                        type="text"
+                        value={currentStep.yesText || ''}
+                        onChange={e => updateCurrentStep({ yesText: e.target.value })}
+                        placeholder="Sim, concordo!"
+                        className={stepInputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Botão Não</label>
+                      <input
+                        type="text"
+                        value={currentStep.noText || ''}
+                        onChange={e => updateCurrentStep({ noText: e.target.value })}
+                        placeholder="Não"
+                        className={stepInputClass}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ── PERGUNTA ── */}
+              {currentStep.type === 'pergunta' && (
+                <>
+                  <div>
+                    <label className={labelClass}>Pergunta</label>
+                    <textarea
+                      rows={2}
+                      value={currentStep.question || ''}
+                      onChange={e => updateCurrentStep({ question: e.target.value })}
+                      placeholder="Ex: Você está disposto a fazer uma sessão de fotos para o nosso portfólio?"
+                      className={stepInputClass + ' resize-none'}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Botão Sim</label>
+                      <input
+                        type="text"
+                        value={currentStep.yesText || ''}
+                        onChange={e => updateCurrentStep({ yesText: e.target.value })}
+                        placeholder="Sim, topo!"
+                        className={stepInputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Botão Não</label>
+                      <input
+                        type="text"
+                        value={currentStep.noText || ''}
+                        onChange={e => updateCurrentStep({ noText: e.target.value })}
+                        placeholder="Não, obrigado"
+                        className={stepInputClass}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ── Celebration section — shown on last step ── */}
+              {currentStepIndex === steps.length - 1 && (
+                <div className="pt-4 border-t border-dashed border-gray-200 space-y-4">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tela de celebração (após confirmar)</p>
+
+                  <div>
+                    <label className={labelClass}>Título</label>
+                    <input
+                      type="text"
+                      value={customTexts.celebrationTitle || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, celebrationTitle: e.target.value }))}
+                      placeholder="Parabéns!"
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Subtítulo</label>
+                    <input
+                      type="text"
+                      value={customTexts.celebrationSubtitle || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, celebrationSubtitle: e.target.value }))}
+                      placeholder="Você foi qualificada para ser nossa paciente modelo!"
+                      className={stepInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Mensagem</label>
+                    <input
+                      type="text"
+                      value={customTexts.celebrationMessage || ''}
+                      onChange={e => setCustomTexts(prev => ({ ...prev, celebrationMessage: e.target.value }))}
+                      placeholder="É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras"
+                      className={stepInputClass}
+                    />
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+        </div>
+
+        {/* ── Submit bar ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between">
           <button type="button" onClick={() => router.push('/admin')}
             className="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors">
             Cancelar
@@ -637,6 +990,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             {saving ? 'Salvando...' : mode === 'create' ? 'Criar Formulário' : 'Salvar Alterações'}
           </button>
         </div>
+
       </div>
     </form>
 
