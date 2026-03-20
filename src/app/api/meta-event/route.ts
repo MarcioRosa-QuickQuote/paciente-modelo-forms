@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    const url = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${capiToken}`;
+    const url = `https://graph.facebook.com/v21.0/${pixelId}/events?access_token=${capiToken}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
