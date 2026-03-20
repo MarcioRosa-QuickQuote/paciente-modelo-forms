@@ -288,6 +288,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             onChange={setSteps}
             currentIndex={currentStepIndex}
             onCurrentIndexChange={setCurrentStepIndex}
+            hasCelebration
           />
 
           {/* Divider */}
@@ -334,64 +335,44 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
                   {/* Fotos Antes e Depois */}
                   <div>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-2">
                       <label className={labelClass + ' mb-0'}>Fotos Antes e Depois</label>
                       <button type="button" onClick={addPhotoPair}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-lg text-sm font-medium hover:bg-[#6B1C3A]/20 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        className="flex items-center gap-1 px-2.5 py-1 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-lg text-xs font-medium hover:bg-[#6B1C3A]/20 transition-colors">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        + Fotos
+                        + Par
                       </button>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       {photos.map((photo, index) => (
-                        <div key={index} className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                              Par {index + 1}
-                            </span>
-                            {photos.length > 1 && (
-                              <button type="button" onClick={() => removePhotoPair(index)}
-                                className="text-xs text-red-500 hover:text-red-700 transition-colors">
-                                Remover
-                              </button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            {(['before', 'after'] as const).map(type => (
-                              <div key={type}>
-                                <p className="text-xs text-gray-500 mb-2 text-center font-medium uppercase tracking-wide">
-                                  {type === 'before' ? 'Antes' : 'Depois'}
-                                </p>
-                                <div
-                                  onClick={() => {
-                                    const key = `${index}-${type}`;
-                                    if (!photoRefs.current[key]) return;
-                                    photoRefs.current[key]!.click();
-                                  }}
-                                  className="relative aspect-[3/4] bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-[#6B1C3A]/50 transition-colors group"
+                        <div key={index} className="flex items-center gap-2">
+                          {(['before', 'after'] as const).map(type => {
+                            const key = `${index}-${type}`;
+                            return (
+                              <div key={type} className="flex-1 relative">
+                                <button
+                                  type="button"
+                                  onClick={() => photoRefs.current[key]?.click()}
+                                  className={`w-full flex items-center gap-2 px-3 py-2 border rounded-lg text-xs transition-colors ${
+                                    photo[type]
+                                      ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5 text-[#6B1C3A]'
+                                      : 'border-dashed border-gray-300 text-gray-400 hover:border-[#6B1C3A]/40 hover:text-[#6B1C3A]'
+                                  }`}
                                 >
-                                  {photo[type] ? (
-                                    <Image src={photo[type]} alt={type} fill className="object-cover" />
+                                  {uploadingIndex === key ? (
+                                    <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin flex-shrink-0" />
                                   ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-[#6B1C3A] transition-colors">
-                                      {uploadingIndex === `${index}-${type}` ? (
-                                        <div className="w-8 h-8 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
-                                      ) : (
-                                        <>
-                                          <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                          </svg>
-                                          <span className="text-xs">Clique para enviar</span>
-                                        </>
-                                      )}
-                                    </div>
+                                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
                                   )}
-                                </div>
+                                  <span className="truncate">{photo[type] ? `✓ ${type === 'before' ? 'Antes' : 'Depois'}` : (type === 'before' ? 'Foto Antes' : 'Foto Depois')}</span>
+                                </button>
                                 <input
-                                  ref={el => { photoRefs.current[`${index}-${type}`] = el; }}
+                                  ref={el => { photoRefs.current[key] = el; }}
                                   type="file"
                                   accept="image/jpeg,image/png,image/webp"
                                   className="hidden"
@@ -401,8 +382,16 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                                   }}
                                 />
                               </div>
-                            ))}
-                          </div>
+                            );
+                          })}
+                          {photos.length > 1 && (
+                            <button type="button" onClick={() => removePhotoPair(index)}
+                              className="p-1.5 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -787,46 +776,44 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                 </>
               )}
 
-              {/* ── Celebration section — shown on last step ── */}
-              {currentStepIndex === steps.length - 1 && (
-                <div className="pt-4 border-t border-dashed border-gray-200 space-y-4">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tela de celebração (após confirmar)</p>
+            </div>
+          )}
 
-                  <div>
-                    <label className={labelClass}>Título</label>
-                    <input
-                      type="text"
-                      value={customTexts.celebrationTitle || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, celebrationTitle: e.target.value }))}
-                      placeholder="Parabéns!"
-                      className={stepInputClass}
-                    />
-                  </div>
+          {/* ── Aba Celebração ── */}
+          {currentStepIndex === steps.length && (
+            <div className="p-6 space-y-5 overflow-y-auto flex-1">
+              <div>
+                <label className={labelClass}>Título</label>
+                <input
+                  type="text"
+                  value={customTexts.celebrationTitle || ''}
+                  onChange={e => setCustomTexts(prev => ({ ...prev, celebrationTitle: e.target.value }))}
+                  placeholder="Parabéns!"
+                  className={stepInputClass}
+                />
+              </div>
 
-                  <div>
-                    <label className={labelClass}>Subtítulo</label>
-                    <input
-                      type="text"
-                      value={customTexts.celebrationSubtitle || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, celebrationSubtitle: e.target.value }))}
-                      placeholder="Você foi qualificada para ser nossa paciente modelo!"
-                      className={stepInputClass}
-                    />
-                  </div>
+              <div>
+                <label className={labelClass}>Subtítulo</label>
+                <input
+                  type="text"
+                  value={customTexts.celebrationSubtitle || ''}
+                  onChange={e => setCustomTexts(prev => ({ ...prev, celebrationSubtitle: e.target.value }))}
+                  placeholder="Você foi qualificada para ser nossa paciente modelo!"
+                  className={stepInputClass}
+                />
+              </div>
 
-                  <div>
-                    <label className={labelClass}>Mensagem</label>
-                    <input
-                      type="text"
-                      value={customTexts.celebrationMessage || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, celebrationMessage: e.target.value }))}
-                      placeholder="É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras"
-                      className={stepInputClass}
-                    />
-                  </div>
-                </div>
-              )}
-
+              <div>
+                <label className={labelClass}>Mensagem</label>
+                <input
+                  type="text"
+                  value={customTexts.celebrationMessage || ''}
+                  onChange={e => setCustomTexts(prev => ({ ...prev, celebrationMessage: e.target.value }))}
+                  placeholder="É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras"
+                  className={stepInputClass}
+                />
+              </div>
             </div>
           )}
 

@@ -86,6 +86,7 @@ interface FormStepBuilderProps {
   onChange: (steps: FormStep[]) => void;
   currentIndex: number;
   onCurrentIndexChange: (index: number) => void;
+  hasCelebration?: boolean;
 }
 
 // ─── Sortable Dot ─────────────────────────────────────────────────────────────
@@ -177,6 +178,7 @@ export default function FormStepBuilder({
   onChange,
   currentIndex,
   onCurrentIndexChange,
+  hasCelebration = false,
 }: FormStepBuilderProps) {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -185,7 +187,9 @@ export default function FormStepBuilder({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const currentStep = steps[currentIndex] ?? steps[0];
+  const isCelebration = hasCelebration && currentIndex === steps.length;
+  const totalSteps = hasCelebration ? steps.length + 1 : steps.length;
+  const currentStep = !isCelebration ? (steps[currentIndex] ?? steps[0]) : null;
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -227,12 +231,12 @@ export default function FormStepBuilder({
   }
 
   function goToNext() {
-    if (currentIndex < steps.length - 1) onCurrentIndexChange(currentIndex + 1);
+    if (currentIndex < totalSteps - 1) onCurrentIndexChange(currentIndex + 1);
   }
 
-  if (!currentStep) return null;
+  if (!isCelebration && !currentStep) return null;
 
-  const info = getStepInfo(currentStep.type);
+  const info = !isCelebration ? getStepInfo(currentStep!.type) : { label: 'Celebração', icon: null };
 
   return (
     <>
@@ -263,7 +267,7 @@ export default function FormStepBuilder({
         <button
           type="button"
           onClick={goToNext}
-          disabled={currentIndex === steps.length - 1}
+          disabled={currentIndex === totalSteps - 1}
           className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0"
           aria-label="Próxima etapa"
         >
@@ -273,7 +277,7 @@ export default function FormStepBuilder({
         </button>
 
         {/* Trash */}
-        {steps.length > 1 && (
+        {steps.length > 1 && !isCelebration && (
           <button
             type="button"
             onClick={() => removeStep(currentIndex)}
@@ -308,6 +312,16 @@ export default function FormStepBuilder({
                 onClick={() => onCurrentIndexChange(index)}
               />
             ))}
+            {hasCelebration && (
+              <button
+                type="button"
+                onClick={() => onCurrentIndexChange(steps.length)}
+                className={isCelebration
+                  ? 'w-5 h-2 rounded-full bg-[#6B1C3A] cursor-pointer transition-all'
+                  : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-all'}
+                aria-label="Tela de celebração"
+              />
+            )}
           </div>
         </SortableContext>
       </DndContext>
