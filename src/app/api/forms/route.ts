@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
       theme: data.theme || 'purple',
       user_id: userId,
       steps: data.steps || [],
+      custom_texts: data.customTexts || {},
     });
 
     return NextResponse.json({ id, slug }, { status: 201 });

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { Theme } from '@/lib/themes';
+import { CustomTexts } from '@/types/form';
 
 interface Props {
   formId: string;
@@ -12,11 +13,12 @@ interface Props {
   whatsappMessage?: string;
   theme: Theme;
   onTrackEvent?: (eventName: string) => void;
+  customTexts?: CustomTexts;
 }
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage, theme, onTrackEvent }: Props) {
+export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage, theme, onTrackEvent, customTexts }: Props) {
   const hasLaunched = useRef(false);
 
   const launchConfetti = useCallback(() => {
@@ -96,14 +98,14 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
             className="bg-clip-text text-transparent"
             style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
           >
-            Parabéns!
+            {customTexts?.celebrationTitle || 'Parabéns!'}
           </span>
         </h1>
         <p className="text-xl text-gray-700 font-semibold mb-2">
-          Você foi qualificada para ser nossa paciente modelo!
+          {customTexts?.celebrationSubtitle || 'Você foi qualificada para ser nossa paciente modelo!'}
         </p>
         <p className="text-gray-500 text-base leading-relaxed max-w-sm mx-auto">
-          É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras 🥰
+          {customTexts?.celebrationMessage || 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras 🥰'}
         </p>
       </motion.div>
 

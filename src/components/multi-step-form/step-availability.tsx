@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { CustomTexts } from '@/types/form';
 
 interface Props {
   procedureName: string;
@@ -13,9 +14,10 @@ interface Props {
   theme: Theme;
   yesText?: string;
   noText?: string;
+  customTexts?: CustomTexts;
 }
 
-export default function StepAvailability({ procedureName, availableDays, procedureDuration, onYes, onNo, theme, yesText, noText }: Props) {
+export default function StepAvailability({ procedureName, availableDays, procedureDuration, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
       {/* Icon */}
@@ -38,9 +40,7 @@ export default function StepAvailability({ procedureName, availableDays, procedu
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-10"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6">
-          Você teria disponibilidade em algum desses dias?
-        </h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6" dangerouslySetInnerHTML={{ __html: customTexts?.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?' }} />
 
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           {availableDays.split(', ').map((day, i) => (
@@ -56,7 +56,7 @@ export default function StepAvailability({ procedureName, availableDays, procedu
 
         {procedureDuration && (
           <p className="text-gray-500 text-base">
-            O procedimento dura cerca de {procedureDuration}.
+            {customTexts?.durationNote || `O procedimento dura cerca de ${procedureDuration}.`}
           </p>
         )}
       </motion.div>

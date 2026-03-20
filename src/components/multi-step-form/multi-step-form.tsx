@@ -158,6 +158,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             theme={theme}
             yesText={step.yesText}
             noText={step.noText}
+            customTexts={formData.customTexts}
           />
         );
       case 'preco':
@@ -173,6 +174,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             theme={theme}
             yesText={step.yesText}
             noText={step.noText}
+            customTexts={formData.customTexts}
           />
         );
       case 'taxa':
@@ -184,6 +186,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             theme={theme}
             yesText={step.yesText}
             noText={step.noText}
+            customTexts={formData.customTexts}
           />
         );
       case 'pergunta':
@@ -276,6 +279,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
                 whatsappMessage={formData.whatsappMessage}
                 theme={theme}
                 onTrackEvent={trackEvent}
+                customTexts={formData.customTexts}
               />
             )}
           </motion.div>

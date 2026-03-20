@@ -97,6 +97,7 @@ export interface FormRow {
   theme: string;
   user_id: string;
   steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
+  custom_texts: Record<string, string>;
   created_at: string;
   updated_at: string;
 }
@@ -128,6 +129,7 @@ interface CreateFormInput {
   theme: string;
   user_id: string;
   steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
+  custom_texts: Record<string, string>;
 }
 
 // Responses
@@ -300,6 +302,7 @@ export function rowToFormData(row: FormRow) {
     theme: row.theme || 'purple',
     userId: row.user_id || '',
     steps: Array.isArray(row.steps) ? (row.steps as { id: string; type: 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta'; question?: string; yesText?: string; noText?: string }[]) : [],
+    customTexts: (row.custom_texts as Record<string, string>) || {},
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

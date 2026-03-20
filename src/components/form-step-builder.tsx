@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FormStep, FormStepType } from '@/types/form';
+import { FormStep, FormStepType, CustomTexts } from '@/types/form';
 
 // ─── Step Type Definitions ────────────────────────────────────────────────────
 
@@ -98,6 +98,8 @@ interface FormStepBuilderProps {
   onFormChange: (field: keyof StepFormData, value: string | number) => void;
   currentIndex: number;
   onCurrentIndexChange: (index: number) => void;
+  customTexts: CustomTexts;
+  onCustomTextsChange: (texts: CustomTexts) => void;
 }
 
 // ─── Sortable Dot ─────────────────────────────────────────────────────────────
@@ -189,9 +191,13 @@ interface StepFieldsProps {
   form: StepFormData;
   onFormChange: (field: keyof StepFormData, value: string | number) => void;
   onUpdate: (updated: FormStep) => void;
+  customTexts: CustomTexts;
+  onCustomTextsChange: (texts: CustomTexts) => void;
 }
 
-function StepFields({ step, form, onFormChange, onUpdate }: StepFieldsProps) {
+function StepFields({ step, form, onFormChange, onUpdate, customTexts, onCustomTextsChange }: StepFieldsProps) {
+  const ct = (key: keyof CustomTexts) => customTexts[key] || '';
+  const setCt = (key: keyof CustomTexts, value: string) => onCustomTextsChange({ ...customTexts, [key]: value });
   const inputClass =
     'w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6B1C3A]/30 focus:border-[#6B1C3A]/50 outline-none text-sm text-gray-900 bg-white';
   const labelClass =
@@ -252,6 +258,14 @@ function StepFields({ step, form, onFormChange, onUpdate }: StepFieldsProps) {
       {step.type === 'disponibilidade' && (
         <>
           <div>
+            <label className={labelClass}>Pergunta principal</label>
+            <input type="text" value={ct('availabilityQuestion')} onChange={e => setCt('availabilityQuestion', e.target.value)} placeholder="Você teria disponibilidade em algum desses dias?" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Texto da duração</label>
+            <input type="text" value={ct('durationNote')} onChange={e => setCt('durationNote', e.target.value)} placeholder={`O procedimento dura cerca de ${form.procedureDuration || '2h'}.`} className={inputClass} />
+          </div>
+          <div>
             <label className={labelClass}>Dias disponíveis</label>
             <input
               type="text"
@@ -300,6 +314,19 @@ function StepFields({ step, form, onFormChange, onUpdate }: StepFieldsProps) {
       {/* PREÇO */}
       {step.type === 'preco' && (
         <>
+          <div>
+            <label className={labelClass}>Texto de contexto (1ª linha)</label>
+            <textarea rows={2} value={ct('pricingContext')} onChange={e => setCt('pricingContext', e.target.value)} placeholder="Sabendo que um paciente de [procedimento] pagaria em média [preço]." className={inputClass + ' resize-none'} />
+            <p className="text-[10px] text-gray-400 mt-1">Deixe vazio para usar o texto padrão com o nome e valor do procedimento</p>
+          </div>
+          <div>
+            <label className={labelClass}>Pergunta principal</label>
+            <textarea rows={2} value={ct('pricingQuestion')} onChange={e => setCt('pricingQuestion', e.target.value)} placeholder="E por ser PACIENTE MODELO ganharia uma condição especial, teria disponibilidade de investir o valor abaixo?" className={inputClass + ' resize-none'} />
+          </div>
+          <div>
+            <label className={labelClass}>Rótulo do card de preço</label>
+            <input type="text" value={ct('pricingLabel')} onChange={e => setCt('pricingLabel', e.target.value)} placeholder="Valor especial paciente modelo" className={inputClass} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>Preço normal (R$)</label>
@@ -354,6 +381,24 @@ function StepFields({ step, form, onFormChange, onUpdate }: StepFieldsProps) {
       {/* TAXA */}
       {step.type === 'taxa' && (
         <>
+          <div>
+            <label className={labelClass}>Texto principal (antes do valor)</label>
+            <input type="text" value={ct('feeTextPrefix')} onChange={e => setCt('feeTextPrefix', e.target.value)} placeholder="Para reservar seu horário na agenda, solicitamos um valor simbólico de" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Texto secundário</label>
+            <input type="text" value={ct('feeBenefitText')} onChange={e => setCt('feeBenefitText', e.target.value)} placeholder="Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento." className={inputClass} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Badge "Abatido"</label>
+              <input type="text" value={ct('feeDeductedLabel')} onChange={e => setCt('feeDeductedLabel', e.target.value)} placeholder="Valor abatido" className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Badge "Seguro"</label>
+              <input type="text" value={ct('feeSafeLabel')} onChange={e => setCt('feeSafeLabel', e.target.value)} placeholder="Seguro" className={inputClass} />
+            </div>
+          </div>
           <div>
             <label className={labelClass}>Valor da taxa (R$)</label>
             <input
@@ -442,6 +487,8 @@ export default function FormStepBuilder({
   onFormChange,
   currentIndex,
   onCurrentIndexChange,
+  customTexts,
+  onCustomTextsChange,
 }: FormStepBuilderProps) {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -588,7 +635,32 @@ export default function FormStepBuilder({
         form={form}
         onFormChange={onFormChange}
         onUpdate={(updated) => updateStep(currentStep.id, updated)}
+        customTexts={customTexts}
+        onCustomTextsChange={onCustomTextsChange}
       />
+
+      {/* ── Celebration texts (last step) ── */}
+      {currentIndex === steps.length - 1 && (
+        <div className="px-4 pb-4 pt-2 border-t border-dashed border-gray-100 space-y-3">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tela de celebração (após o Sim)</p>
+          {[
+            { key: 'celebrationTitle' as const, label: 'Título', placeholder: 'Parabéns!' },
+            { key: 'celebrationSubtitle' as const, label: 'Subtítulo', placeholder: 'Você foi qualificada para ser nossa paciente modelo!' },
+            { key: 'celebrationMessage' as const, label: 'Mensagem', placeholder: 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras 🥰' },
+          ].map(({ key, label, placeholder }) => (
+            <div key={key}>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</label>
+              <input
+                type="text"
+                value={customTexts[key] || ''}
+                onChange={e => onCustomTextsChange({ ...customTexts, [key]: e.target.value })}
+                placeholder={placeholder}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6B1C3A]/30 focus:border-[#6B1C3A]/50 outline-none text-sm text-gray-900 bg-white"
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Add Step Picker ── */}
       {showPicker && (

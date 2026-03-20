@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { CustomTexts } from '@/types/form';
 
 interface Props {
   procedureName: string;
@@ -17,9 +18,10 @@ interface Props {
   theme: Theme;
   yesText?: string;
   noText?: string;
+  customTexts?: CustomTexts;
 }
 
-export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme, yesText, noText }: Props) {
+export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
   const discount = Math.round(((regularPrice - modelPrice) / regularPrice) * 100);
   const hasInstallment = installmentCount > 0 && installmentAmount > 0;
 
@@ -57,23 +59,33 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-6"
       >
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2">
-          Sabendo que um paciente de{' '}
-          <span className="bg-clip-text text-transparent"
-            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-            {procedureName}
-          </span>{' '}
-          pagaria em média{' '}
-          <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>.
-        </h1>
-        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4">
-          E por ser{' '}
-          <span className="font-extrabold uppercase bg-clip-text text-transparent"
-            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-            paciente modelo
-          </span>{' '}
-          ganharia uma condição especial, teria disponibilidade de investir o valor abaixo?
-        </p>
+        {customTexts?.pricingContext ? (
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2"
+            dangerouslySetInnerHTML={{ __html: customTexts.pricingContext }} />
+        ) : (
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2">
+            Sabendo que um paciente de{' '}
+            <span className="bg-clip-text text-transparent"
+              style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
+              {procedureName}
+            </span>{' '}
+            pagaria em média{' '}
+            <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>.
+          </h1>
+        )}
+        {customTexts?.pricingQuestion ? (
+          <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4"
+            dangerouslySetInnerHTML={{ __html: customTexts.pricingQuestion }} />
+        ) : (
+          <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4">
+            E por ser{' '}
+            <span className="font-extrabold uppercase bg-clip-text text-transparent"
+              style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
+              paciente modelo
+            </span>{' '}
+            ganharia uma condição especial, teria disponibilidade de investir o valor abaixo?
+          </p>
+        )}
       </motion.div>
 
       {/* Price Card — altura fixa para evitar pulo de layout */}
@@ -84,7 +96,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
         className="rounded-3xl px-8 pt-6 pb-6 mb-10 text-center shadow-xl w-full max-w-sm"
       >
-        <p className="text-white/80 text-sm font-medium mb-3">Valor especial paciente modelo</p>
+        <p className="text-white/80 text-sm font-medium mb-3">{customTexts?.pricingLabel || 'Valor especial paciente modelo'}</p>
 
         {/* Área de preço com altura fixa para não pular */}
         <div className="h-20 flex flex-col items-center justify-center">

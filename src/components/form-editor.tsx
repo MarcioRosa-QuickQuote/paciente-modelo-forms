@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FormData, FormInput, PhotoPair, FormStep } from '@/types/form';
+import { FormData, FormInput, PhotoPair, FormStep, CustomTexts } from '@/types/form';
 import { generateSlug } from '@/lib/utils';
 import { THEMES } from '@/lib/themes';
 import { supabase } from '@/lib/supabase-client';
@@ -97,6 +97,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
   const [steps, setSteps] = useState<FormStep[]>(buildInitialSteps());
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [customTexts, setCustomTexts] = useState<CustomTexts>(initialData?.customTexts || {});
 
   const [form, setForm] = useState<FormInput>({
     name: initialData?.name || '',
@@ -121,6 +122,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     formFields: initialData?.formFields || { name: true, whatsapp: true, email: true },
     theme: initialData?.theme || templateData?.theme || 'purple',
     steps: [],
+    customTexts: initialData?.customTexts || {},
   });
 
   const [regularPriceDisplay, setRegularPriceDisplay] = useState(formatBRL(form.regularPrice));
@@ -220,6 +222,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
         beforeImage: firstPhoto.before,
         afterImage: firstPhoto.after,
         steps,
+        customTexts,
       };
 
       const url = mode === 'create' ? '/api/forms' : `/api/forms/${initialData?.id}`;
@@ -527,6 +530,8 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               onFormChange={(field, value) => updateField(field as keyof typeof form, value as never)}
               currentIndex={currentStepIndex}
               onCurrentIndexChange={setCurrentStepIndex}
+              customTexts={customTexts}
+              onCustomTextsChange={setCustomTexts}
             />
           </div>
 
