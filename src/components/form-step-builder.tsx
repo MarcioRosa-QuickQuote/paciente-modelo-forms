@@ -244,17 +244,13 @@ export default function FormStepBuilder({
     <>
       {/* ── Navigation bar ── */}
       <div className="flex items-center gap-2 px-4 py-3">
-        {/* Left arrow */}
         <button
           type="button"
           onClick={goToPrev}
           disabled={currentIndex === 0}
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0"
-          aria-label="Etapa anterior"
+          className="px-3 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0 text-sm font-medium cursor-pointer"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          ← Anterior
         </button>
 
         {/* Step name + counter */}
@@ -265,17 +261,13 @@ export default function FormStepBuilder({
           </span>
         </div>
 
-        {/* Right arrow */}
         <button
           type="button"
           onClick={goToNext}
           disabled={currentIndex === totalSteps - 1}
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0"
-          aria-label="Próxima etapa"
+          className="px-3 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0 text-sm font-medium cursor-pointer"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          Próximo →
         </button>
 
         {/* Trash */}
