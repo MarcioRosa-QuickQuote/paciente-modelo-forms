@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase-client';
 import type { User } from '@supabase/supabase-js';
 
-const PUBLIC_PATHS = ['/admin/login', '/admin/ativar', '/admin/subscribe', '/admin/subscribe/success'];
+const PUBLIC_PATHS = ['/admin/login', '/admin/ativar', '/admin/cadastro', '/admin/subscribe', '/admin/subscribe/success'];
 const ALLOWED_EMAILS = ['jhqbomfim@gmail.com', 'marciolarosa@gmail.com'];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

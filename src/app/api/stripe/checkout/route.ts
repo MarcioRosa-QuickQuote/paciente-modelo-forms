@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       metadata: { supabase_user_id: userId },
       subscription_data: {
         metadata: { supabase_user_id: userId },
+        trial_period_days: 3,
       },
     });
 
