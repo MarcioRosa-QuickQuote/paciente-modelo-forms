@@ -10,6 +10,40 @@ import type { User } from '@supabase/supabase-js';
 const PUBLIC_PATHS = ['/admin/login', '/admin/ativar', '/admin/cadastro', '/admin/subscribe', '/admin/subscribe/success'];
 const ALLOWED_EMAILS = ['jhqbomfim@gmail.com', 'marciolarosa@gmail.com'];
 
+function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
+  const [open, setOpen] = useState(false);
+  const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
+  const initials = (user.email ?? '?')[0].toUpperCase();
+
+  return (
+    <div className="relative ml-1">
+      <button onClick={() => setOpen(o => !o)} className="w-9 h-9 rounded-full overflow-hidden border-2 border-gray-200 hover:border-[#6B1C3A]/40 transition-all flex items-center justify-center cursor-pointer">
+        {avatarUrl
+          ? <Image src={avatarUrl} alt="avatar" width={36} height={36} className="object-cover w-full h-full" />
+          : <span className="bg-gradient-to-br from-[#6B1C3A] to-[#9B2D5E] text-white text-sm font-bold w-full h-full flex items-center justify-center">{initials}</span>
+        }
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-11 z-50 w-56 bg-white rounded-2xl border border-gray-100 shadow-xl py-2">
+            <div className="px-4 py-2 border-b border-gray-100">
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
+            </div>
+            <button onClick={() => { setOpen(false); onLogout(); }}
+              className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sair
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -137,13 +171,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className="px-5 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl text-sm font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20">
                 + Novo Formulário
               </Link>
-              <button onClick={handleLogout}
-                className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all ml-1"
-                title="Sair">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </button>
+              <UserMenu user={user} onLogout={handleLogout} />
             </nav>
           </div>
         </div>

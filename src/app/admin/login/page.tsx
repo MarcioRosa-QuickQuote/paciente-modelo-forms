@@ -130,7 +130,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-4">
           <Image src="/capta.png" alt="Logo" width={80} height={32} className="object-contain" />
         </div>
 
