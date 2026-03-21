@@ -5,6 +5,16 @@ import Link from 'next/link';
 import { FormData } from '@/types/form';
 import { formatCurrency } from '@/lib/utils';
 import FormStats from '@/components/form-stats';
+import { supabase } from '@/lib/supabase-client';
+
+async function authFetch(url: string, options: RequestInit = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token ?? '';
+  return fetch(url, {
+    ...options,
+    headers: { ...options.headers, Authorization: `Bearer ${token}` },
+  });
+}
 
 export default function AdminDashboard() {
   const [forms, setForms] = useState<FormData[]>([]);
@@ -17,7 +27,7 @@ export default function AdminDashboard() {
 
   async function fetchForms() {
     try {
-      const res = await fetch('/api/forms');
+      const res = await authFetch('/api/forms');
       const data = await res.json();
       setForms(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -31,7 +41,7 @@ export default function AdminDashboard() {
     if (!confirm('Tem certeza que deseja excluir este formulário?')) return;
 
     try {
-      await fetch(`/api/forms/${id}`, { method: 'DELETE' });
+      await authFetch(`/api/forms/${id}`, { method: 'DELETE' });
       setForms(forms.filter(f => f.id !== id));
     } catch (error) {
       console.error('Error deleting form:', error);

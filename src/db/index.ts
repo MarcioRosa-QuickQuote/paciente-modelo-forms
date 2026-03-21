@@ -209,8 +209,31 @@ export async function saveLead(formId: string, name: string, whatsapp: string, e
   if (error) throw error;
 }
 
-export async function getLeads(formId?: string) {
+export async function getLeads(formId?: string, userId?: string) {
   const supabase = getSupabase();
+
+  // If userId provided, filter only leads from forms owned by that user
+  if (userId) {
+    const { data: userForms } = await supabase
+      .from('forms')
+      .select('id')
+      .eq('user_id', userId);
+    const formIds = (userForms || []).map((f: { id: string }) => f.id);
+    if (formIds.length === 0) return [];
+
+    let query = supabase
+      .from('leads')
+      .select('*, forms(name)')
+      .in('form_id', formId ? [formId] : formIds)
+      .order('created_at', { ascending: false });
+
+    if (formId) query = query.eq('form_id', formId);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  }
+
   let query = supabase
     .from('leads')
     .select('*, forms(name)')

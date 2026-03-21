@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase-client';
 
 interface Lead {
   id: number;
@@ -22,11 +23,14 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/leads')
-      .then(r => r.json())
-      .then(data => setLeads(Array.isArray(data) ? data : []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const token = session?.access_token ?? '';
+      fetch('/api/leads', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(data => setLeads(Array.isArray(data) ? data : []))
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   if (loading) {
