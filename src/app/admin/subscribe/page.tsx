@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase-client';
 import type { User } from '@supabase/supabase-js';
 
-export default function SubscribePage() {
+function SubscribeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const expired = searchParams.get('expired') === 'true';
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -50,9 +52,22 @@ export default function SubscribePage() {
       <div className="w-full max-w-lg">
         <div className="flex flex-col items-center mb-8">
           <Image src="/capta.png" alt="Logo" width={80} height={32} className="object-contain mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 text-center">Acesso ao Painel</h1>
-          <p className="text-gray-400 text-sm mt-1 text-center">Assine para criar e gerenciar seus formulários</p>
         </div>
+
+        {/* Banner de trial expirado */}
+        {expired && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center">
+            <p className="text-amber-800 font-semibold text-sm">Seu período de teste gratuito expirou</p>
+            <p className="text-amber-600 text-xs mt-1">Assine para continuar usando o Capta+ sem interrupções.</p>
+          </div>
+        )}
+
+        {!expired && (
+          <div className="mb-6 text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Acesso ao Painel</h1>
+            <p className="text-gray-400 text-sm mt-1">Assine para criar e gerenciar seus formulários</p>
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
           {/* Plano */}
@@ -116,5 +131,13 @@ export default function SubscribePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SubscribePage() {
+  return (
+    <Suspense>
+      <SubscribeContent />
+    </Suspense>
   );
 }

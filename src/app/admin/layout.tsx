@@ -39,7 +39,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const isOwner = ALLOWED_EMAILS.includes(user.email ?? '');
       const isSubscribed = user.user_metadata?.subscription_status === 'active';
       if (!isOwner && !isSubscribed) {
-        router.push('/admin/subscribe');
+        const trialEndsAt = user.user_metadata?.trial_ends_at as number | undefined;
+        const now = Date.now();
+        if (!trialEndsAt) {
+          // Primeiro acesso: inicia trial de 3 dias
+          const trialEnd = now + 3 * 24 * 60 * 60 * 1000;
+          supabase.auth.updateUser({ data: { trial_ends_at: trialEnd } });
+          // Permite acesso enquanto o update acontece
+        } else if (trialEndsAt < now) {
+          // Trial expirado
+          router.push('/admin/subscribe?expired=true');
+        }
+        // Se trial ainda válido: permite acesso normalmente
       }
     }
   }, [loading, user, pathname, router]);
