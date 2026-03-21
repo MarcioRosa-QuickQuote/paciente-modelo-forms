@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
       success_url: `${request.nextUrl.origin}/admin/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.nextUrl.origin}/admin/subscribe`,
+      cancel_url: `${request.nextUrl.origin}/admin`,
       metadata: { supabase_user_id: userId },
+      locale: 'pt-BR',
       subscription_data: {
         metadata: { supabase_user_id: userId },
         trial_period_days: 3,

@@ -326,7 +326,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SubscriptionModal
           user={user}
           onClose={() => setSubscriptionOpen(false)}
-          onSubscribe={() => { setSubscriptionOpen(false); router.push('/admin/subscribe'); }}
+          onSubscribe={async () => {
+            if (!user) return;
+            const res = await fetch('/api/stripe/checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user.id, userEmail: user.email }),
+            });
+            const { url } = await res.json();
+            if (url) window.location.href = url;
+          }}
           onPortal={handlePortal}
         />
       )}
