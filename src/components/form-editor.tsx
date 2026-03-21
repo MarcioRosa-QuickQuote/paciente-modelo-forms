@@ -303,10 +303,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                     <div className="flex items-center justify-between mb-2">
                       <label className={labelClass + ' mb-0'}>Fotos Antes e Depois</label>
                       <button type="button" onClick={addPhotoPair}
-                        className="flex items-center gap-1 px-2.5 py-1 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-lg text-xs font-medium hover:bg-[#6B1C3A]/20 transition-colors">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
+                        className="flex items-center gap-1 px-2.5 py-1 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-lg text-xs font-medium hover:bg-[#6B1C3A]/20 transition-colors cursor-pointer">
                         + Fotos
                       </button>
                     </div>
@@ -321,7 +318,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                                 <button
                                   type="button"
                                   onClick={() => photoRefs.current[key]?.click()}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 border rounded-lg text-xs transition-colors ${
+                                  className={`w-full flex items-center gap-2 px-3 py-2 border rounded-lg text-xs transition-colors cursor-pointer ${
                                     photo[type]
                                       ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5 text-[#6B1C3A]'
                                       : 'border-dashed border-gray-300 text-gray-400 hover:border-[#6B1C3A]/40 hover:text-[#6B1C3A]'
@@ -791,7 +788,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
         {/* ── Config Modal ── */}
         {configModalOpen && (
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto" onClick={e => { if (e.target === e.currentTarget) setConfigModalOpen(false); }}>
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl my-8">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <span className="flex items-center gap-2 text-base font-semibold text-gray-900">
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

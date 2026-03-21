@@ -7,7 +7,8 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase-client';
 import type { User } from '@supabase/supabase-js';
 
-const PUBLIC_PATHS = ['/admin/login', '/admin/ativar'];
+const PUBLIC_PATHS = ['/admin/login', '/admin/ativar', '/admin/subscribe', '/admin/subscribe/success'];
+const ALLOWED_EMAILS = ['jhqbomfim@gmail.com', 'marciolarosa@gmail.com'];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,8 +30,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    if (!loading && !user && !PUBLIC_PATHS.includes(pathname)) {
+    if (loading) return;
+    if (!user && !PUBLIC_PATHS.includes(pathname)) {
       router.push('/admin/login');
+      return;
+    }
+    if (user && !PUBLIC_PATHS.includes(pathname)) {
+      const isOwner = ALLOWED_EMAILS.includes(user.email ?? '');
+      const isSubscribed = user.user_metadata?.subscription_status === 'active';
+      if (!isOwner && !isSubscribed) {
+        router.push('/admin/subscribe');
+      }
     }
   }, [loading, user, pathname, router]);
 
@@ -48,9 +58,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user) return null;
 
+  const isOwner = ALLOWED_EMAILS.includes(user?.email ?? '');
+
   async function handleLogout() {
     await supabase.auth.signOut();
     router.push('/admin/login');
+  }
+
+  async function handlePortal() {
+    if (!user?.email) return;
+    const res = await fetch('/api/stripe/portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userEmail: user.email }),
+    });
+    const { url } = await res.json();
+    if (url) window.location.href = url;
   }
 
   return (
@@ -93,6 +116,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </Link>
+              {!isOwner && (
+                <button onClick={handlePortal} title="Minha Assinatura"
+                  className="px-3 py-2 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all">
+                  Assinatura
+                </button>
+              )}
               <Link href="/admin/forms/new"
                 className="px-5 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl text-sm font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20">
                 + Novo Formulário

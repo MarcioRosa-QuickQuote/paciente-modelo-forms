@@ -261,7 +261,7 @@ export default function FormStepBuilder({
         <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
           <span className="text-sm font-bold text-gray-900 truncate">{info.label}</span>
           <span className="text-xs text-gray-400 flex-shrink-0">
-            {currentIndex + 1} / {steps.length}
+            {currentIndex + 1} / {totalSteps}
           </span>
         </div>
 
