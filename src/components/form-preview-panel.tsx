@@ -339,25 +339,6 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
               </button>
             </div>
 
-            {/* Step navigation */}
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
-                disabled={activeIndex === 0}
-                className="px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-gray-800 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                ← Anterior
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveIndex(Math.min(steps.length, activeIndex + 1))}
-                disabled={activeIndex >= steps.length}
-                className="px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-gray-800 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                Próximo →
-              </button>
-            </div>
           </div>
         </div>
 
@@ -432,6 +413,27 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
               className="w-1.5 h-1.5 rounded-full transition-all"
               style={{ background: isCelebration ? theme.gradientFrom : '#d1d5db' }}
             />
+          </div>
+
+          {/* Navigation buttons */}
+          <div className="flex items-center justify-between mt-3 px-1">
+            <button
+              type="button"
+              onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
+              disabled={activeIndex === 0}
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded-xl transition-colors cursor-pointer"
+            >
+              ← Anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveIndex(Math.min(steps.length, activeIndex + 1))}
+              disabled={activeIndex >= steps.length}
+              className="px-4 py-2 text-sm font-medium text-white rounded-xl transition-colors cursor-pointer disabled:opacity-30"
+              style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+            >
+              Próximo →
+            </button>
           </div>
         </div>
       </div>
