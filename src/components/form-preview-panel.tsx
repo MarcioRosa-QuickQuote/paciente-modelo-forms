@@ -39,12 +39,13 @@ function StepIcon({ iconBg, children }: { iconBg: string; children: React.ReactN
 
 // ── Step previews ─────────────────────────────────────────────────────────────
 
-function PreviewFoto({ form, photos, theme, desktop }: { form: FormInput; photos: PhotoPair[]; theme: Theme; desktop: boolean }) {
+function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; photos: PhotoPair[]; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
   const validPhotos = photos.filter(p => p.before || p.after);
   const photo = validPhotos[0] || { before: '', after: '' };
   const headline = form.headline || `Deseja ser <span style="background: linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span>?`;
   const supportText = form.supportText || 'Procedimento realizado por profissional especializado.';
+  void ct;
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8 gap-5' : 'px-3 py-5 gap-3'}`}>
@@ -92,14 +93,14 @@ function PreviewFoto({ form, photos, theme, desktop }: { form: FormInput; photos
       />
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={form.steps?.[0]?.yesText || 'Sim, quero!'} />
-        <Btn text={form.steps?.[0]?.noText || 'Não'} outlined />
+        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, quero!'} />
+        <Btn text={step?.noText || 'Não'} outlined />
       </div>
     </div>
   );
 }
 
-function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
+function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInput; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
   const question = ct.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?';
   const durationNote = ct.durationNote || (form.procedureDuration ? `O procedimento dura cerca de ${form.procedureDuration}.` : 'O procedimento dura cerca de 2h.');
@@ -133,14 +134,14 @@ function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; the
       </p>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Sim, tenho!" />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, tenho!'} />
+        <Btn text={step?.noText || 'Não'} outlined />
       </div>
     </div>
   );
 }
 
-function PreviewPreco({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
+function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
   const hasInstallment = form.installmentCount > 0 && form.installmentAmount > 0;
   const discount = form.regularPrice > 0 ? Math.round(((form.regularPrice - form.modelPrice) / form.regularPrice) * 100) : 0;
@@ -177,14 +178,14 @@ function PreviewPreco({ form, theme, desktop }: { form: FormInput; theme: Theme;
       </div>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Sim!" />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim!'} />
+        <Btn text={step?.noText || 'Não'} outlined />
       </div>
     </div>
   );
 }
 
-function PreviewTaxa({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
+function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
   const feePrefix = ct.feeTextPrefix || 'Para reservar seu horário, pedimos um valor simbólico de';
   const feeBenefit = ct.feeBenefitText || 'Esse valor será abatido do procedimento.';
@@ -214,8 +215,8 @@ function PreviewTaxa({ form, theme, desktop }: { form: FormInput; theme: Theme; 
       </div>
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text="Aceito o valor" />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Aceito o valor'} />
+        <Btn text={step?.noText || 'Não'} outlined />
       </div>
     </div>
   );
@@ -290,10 +291,10 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
       </div>
     );
     switch (step.type) {
-      case 'foto': return <PreviewFoto form={form} photos={photos} theme={theme} desktop={desktop} />;
-      case 'disponibilidade': return <PreviewDisponibilidade form={form} theme={theme} desktop={desktop} />;
-      case 'preco': return <PreviewPreco form={form} theme={theme} desktop={desktop} />;
-      case 'taxa': return <PreviewTaxa form={form} theme={theme} desktop={desktop} />;
+      case 'foto': return <PreviewFoto form={form} photos={photos} theme={theme} desktop={desktop} step={step} />;
+      case 'disponibilidade': return <PreviewDisponibilidade form={form} theme={theme} desktop={desktop} step={step} />;
+      case 'preco': return <PreviewPreco form={form} theme={theme} desktop={desktop} step={step} />;
+      case 'taxa': return <PreviewTaxa form={form} theme={theme} desktop={desktop} step={step} />;
       case 'pergunta': return <PreviewPergunta step={step} theme={theme} desktop={desktop} />;
     }
   }

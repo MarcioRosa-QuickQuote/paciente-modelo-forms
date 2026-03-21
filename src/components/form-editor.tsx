@@ -254,8 +254,8 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   const currentStep = steps[currentStepIndex];
 
   return (
-    <div className="max-w-6xl mx-auto">
-    <div className="xl:grid xl:grid-cols-[1fr_460px] xl:gap-6 xl:items-start">
+    <div className="w-full">
+    <div className="xl:grid xl:grid-cols-[1fr_500px] xl:gap-6 xl:items-start">
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
 
@@ -492,24 +492,23 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                 <>
                   <div>
                     <label className={labelClass}>Contexto (1ª linha)</label>
-                    <textarea
-                      rows={2}
+                    <input
+                      type="text"
                       value={customTexts.pricingContext || ''}
                       onChange={e => setCustomTexts(prev => ({ ...prev, pricingContext: e.target.value }))}
-                      placeholder="Sabendo que um paciente de [procedimento] pagaria em média [preço]."
-                      className={stepInputClass + ' resize-none'}
+                      placeholder="Sabendo que um paciente pagaria em média [preço]."
+                      className={stepInputClass}
                     />
-                    <p className="text-xs text-gray-400 mt-1">Deixe vazio para usar texto padrão</p>
                   </div>
 
                   <div>
                     <label className={labelClass}>Pergunta principal</label>
-                    <textarea
-                      rows={2}
+                    <input
+                      type="text"
                       value={customTexts.pricingQuestion || ''}
                       onChange={e => setCustomTexts(prev => ({ ...prev, pricingQuestion: e.target.value }))}
                       placeholder="E por ser PACIENTE MODELO ganharia uma condição especial..."
-                      className={stepInputClass + ' resize-none'}
+                      className={stepInputClass}
                     />
                   </div>
 
@@ -712,12 +711,12 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                 <>
                   <div>
                     <label className={labelClass}>Pergunta</label>
-                    <textarea
-                      rows={2}
+                    <input
+                      type="text"
                       value={currentStep.question || ''}
                       onChange={e => updateCurrentStep({ question: e.target.value })}
                       placeholder="Ex: Você está disposto a fazer uma sessão de fotos para o nosso portfólio?"
-                      className={stepInputClass + ' resize-none'}
+                      className={stepInputClass}
                     />
                   </div>
 
@@ -941,17 +940,19 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           </div>
         )}
 
-        {/* ── Submit bar ── */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between">
-          <button type="button" onClick={() => router.push('/admin')}
-            className="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors">
-            Cancelar
-          </button>
-          <button type="submit" disabled={saving}
-            className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-            {saving ? 'Salvando...' : mode === 'create' ? 'Criar Formulário' : 'Salvar Alterações'}
-          </button>
-        </div>
+        {/* ── Submit bar — aparece apenas na aba de Celebração ── */}
+        {currentStepIndex === steps.length && (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between">
+            <button type="button" onClick={() => router.push('/admin')}
+              className="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" disabled={saving}
+              className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving ? 'Salvando...' : mode === 'create' ? 'Criar Formulário' : 'Salvar Alterações'}
+            </button>
+          </div>
+        )}
 
       </div>
     </form>
