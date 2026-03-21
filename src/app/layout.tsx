@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Formulário de Conversão",
+  title: "Capta+",
   description: "Formulários de conversão para captação de pacientes modelo",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/capta.png",
+    apple: "/capta.png",
   },
 };
 
