@@ -10,11 +10,118 @@ import type { User } from '@supabase/supabase-js';
 const PUBLIC_PATHS = ['/admin/login', '/admin/ativar', '/admin/cadastro', '/admin/subscribe', '/admin/subscribe/success'];
 const ALLOWED_EMAILS = ['jhqbomfim@gmail.com', 'marciolarosa@gmail.com'];
 
-function UserMenu({ user, isOwner, onLogout, onPortal }: {
+function SubscriptionModal({ user, onClose, onSubscribe, onPortal }: {
+  user: User;
+  onClose: () => void;
+  onSubscribe: () => void;
+  onPortal: () => void;
+}) {
+  const subscriptionStatus = user.user_metadata?.subscription_status as string | undefined;
+  const trialEndsAt = user.user_metadata?.trial_ends_at as number | undefined;
+  const isActive = subscriptionStatus === 'active';
+
+  const daysLeft = trialEndsAt ? Math.max(0, Math.ceil((trialEndsAt - Date.now()) / (1000 * 60 * 60 * 24))) : 0;
+  const trialExpired = trialEndsAt ? trialEndsAt < Date.now() : false;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold text-gray-900">Minha Assinatura</h2>
+          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all cursor-pointer">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Status */}
+        {isActive ? (
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-5 flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-emerald-800 text-sm">Assinatura ativa</p>
+              <p className="text-emerald-600 text-xs">Acesso completo ao Capta+</p>
+            </div>
+          </div>
+        ) : trialExpired ? (
+          <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-5 flex items-center gap-3">
+            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-red-800 text-sm">Período de teste expirado</p>
+              <p className="text-red-600 text-xs">Assine para continuar usando</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-5">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-sm">
+                {daysLeft}d
+              </div>
+              <div>
+                <p className="font-semibold text-amber-800 text-sm">Período de teste gratuito</p>
+                <p className="text-amber-600 text-xs">{daysLeft === 0 ? 'Expira hoje' : `${daysLeft} dia${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}`}</p>
+              </div>
+            </div>
+            <div className="h-1.5 bg-amber-200 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${Math.max(5, (daysLeft / 3) * 100)}%` }} />
+            </div>
+          </div>
+        )}
+
+        {/* Plano */}
+        <div className="border border-gray-100 rounded-xl p-4 mb-5">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs font-semibold text-[#6B1C3A] uppercase tracking-wide">Plano Profissional</p>
+            {isActive && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Ativo</span>}
+          </div>
+          <p className="text-2xl font-black text-gray-900">R$ 97<span className="text-sm font-normal text-gray-400">/mês</span></p>
+          <ul className="mt-3 space-y-1">
+            {['Formulários ilimitados', 'Leads organizados', 'Meta Pixel + CAPI', 'Temas personalizáveis'].map(f => (
+              <li key={f} className="flex items-center gap-2 text-xs text-gray-600">
+                <svg className="w-3.5 h-3.5 text-[#6B1C3A] shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Actions */}
+        {isActive ? (
+          <button onClick={onPortal}
+            className="w-full py-3 border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all text-sm cursor-pointer">
+            Gerenciar pagamento no Stripe
+          </button>
+        ) : (
+          <button onClick={onSubscribe}
+            className="w-full py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-bold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 cursor-pointer">
+            Assinar agora — R$ 97/mês
+          </button>
+        )}
+
+        <p className="text-xs text-gray-400 text-center mt-3">Pagamento seguro via Stripe · Cancele quando quiser</p>
+      </div>
+    </div>
+  );
+}
+
+function UserMenu({ user, isOwner, onLogout, onSubscription }: {
   user: User;
   isOwner: boolean;
   onLogout: () => void;
-  onPortal: () => void;
+  onSubscription: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
@@ -72,12 +179,12 @@ function UserMenu({ user, isOwner, onLogout, onPortal }: {
 
             {/* Assinatura — só para não-owners */}
             {!isOwner && (
-              <button onClick={() => { setOpen(false); onPortal(); }}
+              <button onClick={() => { setOpen(false); onSubscription(); }}
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer">
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
-                Gerenciar Assinatura
+                Minha Assinatura
               </button>
             )}
 
@@ -103,6 +210,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -204,7 +312,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className="px-5 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl text-sm font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20">
                 + Novo Formulário
               </Link>
-              <UserMenu user={user} isOwner={isOwner} onLogout={handleLogout} onPortal={handlePortal} />
+              <UserMenu user={user} isOwner={isOwner} onLogout={handleLogout} onSubscription={() => setSubscriptionOpen(true)} />
             </nav>
           </div>
         </div>
@@ -213,6 +321,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+
+      {subscriptionOpen && (
+        <SubscriptionModal
+          user={user}
+          onClose={() => setSubscriptionOpen(false)}
+          onSubscribe={() => { setSubscriptionOpen(false); router.push('/admin/subscribe'); }}
+          onPortal={handlePortal}
+        />
+      )}
     </div>
   );
 }

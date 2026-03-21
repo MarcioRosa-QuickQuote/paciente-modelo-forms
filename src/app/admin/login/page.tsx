@@ -158,12 +158,13 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
 
           {/* Brand header */}
-          <div className="flex items-center gap-3 mb-4 pl-1">
-            <div className="logo-slide" onAnimationEnd={() => setLogoReady(true)}>
+          <div className="mb-5 pl-1">
+            <div className="logo-slide mb-3" onAnimationEnd={() => setLogoReady(true)}>
               <Image src="/capta.png" alt="Logo" width={80} height={32} className="object-contain" />
             </div>
-            <p className={`text-sm font-medium text-gray-500 whitespace-nowrap overflow-hidden ${logoReady && typedText.length < TYPEWRITER_TEXT.length ? 'typewriter-cursor' : ''}`}>
-              {typedText}
+            <p className={`text-2xl font-bold leading-tight ${logoReady && typedText.length < TYPEWRITER_TEXT.length ? 'typewriter-cursor' : ''}`}
+              style={{ background: 'linear-gradient(135deg, #6B1C3A 0%, #9B2D5E 60%, #C44B82 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              {typedText || '\u00A0'}
             </p>
           </div>
 
