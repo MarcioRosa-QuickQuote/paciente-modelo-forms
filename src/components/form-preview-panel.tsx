@@ -40,10 +40,11 @@ function StepIcon({ iconBg, children }: { iconBg: string; children: React.ReactN
 // ── Step previews ─────────────────────────────────────────────────────────────
 
 function PreviewFoto({ form, photos, theme, desktop }: { form: FormInput; photos: PhotoPair[]; theme: Theme; desktop: boolean }) {
+  const ct = form.customTexts || {};
   const validPhotos = photos.filter(p => p.before || p.after);
   const photo = validPhotos[0] || { before: '', after: '' };
-  const headline = form.headline || `Deseja ser <span style="background: linear-gradient(to right, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span> de ${form.procedureName || '...'}?`;
-  const yesText = form.headline?.replace(/<[^>]+>/g, '') ? 'Quero corrigir!' : 'Sim, quero!';
+  const headline = form.headline || `Deseja ser <span style="background: linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span>?`;
+  const supportText = form.supportText || 'Procedimento realizado por profissional especializado.';
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8 gap-5' : 'px-3 py-5 gap-3'}`}>
@@ -85,22 +86,24 @@ function PreviewFoto({ form, photos, theme, desktop }: { form: FormInput; photos
         </div>
       )}
 
-      {form.supportText && (
-        <p
-          className={`text-gray-500 text-center ${desktop ? 'text-sm' : 'text-[11px]'}`}
-          dangerouslySetInnerHTML={{ __html: form.supportText }}
-        />
-      )}
+      <p
+        className={`text-gray-500 text-center ${desktop ? 'text-sm' : 'text-[11px]'}`}
+        dangerouslySetInnerHTML={{ __html: supportText }}
+      />
 
       <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={yesText} />
-        <Btn text="Não" outlined />
+        <Btn gradient={theme.yesBtn} text={form.steps?.[0]?.yesText || 'Sim, quero!'} />
+        <Btn text={form.steps?.[0]?.noText || 'Não'} outlined />
       </div>
     </div>
   );
 }
 
 function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
+  const ct = form.customTexts || {};
+  const question = ct.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?';
+  const durationNote = ct.durationNote || (form.procedureDuration ? `O procedimento dura cerca de ${form.procedureDuration}.` : 'O procedimento dura cerca de 2h.');
+
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
       <StepIcon iconBg={theme.iconBg}>
@@ -109,9 +112,10 @@ function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; the
         </svg>
       </StepIcon>
 
-      <p className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
-        Você teria disponibilidade em algum desses dias?
-      </p>
+      <p
+        className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
+        dangerouslySetInnerHTML={{ __html: question }}
+      />
 
       {form.availableDays && (
         <div className="flex flex-wrap justify-center gap-1.5 mb-3">
@@ -124,11 +128,9 @@ function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; the
         </div>
       )}
 
-      {form.procedureDuration && (
-        <p className={`text-gray-500 text-center mb-4 ${desktop ? 'text-sm' : 'text-[10px]'}`}>
-          O procedimento dura cerca de {form.procedureDuration}.
-        </p>
-      )}
+      <p className={`text-gray-500 text-center mb-4 ${desktop ? 'text-sm' : 'text-[10px]'}`}>
+        {durationNote}
+      </p>
 
       <div className="flex gap-2 w-full">
         <Btn gradient={theme.yesBtn} text="Sim, tenho!" />
@@ -139,8 +141,12 @@ function PreviewDisponibilidade({ form, theme, desktop }: { form: FormInput; the
 }
 
 function PreviewPreco({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
+  const ct = form.customTexts || {};
   const hasInstallment = form.installmentCount > 0 && form.installmentAmount > 0;
   const discount = form.regularPrice > 0 ? Math.round(((form.regularPrice - form.modelPrice) / form.regularPrice) * 100) : 0;
+  const pricingContext = ct.pricingContext || `Normalmente custa <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
+  const pricingQuestion = ct.pricingQuestion || 'Como paciente modelo você pagaria:';
+  const pricingLabel = ct.pricingLabel || 'Valor especial paciente modelo';
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
@@ -150,14 +156,17 @@ function PreviewPreco({ form, theme, desktop }: { form: FormInput; theme: Theme;
         </svg>
       </StepIcon>
 
+      <p
+        className={`font-bold text-gray-900 text-center mb-1 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
+        dangerouslySetInnerHTML={{ __html: pricingContext }}
+      />
       <p className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
-        Normalmente custa <span className="line-through text-gray-400">{formatCurrency(form.regularPrice)}</span>.<br />
-        Como paciente modelo você pagaria:
+        {pricingQuestion}
       </p>
 
       <div className="rounded-2xl px-5 py-4 mb-3 text-center shadow-lg w-full"
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-        <p className="text-white/80 text-xs mb-1">Valor especial paciente modelo</p>
+        <p className="text-white/80 text-xs mb-1">{pricingLabel}</p>
         <p className={`text-white font-extrabold ${desktop ? 'text-3xl' : 'text-2xl'}`}>{formatCurrency(form.modelPrice)}</p>
         {hasInstallment && (
           <p className="text-white/80 text-xs mt-0.5">ou {form.installmentCount}x de {formatCurrency(form.installmentAmount)}</p>
@@ -176,6 +185,12 @@ function PreviewPreco({ form, theme, desktop }: { form: FormInput; theme: Theme;
 }
 
 function PreviewTaxa({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
+  const ct = form.customTexts || {};
+  const feePrefix = ct.feeTextPrefix || 'Para reservar seu horário, pedimos um valor simbólico de';
+  const feeBenefit = ct.feeBenefitText || 'Esse valor será abatido do procedimento.';
+  const feeDeducted = ct.feeDeductedLabel || 'Valor abatido';
+  const feeSafe = ct.feeSafeLabel || 'Seguro';
+
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
       <StepIcon iconBg={theme.iconBg}>
@@ -185,14 +200,18 @@ function PreviewTaxa({ form, theme, desktop }: { form: FormInput; theme: Theme; 
       </StepIcon>
 
       <p className={`font-bold text-gray-900 text-center mb-2 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
-        Para garantir sua vaga, pedimos um valor simbólico:
+        {feePrefix}
       </p>
       <p className={`font-black mb-1 ${desktop ? 'text-4xl' : 'text-3xl'}`} style={{ color: theme.accent }}>
         {formatCurrency(form.feeAmount)}
       </p>
-      <p className={`text-gray-400 text-center mb-4 ${desktop ? 'text-sm' : 'text-[10px]'}`}>
-        Confirma seu comprometimento e garante sua vaga.
+      <p className={`text-gray-400 text-center mb-2 ${desktop ? 'text-sm' : 'text-[10px]'}`}>
+        {feeBenefit}
       </p>
+      <div className="flex gap-2 mb-4">
+        <span className="text-xs px-2 py-1 rounded-full font-semibold" style={{ background: theme.accentLight, color: theme.accent }}>{feeDeducted}</span>
+        <span className="text-xs px-2 py-1 rounded-full font-semibold bg-green-100 text-green-700">{feeSafe}</span>
+      </div>
 
       <div className="flex gap-2 w-full">
         <Btn gradient={theme.yesBtn} text="Aceito o valor" />
@@ -212,12 +231,32 @@ function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Them
       </StepIcon>
 
       <p className={`font-bold text-gray-900 text-center mb-6 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}>
-        {step.question || <span className="text-gray-400 italic">Pergunta personalizada...</span>}
+        {step.question || 'Pergunta personalizada...'}
       </p>
 
       <div className="flex gap-2 w-full">
         <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} />
         <Btn text={step.noText || 'Não'} outlined />
+      </div>
+    </div>
+  );
+}
+
+function PreviewCelebration({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
+  const ct = form.customTexts || {};
+  const title = ct.celebrationTitle || 'Parabéns!';
+  const subtitle = ct.celebrationSubtitle || 'Você foi qualificada para ser nossa paciente modelo!';
+  const message = ct.celebrationMessage || 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras.';
+
+  return (
+    <div className={`flex flex-col items-center text-center ${desktop ? 'px-6 py-10 gap-4' : 'px-4 py-8 gap-3'}`}>
+      <div className={desktop ? 'text-5xl' : 'text-4xl'}>🎉</div>
+      <h3 className={`font-black text-gray-900 ${desktop ? 'text-2xl' : 'text-lg'}`}>{title}</h3>
+      <p className={`text-gray-600 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}>{subtitle}</p>
+      <p className={`text-gray-400 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`}>{message}</p>
+      <div className="w-full py-3 rounded-xl text-white font-bold text-sm"
+        style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
+        Falar pelo WhatsApp
       </div>
     </div>
   );
@@ -237,10 +276,14 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
   const controlled = currentIndex !== undefined && onCurrentIndexChange !== undefined;
   const activeIndex = controlled ? currentIndex : internalStep;
   const setActiveIndex = controlled ? onCurrentIndexChange! : setInternalStep;
-  const safeIndex = steps.length > 0 ? Math.min(activeIndex, steps.length - 1) : 0;
+
+  const isCelebration = activeIndex === steps.length;
+  const safeIndex = isCelebration ? steps.length - 1 : (steps.length > 0 ? Math.min(activeIndex, steps.length - 1) : 0);
   const step = steps[safeIndex];
+  const totalCount = steps.length + 1; // +1 for celebration
 
   function renderStep(desktop: boolean) {
+    if (isCelebration) return <PreviewCelebration form={form} theme={theme} desktop={desktop} />;
     if (!step) return (
       <div className="flex flex-col items-center justify-center h-40 text-gray-400 px-4 text-center">
         <p className="text-xs">Adicione etapas para ver a pré-visualização</p>
@@ -255,6 +298,8 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
     }
   }
 
+  const progressPct = isCelebration ? 100 : (steps.length > 0 ? ((safeIndex + 1) / steps.length) * 100 : 0);
+
   return (
     <div className="sticky top-6">
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -264,7 +309,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
           <div>
             <p className="text-sm font-semibold text-gray-800">Pré-visualização</p>
             <p className="text-xs text-gray-400">
-              {step ? STEP_LABELS[step.type] : '—'} · {steps.length > 0 ? `${safeIndex + 1}/${steps.length}` : '0/0'}
+              {isCelebration ? 'Celebração' : (step ? STEP_LABELS[step.type] : '—')} · {steps.length > 0 ? `${activeIndex + 1}/${totalCount}` : '0/0'}
             </p>
           </div>
 
@@ -297,8 +342,8 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
             <div className="flex items-center gap-0.5">
               <button
                 type="button"
-                onClick={() => setActiveIndex(Math.max(0, safeIndex - 1))}
-                disabled={safeIndex === 0}
+                onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
+                disabled={activeIndex === 0}
                 className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -307,8 +352,8 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
               </button>
               <button
                 type="button"
-                onClick={() => setActiveIndex(Math.min(steps.length - 1, safeIndex + 1))}
-                disabled={safeIndex >= steps.length - 1}
+                onClick={() => setActiveIndex(Math.min(steps.length, activeIndex + 1))}
+                disabled={activeIndex >= steps.length}
                 className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -339,7 +384,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
                 {/* Progress bar */}
                 <div className="h-[3px] bg-gray-100">
                   <div className="h-full transition-all duration-300"
-                    style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`, width: steps.length > 0 ? `${((safeIndex + 1) / steps.length) * 100}%` : '0%' }} />
+                    style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`, width: `${progressPct}%` }} />
                 </div>
                 <div className="overflow-y-auto" style={{ height: 'calc(100% - 52px)' }}>
                   {renderStep(false)}
@@ -364,7 +409,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
                 {/* Progress bar */}
                 <div className="h-[3px] bg-gray-100">
                   <div className="h-full transition-all duration-300"
-                    style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`, width: steps.length > 0 ? `${((safeIndex + 1) / steps.length) * 100}%` : '0%' }} />
+                    style={{ background: `linear-gradient(to right, ${theme.progressFrom}, ${theme.progressTo})`, width: `${progressPct}%` }} />
                 </div>
                 <div className="max-w-md mx-auto">
                   {renderStep(true)}
@@ -374,19 +419,23 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
           )}
 
           {/* Step dots */}
-          {steps.length > 1 && (
-            <div className="flex justify-center gap-1.5 mt-3">
-              {steps.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setActiveIndex(i)}
-                  className="w-1.5 h-1.5 rounded-full transition-all"
-                  style={{ background: i === safeIndex ? theme.gradientFrom : '#d1d5db' }}
-                />
-              ))}
-            </div>
-          )}
+          <div className="flex justify-center gap-1.5 mt-3">
+            {steps.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveIndex(i)}
+                className="w-1.5 h-1.5 rounded-full transition-all"
+                style={{ background: i === activeIndex ? theme.gradientFrom : '#d1d5db' }}
+              />
+            ))}
+            <button
+              type="button"
+              onClick={() => setActiveIndex(steps.length)}
+              className="w-1.5 h-1.5 rounded-full transition-all"
+              style={{ background: isCelebration ? theme.gradientFrom : '#d1d5db' }}
+            />
+          </div>
         </div>
       </div>
     </div>

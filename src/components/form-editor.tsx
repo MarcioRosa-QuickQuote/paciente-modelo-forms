@@ -298,22 +298,6 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                     />
                   </div>
 
-                  <div>
-                    <label className={labelClass}>
-                      Texto de apoio
-                      <span className="ml-2 text-xs text-gray-400 font-normal">
-                        Abaixo das fotos · selecione texto para colorir
-                      </span>
-                    </label>
-                    <RichTextField
-                      value={form.supportText}
-                      onChange={v => updateField('supportText', v)}
-                      placeholder="Ex: Corrija orelha de abano sem cirurgia, sem cortes e sem cicatriz."
-                      singleLine
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
-                    />
-                  </div>
-
                   {/* Fotos Antes e Depois */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -376,6 +360,22 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>
+                      Texto de apoio
+                      <span className="ml-2 text-xs text-gray-400 font-normal">
+                        Abaixo das fotos · selecione texto para colorir
+                      </span>
+                    </label>
+                    <RichTextField
+                      value={form.supportText}
+                      onChange={v => updateField('supportText', v)}
+                      placeholder="Ex: Corrija orelha de abano sem cirurgia, sem cortes e sem cicatriz."
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
+                    />
                   </div>
 
                   {/* Botão Sim / Não */}
@@ -460,17 +460,6 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                         </div>
                       </div>
                     )}
-                  </div>
-
-                  <div>
-                    <label className={labelClass}>Duração do procedimento</label>
-                    <input
-                      type="text"
-                      value={form.procedureDuration}
-                      onChange={e => updateField('procedureDuration', e.target.value)}
-                      placeholder="Ex: 2hr, 1h30min"
-                      className={stepInputClass}
-                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -828,13 +817,6 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                     placeholder="Ex: Botox Março 2026" className={inputClass} required />
                 </div>
 
-                {/* Procedimento */}
-                <div>
-                  <label className={labelClass}>Nome do Procedimento</label>
-                  <input type="text" value={form.procedureName} onChange={e => updateField('procedureName', e.target.value)}
-                    placeholder="Ex: Botox, Preenchimento Labial, Harmonização Facial" className={inputClass} required />
-                </div>
-
                 {/* Profissional */}
                 <div>
                   <label className={labelClass}>Nome da Profissional</label>
@@ -976,7 +958,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
     {/* Live preview — only on large screens */}
     <div className="hidden xl:block">
-      <FormPreviewPanel form={form} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
+      <FormPreviewPanel form={{ ...form, customTexts }} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
     </div>
     </div>
     </div>
