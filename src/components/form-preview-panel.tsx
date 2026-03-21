@@ -340,26 +340,22 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
             </div>
 
             {/* Step navigation */}
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
                 disabled={activeIndex === 0}
-                className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-gray-800 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
+                ← Anterior
               </button>
               <button
                 type="button"
                 onClick={() => setActiveIndex(Math.min(steps.length, activeIndex + 1))}
                 disabled={activeIndex >= steps.length}
-                className="p-1.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-2.5 py-1 text-xs font-medium text-gray-500 hover:text-gray-800 disabled:opacity-30 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
+                Próximo →
               </button>
             </div>
           </div>
