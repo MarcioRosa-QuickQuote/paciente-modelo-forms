@@ -40,6 +40,11 @@ body {
   animation: float-up 4s ease-out forwards;
 }
 
+/* Cursor pointer global */
+button, a, label[for], [role="button"] {
+  cursor: pointer;
+}
+
 /* Placeholder for contentEditable rich text fields */
 [contenteditable][data-placeholder]:empty::before {
   content: attr(data-placeholder);

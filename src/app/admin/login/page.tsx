@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-client';
+
+const TYPEWRITER_TEXT = 'Formulário de Conversão Inteligente';
 
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -25,6 +27,19 @@ export default function LoginPage() {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [error, setError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [logoReady, setLogoReady] = useState(false);
+  const [typedText, setTypedText] = useState('');
+
+  useEffect(() => {
+    if (!logoReady) return;
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setTypedText(TYPEWRITER_TEXT.slice(0, i));
+      if (i === TYPEWRITER_TEXT.length) clearInterval(interval);
+    }, 45);
+    return () => clearInterval(interval);
+  }, [logoReady]);
 
   function switchTab(t: 'login' | 'signup') {
     setTab(t);
@@ -55,18 +70,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (authError) {
-        if (authError.message.includes('Invalid login credentials')) {
-          setError('E-mail ou senha incorretos.');
-        } else if (authError.message.includes('Email not confirmed')) {
-          setError('Confirme seu e-mail antes de fazer login.');
-        } else {
-          setError(authError.message);
-        }
+        if (authError.message.includes('Invalid login credentials')) setError('E-mail ou senha incorretos.');
+        else if (authError.message.includes('Email not confirmed')) setError('Confirme seu e-mail antes de fazer login.');
+        else setError(authError.message);
         return;
       }
       router.push('/admin');
@@ -91,11 +99,8 @@ export default function LoginPage() {
         options: { emailRedirectTo: `${window.location.origin}/admin` },
       });
       if (authError) {
-        if (authError.message.includes('already registered')) {
-          setError('Este e-mail já possui uma conta. Faça login.');
-        } else {
-          setError(authError.message);
-        }
+        if (authError.message.includes('already registered')) setError('Este e-mail já possui uma conta. Faça login.');
+        else setError(authError.message);
         return;
       }
       setSignupSuccess(true);
@@ -119,7 +124,7 @@ export default function LoginPage() {
           <p className="text-gray-500 mb-2">Verifique seu e-mail para confirmar o cadastro.</p>
           <p className="text-gray-400 text-sm mb-8">Após confirmar, faça login para ativar seu período de teste gratuito.</p>
           <button onClick={() => { setSignupSuccess(false); switchTab('login'); }}
-            className="inline-flex px-8 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20">
+            className="inline-flex px-8 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 cursor-pointer">
             Ir para Login
           </button>
         </div>
@@ -128,106 +133,133 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-4">
-          <Image src="/capta.png" alt="Logo" width={80} height={32} className="object-contain" />
-        </div>
+    <>
+      <style>{`
+        @keyframes slideFromRight {
+          from { transform: translateX(72px); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+        .logo-slide {
+          animation: slideFromRight 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .typewriter-cursor::after {
+          content: '|';
+          animation: blink 0.8s step-end infinite;
+          margin-left: 1px;
+          color: #6B1C3A;
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+      `}</style>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          {/* Tabs */}
-          <div className="flex border-b border-gray-100">
-            <button onClick={() => switchTab('login')}
-              className={`flex-1 py-4 text-sm font-semibold transition-all ${tab === 'login' ? 'text-[#6B1C3A] border-b-2 border-[#6B1C3A] bg-white' : 'text-gray-400 hover:text-gray-600 bg-gray-50'}`}>
-              Entrar
-            </button>
-            <button onClick={() => switchTab('signup')}
-              className={`flex-1 py-4 text-sm font-semibold transition-all ${tab === 'signup' ? 'text-[#6B1C3A] border-b-2 border-[#6B1C3A] bg-white' : 'text-gray-400 hover:text-gray-600 bg-gray-50'}`}>
-              Criar conta
-            </button>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30 flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+
+          {/* Brand header */}
+          <div className="flex items-center gap-3 mb-4 pl-1">
+            <div className="logo-slide" onAnimationEnd={() => setLogoReady(true)}>
+              <Image src="/capta.png" alt="Logo" width={80} height={32} className="object-contain" />
+            </div>
+            <p className={`text-sm font-medium text-gray-500 whitespace-nowrap overflow-hidden ${logoReady && typedText.length < TYPEWRITER_TEXT.length ? 'typewriter-cursor' : ''}`}>
+              {typedText}
+            </p>
           </div>
 
-          <div className="p-8">
-            {tab === 'signup' && (
-              <p className="text-center text-sm text-emerald-600 font-medium bg-emerald-50 rounded-xl py-2 px-3 mb-5">
-                3 dias grátis — sem precisar de cartão
-              </p>
-            )}
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm text-center">
-                {error}
-              </div>
-            )}
-
-            {/* Google */}
-            <button type="button" onClick={handleGoogle} disabled={loadingGoogle}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-5">
-              {loadingGoogle
-                ? <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                : <GoogleIcon />}
-              {tab === 'login' ? 'Entrar com Google' : 'Continuar com Google'}
-            </button>
-
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400">ou</span>
-              <div className="flex-1 h-px bg-gray-200" />
+          {/* Modal */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-100">
+              <button onClick={() => switchTab('login')}
+                className={`flex-1 py-4 text-sm font-semibold transition-all cursor-pointer ${tab === 'login' ? 'text-[#6B1C3A] border-b-2 border-[#6B1C3A] bg-white' : 'text-gray-400 hover:text-gray-600 bg-gray-50'}`}>
+                Entrar
+              </button>
+              <button onClick={() => switchTab('signup')}
+                className={`flex-1 py-4 text-sm font-semibold transition-all cursor-pointer ${tab === 'signup' ? 'text-[#6B1C3A] border-b-2 border-[#6B1C3A] bg-white' : 'text-gray-400 hover:text-gray-600 bg-gray-50'}`}>
+                Criar conta
+              </button>
             </div>
 
-            {/* Login form */}
-            {tab === 'login' && (
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Senha</label>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
-                </div>
-                <button type="submit" disabled={loading}
-                  className="w-full px-6 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {loading ? 'Entrando...' : 'Entrar'}
-                </button>
-              </form>
-            )}
+            <div className="p-8">
+              {tab === 'signup' && (
+                <p className="text-center text-sm text-emerald-600 font-medium bg-emerald-50 rounded-xl py-2 px-3 mb-5">
+                  3 dias grátis — sem precisar de cartão
+                </p>
+              )}
 
-            {/* Signup form */}
-            {tab === 'signup' && (
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm text-center">
+                  {error}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Senha</label>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required minLength={6} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirmar senha</label>
-                  <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repita a senha"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required minLength={6} />
-                </div>
-                <button type="submit" disabled={loading}
-                  className="w-full px-6 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {loading ? 'Criando conta...' : 'Criar conta grátis'}
-                </button>
-              </form>
-            )}
+              )}
+
+              <button type="button" onClick={handleGoogle} disabled={loadingGoogle}
+                className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mb-5">
+                {loadingGoogle
+                  ? <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                  : <GoogleIcon />}
+                {tab === 'login' ? 'Entrar com Google' : 'Continuar com Google'}
+              </button>
+
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">ou</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              {tab === 'login' && (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full px-6 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                    {loading ? 'Entrando...' : 'Entrar'}
+                  </button>
+                </form>
+              )}
+
+              {tab === 'signup' && (
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required minLength={6} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Confirmar senha</label>
+                    <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repita a senha"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900" required minLength={6} />
+                  </div>
+                  <button type="submit" disabled={loading}
+                    className="w-full px-6 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                    {loading ? 'Criando conta...' : 'Criar conta grátis'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+
+          <div className="text-center mt-5">
+            <Link href="/admin/ativar" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">
+              Ativar conta de owner
+            </Link>
           </div>
         </div>
-
-        <div className="text-center mt-6">
-          <Link href="/admin/ativar" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">
-            Ativar conta de owner
-          </Link>
-        </div>
       </div>
-    </div>
+    </>
   );
 }
