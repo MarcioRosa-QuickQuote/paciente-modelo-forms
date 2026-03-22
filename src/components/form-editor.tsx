@@ -504,14 +504,13 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               {currentStep.type === 'preco' && (
                 <>
                   <div>
-                    <label className={labelClass}>Nome do Procedimento</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Nome do Procedimento <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={form.procedureName}
-                      onChange={e => updateField('procedureName', e.target.value)}
+                      onChange={v => updateField('procedureName', v)}
                       placeholder="Ex: Preenchimento Labial"
-                      className={stepInputClass}
-                      required
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
@@ -845,10 +844,15 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                 <div>
                   <label className={labelClass}>
                     Nome do Procedimento
-                    <span className="ml-2 text-xs text-gray-400 font-normal">Aparece nas telas de foto e preço</span>
+                    <span className="ml-2 text-xs text-gray-400 font-normal">Aparece nas telas de foto e preço · selecione texto para colorir</span>
                   </label>
-                  <input type="text" value={form.procedureName} onChange={e => updateField('procedureName', e.target.value)}
-                    placeholder="Ex: Preenchimento Labial" className={inputClass} required />
+                  <RichTextField
+                    value={form.procedureName}
+                    onChange={v => updateField('procedureName', v)}
+                    placeholder="Ex: Preenchimento Labial"
+                    singleLine
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
+                  />
                 </div>
 
                 {/* Profissional */}

@@ -71,10 +71,10 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         ) : (
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2">
             Sabendo que um paciente de{' '}
-            <span className="bg-clip-text text-transparent"
-              style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-              {procedureName}
-            </span>{' '}
+            <span className="font-extrabold"
+              style={{ color: theme.gradientFrom }}
+              dangerouslySetInnerHTML={{ __html: procedureName }}
+            />{' '}
             pagaria em média{' '}
             <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>.
           </h1>
