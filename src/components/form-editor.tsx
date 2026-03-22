@@ -504,6 +504,18 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               {currentStep.type === 'preco' && (
                 <>
                   <div>
+                    <label className={labelClass}>Nome do Procedimento</label>
+                    <input
+                      type="text"
+                      value={form.procedureName}
+                      onChange={e => updateField('procedureName', e.target.value)}
+                      placeholder="Ex: Preenchimento Labial"
+                      className={stepInputClass}
+                      required
+                    />
+                  </div>
+
+                  <div>
                     <label className={labelClass}>Contexto (1ª linha)</label>
                     <input
                       type="text"
@@ -827,6 +839,16 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                   <label className={labelClass}>Nome do Formulário</label>
                   <input type="text" value={form.name} onChange={e => updateField('name', e.target.value)}
                     placeholder="Ex: Botox Março 2026" className={inputClass} required />
+                </div>
+
+                {/* Nome do procedimento */}
+                <div>
+                  <label className={labelClass}>
+                    Nome do Procedimento
+                    <span className="ml-2 text-xs text-gray-400 font-normal">Aparece nas telas de foto e preço</span>
+                  </label>
+                  <input type="text" value={form.procedureName} onChange={e => updateField('procedureName', e.target.value)}
+                    placeholder="Ex: Preenchimento Labial" className={inputClass} required />
                 </div>
 
                 {/* Profissional */}
