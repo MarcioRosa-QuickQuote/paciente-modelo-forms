@@ -814,26 +814,6 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             </div>
           )}
 
-          {/* ── Bottom navigation ── */}
-          <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
-              disabled={currentStepIndex === 0}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-[#6B1C3A] hover:bg-[#6B1C3A]/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            >
-              ← Anterior
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentStepIndex(i => Math.min(steps.length, i + 1))}
-              disabled={currentStepIndex === steps.length}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-[#6B1C3A] hover:bg-[#6B1C3A]/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            >
-              Próximo →
-            </button>
-          </div>
-
         </div>
 
         {/* ── Config Modal ── */}

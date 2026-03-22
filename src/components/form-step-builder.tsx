@@ -283,28 +283,46 @@ export default function FormStepBuilder({
         )}
       </div>
 
-      {/* ── Dots ── */}
+      {/* ── Dots + Nav ── */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={steps.map(s => s.id)} strategy={horizontalListSortingStrategy}>
-          <div className="px-4 py-2 flex items-center gap-1.5 border-t border-gray-100">
-            {steps.map((step, index) => (
-              <SortableDot
-                key={step.id}
-                id={step.id}
-                isActive={index === currentIndex}
-                onClick={() => onCurrentIndexChange(index)}
-              />
-            ))}
-            {hasCelebration && (
-              <button
-                type="button"
-                onClick={() => onCurrentIndexChange(steps.length)}
-                className={isCelebration
-                  ? 'w-5 h-2 rounded-full bg-[#6B1C3A] cursor-pointer transition-all'
-                  : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-all'}
-                aria-label="Tela de celebração"
-              />
-            )}
+          <div className="px-4 py-2 flex items-center justify-between border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => currentIndex > 0 && onCurrentIndexChange(currentIndex - 1)}
+              disabled={currentIndex === 0}
+              className="text-sm font-semibold text-[#6B1C3A] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            >
+              ← Anterior
+            </button>
+            <div className="flex items-center gap-1.5">
+              {steps.map((step, index) => (
+                <SortableDot
+                  key={step.id}
+                  id={step.id}
+                  isActive={index === currentIndex}
+                  onClick={() => onCurrentIndexChange(index)}
+                />
+              ))}
+              {hasCelebration && (
+                <button
+                  type="button"
+                  onClick={() => onCurrentIndexChange(steps.length)}
+                  className={isCelebration
+                    ? 'w-5 h-2 rounded-full bg-[#6B1C3A] cursor-pointer transition-all'
+                    : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-all'}
+                  aria-label="Tela de celebração"
+                />
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => currentIndex < totalSteps - 1 && onCurrentIndexChange(currentIndex + 1)}
+              disabled={currentIndex === totalSteps - 1}
+              className="text-sm font-semibold text-[#6B1C3A] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Próximo →
+            </button>
           </div>
         </SortableContext>
       </DndContext>
