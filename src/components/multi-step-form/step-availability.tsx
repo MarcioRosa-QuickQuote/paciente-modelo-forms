@@ -55,9 +55,9 @@ export default function StepAvailability({ procedureName, availableDays, procedu
         </div>
 
         {procedureDuration && (
-          <p className="text-gray-500 text-base">
-            {customTexts?.durationNote || `O procedimento dura cerca de ${procedureDuration}.`}
-          </p>
+          <p className="text-gray-500 text-base"
+            dangerouslySetInnerHTML={{ __html: customTexts?.durationNote || `O procedimento dura cerca de ${procedureDuration}.` }}
+          />
         )}
       </motion.div>
 

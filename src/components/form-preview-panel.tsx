@@ -140,9 +140,9 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
         </div>
       )}
 
-      <p className={`text-gray-500 text-center mb-4 ${desktop ? 'text-sm' : 'text-[10px]'}`}>
-        {durationNote}
-      </p>
+      <p className={`text-gray-500 text-center mb-4 ${desktop ? 'text-sm' : 'text-[10px]'}`}
+        dangerouslySetInnerHTML={{ __html: durationNote }}
+      />
 
       <div className="flex gap-2 w-full">
         <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, tenho!'} />
@@ -189,7 +189,7 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
 
       <div className="rounded-2xl px-5 py-4 mb-3 text-center shadow-lg w-full"
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-        <p className="text-white/80 text-xs mb-1">{pricingLabel}</p>
+        <p className="text-white/80 text-xs mb-1" dangerouslySetInnerHTML={{ __html: pricingLabel }} />
         <p className={`text-white font-extrabold ${desktop ? 'text-3xl' : 'text-2xl'}`}>{formatCurrency(form.modelPrice)}</p>
         {hasInstallment && (
           <p className="text-white/80 text-xs mt-0.5">ou {form.installmentCount}x de {formatCurrency(form.installmentAmount)}</p>
@@ -222,18 +222,18 @@ function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: T
         </svg>
       </StepIcon>
 
-      <p className={`font-bold text-gray-900 text-center mb-2 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
-        {feePrefix}
-      </p>
+      <p className={`font-bold text-gray-900 text-center mb-2 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
+        dangerouslySetInnerHTML={{ __html: feePrefix }}
+      />
       <p className={`font-black mb-1 ${desktop ? 'text-4xl' : 'text-3xl'}`} style={{ color: theme.accent }}>
         {formatCurrency(form.feeAmount)}
       </p>
-      <p className={`text-gray-400 text-center mb-2 ${desktop ? 'text-sm' : 'text-[10px]'}`}>
-        {feeBenefit}
-      </p>
+      <p className={`text-gray-400 text-center mb-2 ${desktop ? 'text-sm' : 'text-[10px]'}`}
+        dangerouslySetInnerHTML={{ __html: feeBenefit }}
+      />
       <div className="flex gap-2 mb-4">
-        <span className="text-xs px-2 py-1 rounded-full font-semibold" style={{ background: theme.accentLight, color: theme.accent }}>{feeDeducted}</span>
-        <span className="text-xs px-2 py-1 rounded-full font-semibold bg-green-100 text-green-700">{feeSafe}</span>
+        <span className="text-xs px-2 py-1 rounded-full font-semibold" style={{ background: theme.accentLight, color: theme.accent }} dangerouslySetInnerHTML={{ __html: feeDeducted }} />
+        <span className="text-xs px-2 py-1 rounded-full font-semibold bg-green-100 text-green-700" dangerouslySetInnerHTML={{ __html: feeSafe }} />
       </div>
 
       <div className="flex gap-2 w-full">
@@ -253,9 +253,9 @@ function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Them
         </svg>
       </StepIcon>
 
-      <p className={`font-bold text-gray-900 text-center mb-6 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}>
-        {step.question || 'Pergunta personalizada...'}
-      </p>
+      <p className={`font-bold text-gray-900 text-center mb-6 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}
+        dangerouslySetInnerHTML={{ __html: step.question || 'Pergunta personalizada...' }}
+      />
 
       <div className="flex gap-2 w-full">
         <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} />
@@ -274,9 +274,9 @@ function PreviewCelebration({ form, theme, desktop }: { form: FormInput; theme: 
   return (
     <div className={`flex flex-col items-center text-center ${desktop ? 'px-6 py-10 gap-4' : 'px-4 py-8 gap-3'}`}>
       <div className={desktop ? 'text-5xl' : 'text-4xl'}>🎉</div>
-      <h3 className={`font-black text-gray-900 ${desktop ? 'text-2xl' : 'text-lg'}`}>{title}</h3>
-      <p className={`text-gray-600 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}>{subtitle}</p>
-      <p className={`text-gray-400 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`}>{message}</p>
+      <h3 className={`font-black text-gray-900 ${desktop ? 'text-2xl' : 'text-lg'}`} dangerouslySetInnerHTML={{ __html: title }} />
+      <p className={`text-gray-600 leading-snug ${desktop ? 'text-base' : 'text-sm'}`} dangerouslySetInnerHTML={{ __html: subtitle }} />
+      <p className={`text-gray-400 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: message }} />
       <div className="w-full py-3 rounded-xl text-white font-bold text-sm"
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
         Falar pelo WhatsApp

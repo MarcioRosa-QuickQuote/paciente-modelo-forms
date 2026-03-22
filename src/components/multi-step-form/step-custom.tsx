@@ -34,9 +34,9 @@ export default function StepCustom({ question, yesText, noText, onYes, onNo, the
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-10"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-          {question}
-        </h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight"
+          dangerouslySetInnerHTML={{ __html: question }}
+        />
       </motion.div>
 
       <motion.div

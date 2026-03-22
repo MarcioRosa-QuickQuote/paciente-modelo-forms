@@ -97,16 +97,15 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
           <span
             className="bg-clip-text text-transparent"
             style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-          >
-            {customTexts?.celebrationTitle || 'Parabéns!'}
-          </span>
+            dangerouslySetInnerHTML={{ __html: customTexts?.celebrationTitle || 'Parabéns!' }}
+          />
         </h1>
-        <p className="text-xl text-gray-700 font-semibold mb-2">
-          {customTexts?.celebrationSubtitle || 'Você foi qualificada para ser nossa paciente modelo!'}
-        </p>
-        <p className="text-gray-500 text-base leading-relaxed max-w-sm mx-auto">
-          {customTexts?.celebrationMessage || 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras 🥰'}
-        </p>
+        <p className="text-xl text-gray-700 font-semibold mb-2"
+          dangerouslySetInnerHTML={{ __html: customTexts?.celebrationSubtitle || 'Você foi qualificada para ser nossa paciente modelo!' }}
+        />
+        <p className="text-gray-500 text-base leading-relaxed max-w-sm mx-auto"
+          dangerouslySetInnerHTML={{ __html: customTexts?.celebrationMessage || 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras 🥰' }}
+        />
       </motion.div>
 
       <motion.a

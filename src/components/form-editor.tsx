@@ -421,24 +421,24 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               {currentStep.type === 'disponibilidade' && (
                 <>
                   <div>
-                    <label className={labelClass}>Pergunta principal</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Pergunta principal <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={customTexts.availabilityQuestion || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, availabilityQuestion: e.target.value }))}
+                      onChange={v => setCustomTexts(prev => ({ ...prev, availabilityQuestion: v }))}
                       placeholder="Você teria disponibilidade em algum desses dias?"
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Texto da duração</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Texto da duração <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={customTexts.durationNote || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, durationNote: e.target.value }))}
+                      onChange={v => setCustomTexts(prev => ({ ...prev, durationNote: v }))}
                       placeholder={`O procedimento dura cerca de ${form.procedureDuration || '2h'}.`}
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
@@ -516,35 +516,35 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                   </div>
 
                   <div>
-                    <label className={labelClass}>Contexto (1ª linha)</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Contexto (1ª linha) <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={customTexts.pricingContext || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, pricingContext: e.target.value }))}
+                      onChange={v => setCustomTexts(prev => ({ ...prev, pricingContext: v }))}
                       placeholder={`Sabendo que um paciente de ${form.procedureName || 'Procedimento'} pagaria em média [preço].`}
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Pergunta principal</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Pergunta principal <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={customTexts.pricingQuestion || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, pricingQuestion: e.target.value }))}
+                      onChange={v => setCustomTexts(prev => ({ ...prev, pricingQuestion: v }))}
                       placeholder="E por ser PACIENTE MODELO ganharia uma condição especial..."
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Rótulo do card</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Rótulo do card <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={customTexts.pricingLabel || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, pricingLabel: e.target.value }))}
+                      onChange={v => setCustomTexts(prev => ({ ...prev, pricingLabel: v }))}
                       placeholder="Valor especial paciente modelo"
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
@@ -646,46 +646,46 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               {currentStep.type === 'taxa' && (
                 <>
                   <div>
-                    <label className={labelClass}>Texto antes do valor</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Texto antes do valor <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={customTexts.feeTextPrefix || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, feeTextPrefix: e.target.value }))}
+                      onChange={v => setCustomTexts(prev => ({ ...prev, feeTextPrefix: v }))}
                       placeholder="Para reservar seu horário na agenda, solicitamos um valor simbólico de"
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Texto secundário</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Texto secundário <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={customTexts.feeBenefitText || ''}
-                      onChange={e => setCustomTexts(prev => ({ ...prev, feeBenefitText: e.target.value }))}
+                      onChange={v => setCustomTexts(prev => ({ ...prev, feeBenefitText: v }))}
                       placeholder="Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento."
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className={labelClass}>Badge "Abatido"</label>
-                      <input
-                        type="text"
+                      <RichTextField
                         value={customTexts.feeDeductedLabel || ''}
-                        onChange={e => setCustomTexts(prev => ({ ...prev, feeDeductedLabel: e.target.value }))}
+                        onChange={v => setCustomTexts(prev => ({ ...prev, feeDeductedLabel: v }))}
                         placeholder="Valor abatido"
-                        className={stepInputClass}
+                        singleLine
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                       />
                     </div>
                     <div>
                       <label className={labelClass}>Badge "Seguro"</label>
-                      <input
-                        type="text"
+                      <RichTextField
                         value={customTexts.feeSafeLabel || ''}
-                        onChange={e => setCustomTexts(prev => ({ ...prev, feeSafeLabel: e.target.value }))}
+                        onChange={v => setCustomTexts(prev => ({ ...prev, feeSafeLabel: v }))}
                         placeholder="Seguro"
-                        className={stepInputClass}
+                        singleLine
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                       />
                     </div>
                   </div>
@@ -735,13 +735,13 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               {currentStep.type === 'pergunta' && (
                 <>
                   <div>
-                    <label className={labelClass}>Pergunta</label>
-                    <input
-                      type="text"
+                    <label className={labelClass}>Pergunta <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <RichTextField
                       value={currentStep.question || ''}
-                      onChange={e => updateCurrentStep({ question: e.target.value })}
+                      onChange={v => updateCurrentStep({ question: v })}
                       placeholder="Ex: Você está disposto a fazer uma sessão de fotos para o nosso portfólio?"
-                      className={stepInputClass}
+                      singleLine
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
@@ -777,35 +777,35 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           {currentStepIndex === steps.length && (
             <div className="p-6 space-y-5 overflow-y-auto flex-1">
               <div>
-                <label className={labelClass}>Título</label>
-                <input
-                  type="text"
+                <label className={labelClass}>Título <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                <RichTextField
                   value={customTexts.celebrationTitle || ''}
-                  onChange={e => setCustomTexts(prev => ({ ...prev, celebrationTitle: e.target.value }))}
+                  onChange={v => setCustomTexts(prev => ({ ...prev, celebrationTitle: v }))}
                   placeholder="Parabéns!"
-                  className={stepInputClass}
+                  singleLine
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                 />
               </div>
 
               <div>
-                <label className={labelClass}>Subtítulo</label>
-                <input
-                  type="text"
+                <label className={labelClass}>Subtítulo <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                <RichTextField
                   value={customTexts.celebrationSubtitle || ''}
-                  onChange={e => setCustomTexts(prev => ({ ...prev, celebrationSubtitle: e.target.value }))}
+                  onChange={v => setCustomTexts(prev => ({ ...prev, celebrationSubtitle: v }))}
                   placeholder="Você foi qualificada para ser nossa paciente modelo!"
-                  className={stepInputClass}
+                  singleLine
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                 />
               </div>
 
               <div>
-                <label className={labelClass}>Mensagem</label>
-                <input
-                  type="text"
+                <label className={labelClass}>Mensagem <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                <RichTextField
                   value={customTexts.celebrationMessage || ''}
-                  onChange={e => setCustomTexts(prev => ({ ...prev, celebrationMessage: e.target.value }))}
+                  onChange={v => setCustomTexts(prev => ({ ...prev, celebrationMessage: v }))}
                   placeholder="É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras"
-                  className={stepInputClass}
+                  singleLine
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                 />
               </div>
             </div>

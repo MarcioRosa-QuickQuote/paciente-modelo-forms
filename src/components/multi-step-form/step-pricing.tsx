@@ -102,7 +102,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
         className="rounded-3xl px-8 pt-6 pb-6 mb-10 text-center shadow-xl w-full max-w-sm"
       >
-        <p className="text-white/80 text-sm font-medium mb-3">{customTexts?.pricingLabel || 'Valor especial paciente modelo'}</p>
+        <p className="text-white/80 text-sm font-medium mb-3" dangerouslySetInnerHTML={{ __html: customTexts?.pricingLabel || 'Valor especial paciente modelo' }} />
 
         {/* Área de preço com altura fixa para não pular */}
         <div className="h-20 flex flex-col items-center justify-center">
