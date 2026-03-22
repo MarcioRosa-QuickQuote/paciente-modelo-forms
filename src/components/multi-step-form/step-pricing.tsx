@@ -21,6 +21,12 @@ interface Props {
   customTexts?: CustomTexts;
 }
 
+function resolveTokens(text: string, procedureName: string, regularPrice: number): string {
+  return text
+    .replace(/\{procedureName\}/g, procedureName)
+    .replace(/\{preco\}/g, formatCurrency(regularPrice));
+}
+
 export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
   const discount = Math.round(((regularPrice - modelPrice) / regularPrice) * 100);
   const hasInstallment = installmentCount > 0 && installmentAmount > 0;
@@ -61,7 +67,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
       >
         {customTexts?.pricingContext ? (
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2"
-            dangerouslySetInnerHTML={{ __html: customTexts.pricingContext }} />
+            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingContext, procedureName, regularPrice) }} />
         ) : (
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2">
             Sabendo que um paciente de{' '}
@@ -75,7 +81,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         )}
         {customTexts?.pricingQuestion ? (
           <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4"
-            dangerouslySetInnerHTML={{ __html: customTexts.pricingQuestion }} />
+            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingQuestion, procedureName, regularPrice) }} />
         ) : (
           <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4">
             E por ser{' '}

@@ -87,3 +87,9 @@ ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS capi_token TEXT DEFAULT '';
 
 -- 10. Adicionar coluna de etapas configuráveis
 ALTER TABLE forms ADD COLUMN IF NOT EXISTS steps JSONB DEFAULT '[]';
+
+-- 11. Adicionar coluna de textos customizados
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS custom_texts JSONB DEFAULT '{}';
+
+-- 12. Adicionar suporte a foto única centralizada
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS single_photo BOOLEAN DEFAULT false;

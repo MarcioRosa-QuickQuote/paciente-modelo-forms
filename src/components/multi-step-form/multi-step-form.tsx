@@ -138,6 +138,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
           <StepBeforeAfter
             procedureName={formData.procedureName}
             photos={formData.photos}
+            singlePhoto={formData.singlePhoto}
             headline={formData.headline}
             supportText={formData.supportText}
             onYes={handleYes}

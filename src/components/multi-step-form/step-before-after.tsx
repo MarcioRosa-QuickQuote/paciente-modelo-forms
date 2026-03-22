@@ -10,6 +10,7 @@ import { PhotoPair } from '@/types/form';
 interface Props {
   procedureName: string;
   photos: PhotoPair[];
+  singlePhoto?: boolean;
   headline: string;
   supportText: string;
   onYes: () => void;
@@ -19,7 +20,7 @@ interface Props {
   noText?: string;
 }
 
-export default function StepBeforeAfter({ procedureName, photos, headline, supportText, onYes, onNo, theme, yesText, noText }: Props) {
+export default function StepBeforeAfter({ procedureName, photos, singlePhoto, headline, supportText, onYes, onNo, theme, yesText, noText }: Props) {
   const validPhotos = photos.filter(p => p.before || p.after);
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -60,40 +61,51 @@ export default function StepBeforeAfter({ procedureName, photos, headline, suppo
           transition={{ duration: 0.5, delay: 0.15 }}
           className="w-full max-w-sm mb-4"
         >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={photoIndex}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="grid grid-cols-2 gap-3"
-            >
-              {currentPhoto.before && (
-                <div className="relative">
-                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
-                    <Image src={currentPhoto.before} alt="Antes" fill className="object-cover" />
-                  </div>
-                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
-                    ANTES
-                  </span>
+          {singlePhoto ? (
+            /* Single centered photo */
+            currentPhoto.before && (
+              <div className="relative w-3/4 mx-auto">
+                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
+                  <Image src={currentPhoto.before} alt="Foto" fill className="object-cover" />
                 </div>
-              )}
-              {currentPhoto.after && (
-                <div className="relative">
-                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
-                    <Image src={currentPhoto.after} alt="Depois" fill className="object-cover" />
+              </div>
+            )
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={photoIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="grid grid-cols-2 gap-3"
+              >
+                {currentPhoto.before && (
+                  <div className="relative">
+                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
+                      <Image src={currentPhoto.before} alt="Antes" fill className="object-cover" />
+                    </div>
+                    <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
+                      ANTES
+                    </span>
                   </div>
-                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs font-bold px-3 py-1 rounded-full"
-                    style={{ background: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-                    DEPOIS
-                  </span>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+                )}
+                {currentPhoto.after && (
+                  <div className="relative">
+                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
+                      <Image src={currentPhoto.after} alt="Depois" fill className="object-cover" />
+                    </div>
+                    <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs font-bold px-3 py-1 rounded-full"
+                      style={{ background: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
+                      DEPOIS
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          )}
 
-          {validPhotos.length > 1 && (
+          {!singlePhoto && validPhotos.length > 1 && (
             <div className="flex justify-center gap-1.5 mt-3">
               {validPhotos.map((_, i) => (
                 <button key={i} onClick={() => setPhotoIndex(i)}

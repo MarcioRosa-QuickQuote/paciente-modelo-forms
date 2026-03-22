@@ -111,6 +111,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     beforeImage: initialData?.beforeImage || '',
     afterImage: initialData?.afterImage || '',
     photos: buildInitialPhotos(),
+    singlePhoto: initialData?.singlePhoto ?? false,
     headline: initialData?.headline || templateData?.headline || '',
     supportText: initialData?.supportText || templateData?.supportText || '',
     whatsappMessage: initialData?.whatsappMessage || '',
@@ -298,20 +299,31 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                     />
                   </div>
 
-                  {/* Fotos Antes e Depois */}
+                  {/* Fotos */}
                   <div>
+                    {/* Checkbox Apenas 1 foto */}
+                    <label className="flex items-center gap-2 mb-3 cursor-pointer select-none w-fit">
+                      <input
+                        type="checkbox"
+                        checked={form.singlePhoto}
+                        onChange={e => updateField('singlePhoto', e.target.checked)}
+                        className="w-4 h-4 rounded accent-[#6B1C3A] cursor-pointer"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Apenas 1 foto</span>
+                    </label>
+
                     <div className="flex items-center justify-between mb-2">
-                      <label className={labelClass + ' mb-0'}>Fotos Antes e Depois</label>
+                      <label className={labelClass + ' mb-0'}>{form.singlePhoto ? 'Foto' : 'Fotos Antes e Depois'}</label>
                       <button type="button" onClick={addPhotoPair}
                         className="flex items-center gap-1 px-2.5 py-1 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-lg text-xs font-medium hover:bg-[#6B1C3A]/20 transition-colors cursor-pointer">
-                        + Fotos
+                        + Foto{form.singlePhoto ? '' : 's'}
                       </button>
                     </div>
 
                     <div className="space-y-2">
                       {photos.map((photo, index) => (
                         <div key={index} className="flex items-center gap-2">
-                          {(['before', 'after'] as const).map(type => {
+                          {(form.singlePhoto ? ['before'] as const : ['before', 'after'] as const).map(type => {
                             const key = `${index}-${type}`;
                             return (
                               <div key={type} className="flex-1 relative">
@@ -331,7 +343,11 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                   )}
-                                  <span className="truncate">{photo[type] ? `✓ ${type === 'before' ? 'Antes' : 'Depois'}` : (type === 'before' ? 'Foto Antes' : 'Foto Depois')}</span>
+                                  <span className="truncate">
+                                    {photo[type]
+                                      ? `✓ ${form.singlePhoto ? 'Foto' : (type === 'before' ? 'Antes' : 'Depois')}`
+                                      : (form.singlePhoto ? 'Foto' : (type === 'before' ? 'Foto Antes' : 'Foto Depois'))}
+                                  </span>
                                 </button>
                                 <input
                                   ref={el => { photoRefs.current[key] = el; }}
@@ -487,13 +503,17 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               {/* ── PREÇO ── */}
               {currentStep.type === 'preco' && (
                 <>
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-xs text-blue-600">
+                    Use <code className="font-mono bg-blue-100 px-1 rounded">{'{procedureName}'}</code> para o nome do procedimento e <code className="font-mono bg-blue-100 px-1 rounded">{'{preco}'}</code> para o valor normal.
+                  </div>
+
                   <div>
                     <label className={labelClass}>Contexto (1ª linha)</label>
                     <input
                       type="text"
                       value={customTexts.pricingContext || ''}
                       onChange={e => setCustomTexts(prev => ({ ...prev, pricingContext: e.target.value }))}
-                      placeholder="Sabendo que um paciente pagaria em média [preço]."
+                      placeholder={`Sabendo que um paciente de {procedureName} pagaria em média {preco}.`}
                       className={stepInputClass}
                     />
                   </div>

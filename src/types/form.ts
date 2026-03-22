@@ -58,6 +58,7 @@ export interface FormData {
   beforeImage: string;
   afterImage: string;
   photos: PhotoPair[];
+  singlePhoto: boolean;
   headline: string;
   supportText: string;
   isActive: boolean;
@@ -88,6 +89,7 @@ export interface FormInput {
   beforeImage: string;
   afterImage: string;
   photos: PhotoPair[];
+  singlePhoto: boolean;
   headline: string;
   supportText: string;
   whatsappMessage: string;

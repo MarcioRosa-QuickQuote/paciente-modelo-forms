@@ -54,7 +54,18 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
         dangerouslySetInnerHTML={{ __html: headline }}
       />
 
-      {validPhotos.length > 0 ? (
+      {form.singlePhoto ? (
+        /* Single centered photo */
+        validPhotos.length > 0 && photo.before ? (
+          <div className="relative aspect-[3/4] rounded-xl overflow-hidden w-3/4 mx-auto">
+            <Image src={photo.before} alt="Foto" fill className="object-cover" />
+          </div>
+        ) : (
+          <div className="aspect-[3/4] bg-gray-100 rounded-xl flex items-center justify-center w-3/4 mx-auto">
+            <span className="text-[10px] text-gray-400 font-medium">FOTO</span>
+          </div>
+        )
+      ) : validPhotos.length > 0 ? (
         <div className={`grid grid-cols-2 w-full ${desktop ? 'gap-4' : 'gap-2'}`}>
           {(['before', 'after'] as const).map(type => (
             photo[type] ? (
@@ -141,12 +152,22 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
   );
 }
 
+function resolveTokens(text: string, procedureName: string, regularPrice: number): string {
+  return text
+    .replace(/\{procedureName\}/g, procedureName)
+    .replace(/\{preco\}/g, formatCurrency(regularPrice));
+}
+
 function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
   const hasInstallment = form.installmentCount > 0 && form.installmentAmount > 0;
   const discount = form.regularPrice > 0 ? Math.round(((form.regularPrice - form.modelPrice) / form.regularPrice) * 100) : 0;
-  const pricingContext = ct.pricingContext || `Normalmente custa <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
-  const pricingQuestion = ct.pricingQuestion || 'Como paciente modelo você pagaria:';
+  const pricingContext = ct.pricingContext
+    ? resolveTokens(ct.pricingContext, form.procedureName, form.regularPrice)
+    : `Normalmente custa <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
+  const pricingQuestion = ct.pricingQuestion
+    ? resolveTokens(ct.pricingQuestion, form.procedureName, form.regularPrice)
+    : 'Como paciente modelo você pagaria:';
   const pricingLabel = ct.pricingLabel || 'Valor especial paciente modelo';
 
   return (
