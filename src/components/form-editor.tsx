@@ -503,17 +503,13 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               {/* ── PREÇO ── */}
               {currentStep.type === 'preco' && (
                 <>
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-xs text-blue-600">
-                    Use <code className="font-mono bg-blue-100 px-1 rounded">{'{procedureName}'}</code> para o nome do procedimento e <code className="font-mono bg-blue-100 px-1 rounded">{'{preco}'}</code> para o valor normal.
-                  </div>
-
                   <div>
                     <label className={labelClass}>Contexto (1ª linha)</label>
                     <input
                       type="text"
                       value={customTexts.pricingContext || ''}
                       onChange={e => setCustomTexts(prev => ({ ...prev, pricingContext: e.target.value }))}
-                      placeholder={`Sabendo que um paciente de {procedureName} pagaria em média {preco}.`}
+                      placeholder={`Sabendo que um paciente de ${form.procedureName || 'Procedimento'} pagaria em média [preço].`}
                       className={stepInputClass}
                     />
                   </div>

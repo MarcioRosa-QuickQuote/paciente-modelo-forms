@@ -162,12 +162,13 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
   const ct = form.customTexts || {};
   const hasInstallment = form.installmentCount > 0 && form.installmentAmount > 0;
   const discount = form.regularPrice > 0 ? Math.round(((form.regularPrice - form.modelPrice) / form.regularPrice) * 100) : 0;
+  const procedureName = form.procedureName || 'Procedimento';
   const pricingContext = ct.pricingContext
-    ? resolveTokens(ct.pricingContext, form.procedureName, form.regularPrice)
-    : `Normalmente custa <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
+    ? resolveTokens(ct.pricingContext, procedureName, form.regularPrice)
+    : `Sabendo que um paciente de <strong>${procedureName}</strong> pagaria em média <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
   const pricingQuestion = ct.pricingQuestion
-    ? resolveTokens(ct.pricingQuestion, form.procedureName, form.regularPrice)
-    : 'Como paciente modelo você pagaria:';
+    ? resolveTokens(ct.pricingQuestion, procedureName, form.regularPrice)
+    : `E por ser <strong>PACIENTE MODELO</strong> ganharia uma condição especial, teria disponibilidade de investir o valor abaixo?`;
   const pricingLabel = ct.pricingLabel || 'Valor especial paciente modelo';
 
   return (
@@ -182,9 +183,9 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
         className={`font-bold text-gray-900 text-center mb-1 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
         dangerouslySetInnerHTML={{ __html: pricingContext }}
       />
-      <p className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}>
-        {pricingQuestion}
-      </p>
+      <p className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
+        dangerouslySetInnerHTML={{ __html: pricingQuestion }}
+      />
 
       <div className="rounded-2xl px-5 py-4 mb-3 text-center shadow-lg w-full"
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
