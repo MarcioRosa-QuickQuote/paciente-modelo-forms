@@ -228,14 +228,6 @@ export default function FormStepBuilder({
     onCurrentIndexChange(newIndex);
   }
 
-  function goToPrev() {
-    if (currentIndex > 0) onCurrentIndexChange(currentIndex - 1);
-  }
-
-  function goToNext() {
-    if (currentIndex < totalSteps - 1) onCurrentIndexChange(currentIndex + 1);
-  }
-
   if (!isCelebration && !currentStep) return null;
 
   const info = !isCelebration ? getStepInfo(currentStep!.type) : { label: 'Celebração', icon: null };
@@ -244,31 +236,13 @@ export default function FormStepBuilder({
     <>
       {/* ── Navigation bar ── */}
       <div className="flex items-center gap-2 px-4 py-3">
-        <button
-          type="button"
-          onClick={goToPrev}
-          disabled={currentIndex === 0}
-          className="px-3 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0 text-sm font-medium cursor-pointer"
-        >
-          ← Anterior
-        </button>
-
         {/* Step name + counter */}
-        <div className="flex-1 flex items-center justify-center gap-2 min-w-0">
+        <div className="flex-1 flex items-center gap-2 min-w-0">
           <span className="text-sm font-bold text-gray-900 truncate">{info.label}</span>
           <span className="text-xs text-gray-400 flex-shrink-0">
             {currentIndex + 1} / {totalSteps}
           </span>
         </div>
-
-        <button
-          type="button"
-          onClick={goToNext}
-          disabled={currentIndex === totalSteps - 1}
-          className="px-3 py-1.5 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-30 transition-colors flex-shrink-0 text-sm font-medium cursor-pointer"
-        >
-          Próximo →
-        </button>
 
         {/* Trash */}
         {steps.length > 1 && !isCelebration && (
