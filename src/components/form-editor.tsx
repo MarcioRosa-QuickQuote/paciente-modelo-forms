@@ -22,6 +22,10 @@ const DEFAULT_STEPS: FormStep[] = [
   { id: 'default-taxa', type: 'taxa' },
 ];
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '');
+}
+
 function formatBRL(value: number): string {
   if (!value) return '';
   return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -519,7 +523,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                     <RichTextField
                       value={customTexts.pricingContext || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, pricingContext: v }))}
-                      placeholder={`Sabendo que um paciente de ${form.procedureName || 'Procedimento'} pagaria em média [preço].`}
+                      placeholder={`Sabendo que um paciente de ${stripHtml(form.procedureName) || 'Procedimento'} pagaria em média [preço].`}
                       singleLine
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
