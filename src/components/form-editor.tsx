@@ -816,6 +816,26 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
         </div>
 
+        {/* ── Navegação entre telas ── */}
+        <div className="flex items-center justify-between px-2">
+          <button
+            type="button"
+            onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
+            disabled={currentStepIndex === 0}
+            className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+          >
+            ← Anterior
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentStepIndex(i => Math.min(steps.length, i + 1))}
+            disabled={currentStepIndex === steps.length}
+            className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+          >
+            Próximo →
+          </button>
+        </div>
+
         {/* ── Config Modal ── */}
         {configModalOpen && (
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto" onClick={e => { if (e.target === e.currentTarget) setConfigModalOpen(false); }}>
