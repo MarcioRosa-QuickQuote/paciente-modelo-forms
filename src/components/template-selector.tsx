@@ -8,12 +8,12 @@ interface Props {
 }
 
 const NICHE_GROUPS = [
+  { label: 'Personalizado', ids: ['em-branco'] },
   { label: 'Clínica de Estética', ids: ['paciente-modelo', 'botox-harmonizacao', 'estetica-corporal', 'capilar-micropigmentacao'] },
   { label: 'Odontologia', ids: ['clareamento-dental', 'implante-dental', 'facetas-laminados'] },
   { label: 'Saúde & Fitness', ids: ['nutricao-emagrecimento', 'personal-trainer'] },
   { label: 'Advocacia', ids: ['advocacia-trabalhista', 'advocacia-previdenciaria'] },
   { label: 'Psicologia', ids: ['psicologia-terapia'] },
-  { label: 'Personalizado', ids: ['em-branco'] },
 ];
 
 function TemplateCard({ template, onSelect }: { template: FormTemplate; onSelect: (id: string) => void }) {
