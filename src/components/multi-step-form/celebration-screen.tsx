@@ -205,7 +205,7 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
                   Experimentar grátis por 7 dias →
                 </Link>
                 <button
-                  onClick={() => { window.location.href = '/admin/cadastro'; }}
+                  onClick={() => { window.location.reload(); }}
                   className="mt-3 text-sm text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   Iniciar Teste
