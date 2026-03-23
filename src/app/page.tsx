@@ -150,33 +150,39 @@ export default function LandingPage() {
           </div>
 
           {/* Phone mockup no hero */}
-          <div className="flex-shrink-0 relative">
-            <div className="absolute -inset-10 bg-violet-600/20 rounded-full blur-[80px] pointer-events-none" />
+          <div className="flex-shrink-0 relative flex flex-col items-center">
+            <div className="absolute -inset-10 bg-violet-600/15 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Outer shell */}
+            {/* Outer shell — de frente, sem rotação */}
             <div className="relative"
               style={{
-                width: 280,
-                background: 'linear-gradient(160deg, #2a2a2e 0%, #1a1a1e 60%, #111113 100%)',
+                width: 270,
+                background: 'linear-gradient(170deg, #3a3a3e 0%, #1e1e22 50%, #111113 100%)',
                 borderRadius: 50,
                 padding: '9px',
-                boxShadow: '0 0 0 1px #3a3a3e, 0 50px 100px rgba(0,0,0,0.8), 0 20px 40px rgba(109,40,217,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
-                transform: 'perspective(1000px) rotateY(-6deg) rotateX(2deg)',
+                boxShadow: [
+                  '0 0 0 1px #444448',
+                  '0 2px 0 1px #555558',
+                  '0 60px 80px -10px rgba(0,0,0,0.9)',
+                  '0 30px 50px rgba(109,40,217,0.2)',
+                  'inset 0 1px 0 rgba(255,255,255,0.12)',
+                  'inset 0 -1px 0 rgba(0,0,0,0.5)',
+                ].join(', '),
               }}
             >
               {/* Botões laterais */}
-              <div className="absolute -left-[3px] top-[88px] w-[3px] h-7 rounded-l bg-[#2a2a2e]" />
-              <div className="absolute -left-[3px] top-[128px] w-[3px] h-11 rounded-l bg-[#2a2a2e]" />
-              <div className="absolute -left-[3px] top-[186px] w-[3px] h-11 rounded-l bg-[#2a2a2e]" />
-              <div className="absolute -right-[3px] top-[144px] w-[3px] h-14 rounded-r bg-[#2a2a2e]" />
+              <div className="absolute -left-[3px] top-[85px] w-[3px] h-6 rounded-l" style={{ background: 'linear-gradient(to right, #555, #333)' }} />
+              <div className="absolute -left-[3px] top-[122px] w-[3px] h-10 rounded-l" style={{ background: 'linear-gradient(to right, #555, #333)' }} />
+              <div className="absolute -left-[3px] top-[176px] w-[3px] h-10 rounded-l" style={{ background: 'linear-gradient(to right, #555, #333)' }} />
+              <div className="absolute -right-[3px] top-[138px] w-[3px] h-14 rounded-r" style={{ background: 'linear-gradient(to left, #555, #333)' }} />
 
               {/* Tela */}
               <div style={{ borderRadius: 42, overflow: 'hidden', background: '#000', position: 'relative' }}>
                 {/* Dynamic island */}
-                <div style={{ position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)', width: 100, height: 28, background: '#000', borderRadius: 18, zIndex: 10, boxShadow: '0 0 0 1px rgba(255,255,255,0.06)' }} />
+                <div style={{ position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)', width: 96, height: 26, background: '#000', borderRadius: 16, zIndex: 10, boxShadow: '0 0 0 1px rgba(255,255,255,0.07)' }} />
 
                 {/* Status bar */}
-                <div style={{ height: 48, background: '#fff', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 22px 5px', fontSize: 10, fontWeight: 600, color: '#111', position: 'relative', zIndex: 5 }}>
+                <div style={{ height: 46, background: '#fff', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 20px 5px', fontSize: 10, fontWeight: 600, color: '#111', position: 'relative', zIndex: 5 }}>
                   <span>9:41</span>
                   <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                     <svg width="14" height="10" viewBox="0 0 15 11" fill="none"><rect x="0" y="4" width="3" height="7" rx="1" fill="#111"/><rect x="4" y="2.5" width="3" height="8.5" rx="1" fill="#111"/><rect x="8" y="1" width="3" height="10" rx="1" fill="#111"/><rect x="12" y="0" width="3" height="11" rx="1" fill="#111"/></svg>
@@ -185,27 +191,53 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* iframe do formulário */}
+                {/* iframe */}
                 <iframe
                   src="/formulario/blefaroplastia?demo=true"
-                  style={{ width: 262, height: 500, border: 'none', display: 'block' }}
+                  style={{ width: 252, height: 520, border: 'none', display: 'block' }}
                   title="Demo Capta+"
                   scrolling="no"
                 />
 
                 {/* Home indicator */}
-                <div style={{ height: 26, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 90, height: 4, background: '#111', borderRadius: 4, opacity: 0.18 }} />
+                <div style={{ height: 24, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 88, height: 4, background: '#111', borderRadius: 4, opacity: 0.16 }} />
                 </div>
               </div>
             </div>
 
-            {/* Sombra de profundidade no chão */}
+            {/* Suporte / stand */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 0 }}>
+              {/* Pescoço */}
+              <div style={{
+                width: 28, height: 22,
+                background: 'linear-gradient(to bottom, #2a2a2e, #1a1a1c)',
+                borderRadius: '0 0 4px 4px',
+                boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.05)',
+              }} />
+              {/* Braço horizontal */}
+              <div style={{
+                width: 80, height: 10,
+                background: 'linear-gradient(to bottom, #252528, #1a1a1c)',
+                borderRadius: '0 0 6px 6px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.5)',
+              }} />
+              {/* Base */}
+              <div style={{
+                width: 140, height: 10,
+                marginTop: 2,
+                background: 'linear-gradient(to bottom, #222225, #111113)',
+                borderRadius: 8,
+                boxShadow: '0 4px 16px rgba(0,0,0,0.7), 0 2px 0 rgba(255,255,255,0.03)',
+              }} />
+            </div>
+
+            {/* Sombra no chão */}
             <div style={{
-              position: 'absolute', bottom: -24, left: '50%', transform: 'translateX(-50%)',
-              width: 220, height: 28, borderRadius: '50%',
-              background: 'radial-gradient(ellipse, rgba(109,40,217,0.5) 0%, transparent 70%)',
-              filter: 'blur(12px)',
+              width: 180, height: 14, borderRadius: '50%',
+              background: 'radial-gradient(ellipse, rgba(0,0,0,0.7) 0%, transparent 70%)',
+              filter: 'blur(8px)',
+              marginTop: -2,
             }} />
           </div>
 
@@ -230,29 +262,17 @@ export default function LandingPage() {
       </section>
 
       {/* ── Demo section ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
-          <div className="flex-1 order-2 lg:order-1">
-            <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">Veja ao vivo</p>
-            <h2 className="text-4xl md:text-5xl font-black leading-tight mb-6">
-              Experimente um funil<br />
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">completo agora</span>
-            </h2>
-            <p className="text-gray-400 text-lg mb-8 leading-relaxed">
-              Clique no botão e viva a experiência que seus leads terão. Fotos, perguntas de qualificação, preço e taxa de reserva — tudo em um fluxo fluido no celular.
-            </p>
-            <ul className="space-y-3 mb-10">
-              {['Fotos antes e depois que convencem', 'Qualificação automática de leads', 'Taxa de reserva que aumenta compromisso', 'WhatsApp pronto para fechar'].map(item => (
-                <li key={item} className="flex items-center gap-3 text-gray-300">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gradient-to-r from-violet-600 to-pink-500 flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
+      <section className="py-20 px-6 border-t border-white/5">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">Veja ao vivo</p>
+          <h2 className="text-4xl md:text-5xl font-black leading-tight mb-6">
+            Experimente um funil{' '}
+            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">completo agora</span>
+          </h2>
+          <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
+            Clique e viva a experiência que seus leads terão — fotos, qualificação, preço e taxa de reserva em um fluxo fluido.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href={DEMO_URL}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-violet-500/30 hover:scale-105">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -260,70 +280,9 @@ export default function LandingPage() {
               </svg>
               Abrir formulário demo
             </Link>
-          </div>
-
-          {/* Phone mockup com iframe do formulário */}
-          <div className="order-1 lg:order-2 flex-shrink-0 relative">
-            {/* Glow */}
-            <div className="absolute -inset-8 bg-violet-600/25 rounded-full blur-[80px] pointer-events-none" />
-
-            {/* Outer shell — simula corpo do iPhone */}
-            <div className="relative"
-              style={{
-                width: 300,
-                background: 'linear-gradient(160deg, #2a2a2e 0%, #1a1a1e 60%, #111113 100%)',
-                borderRadius: 52,
-                padding: '10px',
-                boxShadow: '0 0 0 1px #3a3a3e, 0 40px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
-              }}
-            >
-              {/* Botões laterais */}
-              <div className="absolute -left-[3px] top-[90px] w-[3px] h-8 rounded-l bg-[#2a2a2e]" />
-              <div className="absolute -left-[3px] top-[134px] w-[3px] h-12 rounded-l bg-[#2a2a2e]" />
-              <div className="absolute -left-[3px] top-[194px] w-[3px] h-12 rounded-l bg-[#2a2a2e]" />
-              <div className="absolute -right-[3px] top-[150px] w-[3px] h-16 rounded-r bg-[#2a2a2e]" />
-
-              {/* Tela (inner bezel) */}
-              <div style={{ borderRadius: 44, overflow: 'hidden', background: '#000', position: 'relative' }}>
-                {/* Dynamic island */}
-                <div style={{
-                  position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-                  width: 110, height: 32, background: '#000', borderRadius: 20, zIndex: 10,
-                  boxShadow: '0 0 0 1px rgba(255,255,255,0.06)',
-                }} />
-
-                {/* Status bar */}
-                <div style={{ height: 52, background: '#fff', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 24px 6px', fontSize: 11, fontWeight: 600, color: '#111', zIndex: 5, position: 'relative' }}>
-                  <span>9:41</span>
-                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                    <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><rect x="0" y="4" width="3" height="7" rx="1" fill="#111"/><rect x="4" y="2.5" width="3" height="8.5" rx="1" fill="#111"/><rect x="8" y="1" width="3" height="10" rx="1" fill="#111"/><rect x="12" y="0" width="3" height="11" rx="1" fill="#111"/></svg>
-                    <svg width="16" height="11" viewBox="0 0 16 11" fill="none"><path d="M8 2.2C10.5 2.2 12.7 3.3 14.2 5L15.5 3.6C13.6 1.4 10.9 0 8 0C5.1 0 2.4 1.4 0.5 3.6L1.8 5C3.3 3.3 5.5 2.2 8 2.2Z" fill="#111"/><path d="M8 5.5C9.7 5.5 11.2 6.2 12.3 7.4L13.6 6C12.1 4.4 10.2 3.4 8 3.4C5.8 3.4 3.9 4.4 2.4 6L3.7 7.4C4.8 6.2 6.3 5.5 8 5.5Z" fill="#111"/><circle cx="8" cy="10" r="1.5" fill="#111"/></svg>
-                    <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#111" strokeOpacity="0.35"/><rect x="1.5" y="1.5" width="17" height="9" rx="2.5" fill="#111"/><path d="M23 4V8C23.8 7.7 24.5 7 24.5 6C24.5 5 23.8 4.3 23 4Z" fill="#111" fillOpacity="0.4"/></svg>
-                  </div>
-                </div>
-
-                {/* iFrame com o formulário demo */}
-                <iframe
-                  src="/formulario/blefaroplastia?demo=true"
-                  style={{ width: 280, height: 540, border: 'none', display: 'block' }}
-                  title="Demo Capta+"
-                  scrolling="no"
-                />
-
-                {/* Home indicator */}
-                <div style={{ height: 28, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 100, height: 4, background: '#111', borderRadius: 4, opacity: 0.2 }} />
-                </div>
-              </div>
-            </div>
-
-            {/* CTA abaixo do celular */}
-            <div className="mt-6 text-center">
-              <Link href={DEMO_URL}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/30">
-                Abrir em tela cheia →
-              </Link>
-            </div>
+            <Link href={SIGNUP_URL} className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/10 bg-white/5 font-semibold text-lg hover:bg-white/10 transition-all">
+              Criar meu formulário →
+            </Link>
           </div>
         </div>
       </section>
@@ -415,7 +374,7 @@ export default function LandingPage() {
               <p className="text-4xl font-black mb-1">R$197<span className="text-xl font-normal text-gray-400">/mês</span></p>
               <p className="text-gray-500 text-sm mb-6">Cobrado mensalmente</p>
               <ul className="space-y-3 mb-8">
-                {['Formulários ilimitados', 'Leads ilimitados', 'Todos os recursos do Starter', 'Taxa de reserva integrada', 'Pixel do Facebook', 'Múltiplos usuários', 'Suporte prioritário no WhatsApp'].map(item => (
+                {['Formulários ilimitados', 'Leads ilimitados', 'Todos os recursos do Starter', 'Taxa de reserva integrada', 'Pixel da Meta (Facebook/Instagram)', 'Múltiplos usuários', 'Suporte prioritário no WhatsApp'].map(item => (
                   <li key={item} className="flex items-center gap-2 text-sm text-gray-300">
                     <svg className="w-4 h-4 text-pink-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />

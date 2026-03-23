@@ -70,27 +70,28 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2"
             dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingContext, procedureName, regularPrice) }} />
         ) : (
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2">
-            Sabendo que um paciente de{' '}
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight mb-2">
+            Sabendo que a{' '}
             <span className="font-extrabold"
               style={{ color: theme.gradientFrom }}
               dangerouslySetInnerHTML={{ __html: procedureName }}
             />{' '}
-            pagaria em média{' '}
-            <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>.
-          </h1>
-        )}
-        {customTexts?.pricingQuestion ? (
-          <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4"
-            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingQuestion, procedureName, regularPrice) }} />
-        ) : (
-          <p className="text-lg sm:text-xl text-gray-700 leading-relaxed mt-4">
-            E por ser{' '}
+            custa em média{' '}
+            <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>,
+            como{' '}
             <span className="font-extrabold uppercase bg-clip-text text-transparent"
               style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
               paciente modelo
             </span>{' '}
-            ganharia uma condição especial, teria disponibilidade de investir o valor abaixo?
+            você teria condição especial.
+          </h1>
+        )}
+        {customTexts?.pricingQuestion ? (
+          <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-3"
+            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingQuestion, procedureName, regularPrice) }} />
+        ) : (
+          <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-3">
+            Teria disponibilidade para investir o valor abaixo?
           </p>
         )}
       </motion.div>
