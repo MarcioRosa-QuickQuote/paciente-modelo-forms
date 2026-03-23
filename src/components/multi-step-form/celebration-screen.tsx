@@ -44,7 +44,8 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
     }
   }, [launchConfetti]);
 
-  const defaultMessage = `Olá! Tenho interesse em ser paciente modelo para ${procedureName}!`;
+  const plainProcedureName = procedureName.replace(/<[^>]*>/g, '');
+  const defaultMessage = `Olá! Tenho interesse em ser paciente modelo para ${plainProcedureName}!`;
   const rawPhone = whatsappNumber.replace(/\D/g, '');
   const e164Phone = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`;
   const whatsappUrl = `https://wa.me/${e164Phone}?text=${encodeURIComponent(
@@ -187,7 +188,7 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
                   className="flex justify-end"
                 >
                   <div className="bg-[#DCF8C6] rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%] shadow-sm">
-                    <p className="text-gray-800 text-sm">Olá! Tenho interesse em ser paciente modelo para {procedureName}!</p>
+                    <p className="text-gray-800 text-sm">Olá! Tenho interesse em ser paciente modelo para {plainProcedureName}!</p>
                     <p className="text-gray-400 text-xs text-right mt-1">agora ✓✓</p>
                   </div>
                 </motion.div>
@@ -204,10 +205,10 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
                   Experimentar grátis por 3 dias →
                 </Link>
                 <button
-                  onClick={() => setShowDemoModal(false)}
+                  onClick={() => { window.location.href = '/'; }}
                   className="mt-3 text-sm text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  Continuar vendo o demo
+                  Voltar à página do Capta+
                 </button>
               </div>
             </motion.div>
