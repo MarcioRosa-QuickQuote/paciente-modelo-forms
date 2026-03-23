@@ -107,7 +107,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="pt-24 pb-16 px-6 relative overflow-hidden">
+      <section className="pt-24 pb-4 px-6 relative overflow-hidden">
         {/* Glow background */}
         <div className="absolute top-0 right-1/4 w-[700px] h-[500px] bg-violet-600/15 rounded-full blur-[140px] pointer-events-none" />
 
@@ -245,7 +245,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Stats ── */}
-      <section className="py-12 border-y border-white/5">
+      <section className="py-6 border-y border-white/5">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
             { value: '+500', label: 'Formulários criados' },
