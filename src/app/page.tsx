@@ -156,7 +156,7 @@ export default function LandingPage() {
             {/* Outer shell — de frente, sem rotação */}
             <div className="relative"
               style={{
-                width: 270,
+                width: 310,
                 background: 'linear-gradient(170deg, #3a3a3e 0%, #1e1e22 50%, #111113 100%)',
                 borderRadius: 50,
                 padding: '9px',
@@ -194,9 +194,8 @@ export default function LandingPage() {
                 {/* iframe */}
                 <iframe
                   src="/formulario/blefaroplastia?demo=true"
-                  style={{ width: 252, height: 520, border: 'none', display: 'block' }}
+                  style={{ width: 292, height: 560, border: 'none', display: 'block' }}
                   title="Demo Capta+"
-                  scrolling="no"
                 />
 
                 {/* Home indicator */}

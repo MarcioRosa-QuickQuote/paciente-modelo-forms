@@ -36,17 +36,17 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
   const resolvedNoText = noText || 'Não';
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
+    <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 sm:px-6 py-5 sm:py-8">
 
       {/* 1. HEADLINE (topo) */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-center mb-6 w-full max-w-sm"
+        className="text-center mb-3 sm:mb-6 w-full max-w-sm"
       >
         <h1
-          className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight"
+          className="text-xl sm:text-3xl font-bold text-gray-900 leading-tight"
           dangerouslySetInnerHTML={{ __html: headline || `Deseja ser <span style="background: linear-gradient(to right, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span> de ${procedureName}?` }}
         />
       </motion.div>
@@ -57,7 +57,7 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="w-full max-w-sm mb-4"
+          className="w-full max-w-sm mb-2 sm:mb-4"
         >
           {singlePhoto ? (
             /* Single centered photo */

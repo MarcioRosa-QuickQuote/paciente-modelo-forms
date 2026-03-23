@@ -45,16 +45,16 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
   }, [hasInstallment, showOnlyInstallment]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
+    <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 sm:px-6 py-5 sm:py-8">
       {/* Icon */}
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         style={{ background: theme.iconBg }}
-        className="w-20 h-20 rounded-full flex items-center justify-center mb-8 shadow-lg"
+        className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-4 sm:mb-8 shadow-lg"
       >
-        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-7 h-7 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </motion.div>
@@ -64,7 +64,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-center mb-6"
+        className="text-center mb-3 sm:mb-6"
       >
         {customTexts?.pricingContext ? (
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2"
@@ -102,12 +102,12 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.4 }}
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-        className="rounded-3xl px-8 pt-6 pb-6 mb-10 text-center shadow-xl w-full max-w-sm"
+        className="rounded-3xl px-6 pt-4 pb-4 sm:pt-6 sm:pb-6 mb-5 sm:mb-10 text-center shadow-xl w-full max-w-sm"
       >
         <p className="text-white/80 text-sm font-medium mb-3" dangerouslySetInnerHTML={{ __html: customTexts?.pricingLabel || 'Valor especial paciente modelo' }} />
 
         {/* Área de preço com altura fixa para não pular */}
-        <div className="h-20 flex flex-col items-center justify-center">
+        <div className="h-16 sm:h-20 flex flex-col items-center justify-center">
           <AnimatePresence mode="wait">
             {hasInstallment && (showOnlyInstallment || showInstallment) ? (
               <motion.div key="installment"
