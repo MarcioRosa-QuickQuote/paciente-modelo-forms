@@ -102,12 +102,12 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.4 }}
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-        className="rounded-3xl px-6 pt-4 pb-4 sm:pt-6 sm:pb-6 mb-5 sm:mb-10 text-center shadow-xl w-full max-w-sm"
+        className="rounded-3xl px-5 py-3 sm:py-5 mb-4 sm:mb-8 text-center shadow-xl w-full max-w-sm"
       >
-        <p className="text-white/80 text-sm font-medium mb-3" dangerouslySetInnerHTML={{ __html: customTexts?.pricingLabel || 'Valor especial paciente modelo' }} />
+        <p className="text-white/80 text-xs sm:text-sm font-medium mb-2" dangerouslySetInnerHTML={{ __html: customTexts?.pricingLabel || 'Valor especial paciente modelo' }} />
 
-        {/* Área de preço com altura fixa para não pular */}
-        <div className="h-16 sm:h-20 flex flex-col items-center justify-center">
+        {/* Área de preço */}
+        <div className="flex flex-col items-center justify-center min-h-[56px] sm:min-h-[72px]">
           <AnimatePresence mode="wait">
             {hasInstallment && (showOnlyInstallment || showInstallment) ? (
               <motion.div key="installment"
@@ -117,10 +117,10 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
                 transition={{ duration: 0.35 }}
                 className="text-center"
               >
-                <p className="text-white text-4xl font-extrabold leading-none">
+                <p className="text-white text-2xl sm:text-4xl font-extrabold leading-none">
                   {installmentCount}x de {formatCurrency(installmentAmount)}
                 </p>
-                <p className="text-white/70 text-sm mt-1">no cartão</p>
+                <p className="text-white/70 text-xs sm:text-sm mt-1">no cartão</p>
               </motion.div>
             ) : (
               <motion.div key="cash"
@@ -130,17 +130,17 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
                 transition={{ duration: 0.35 }}
                 className="text-center"
               >
-                <p className="text-white text-4xl font-extrabold leading-none">
+                <p className="text-white text-2xl sm:text-4xl font-extrabold leading-none">
                   {formatCurrency(modelPrice)}
                 </p>
-                {hasInstallment && <p className="text-white/70 text-sm mt-1">à vista</p>}
+                {hasInstallment && <p className="text-white/70 text-xs sm:text-sm mt-1">à vista</p>}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-4 py-1 mt-2">
-          <p className="text-white text-sm font-bold">{discount}% de desconto</p>
+        <div className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-0.5 mt-2">
+          <p className="text-white text-xs sm:text-sm font-bold">{discount}% de desconto</p>
         </div>
       </motion.div>
 

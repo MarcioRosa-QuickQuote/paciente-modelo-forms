@@ -119,7 +119,7 @@ export default function LandingPage() {
               Funis interativos para qualquer nicho
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-5">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight mb-5">
               Seus leads chegam{' '}
               <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
                 prontos para fechar
