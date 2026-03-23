@@ -265,7 +265,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
       <div className="space-y-4">
 
         {/* ── Step tabs card ── */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100dvh - 155px)' }}>
 
           {/* Navigation bar + dots (from FormStepBuilder) */}
           <FormStepBuilder
@@ -282,7 +282,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
           {/* Step content area */}
           {currentStep && (
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
 
               {/* ── FOTO ── */}
               {currentStep.type === 'foto' && (
@@ -778,7 +778,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
           {/* ── Aba Celebração ── */}
           {currentStepIndex === steps.length && (
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
               <div>
                 <label className={labelClass}>Título <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
                 <RichTextField
