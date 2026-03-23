@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ demo?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -29,9 +30,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function FormularioPage({ params }: PageProps) {
+export default async function FormularioPage({ params, searchParams }: PageProps) {
   await initializeDb();
   const { slug } = await params;
+  const { demo } = await searchParams;
   const row = await getFormBySlug(slug);
 
   if (!row) {
@@ -51,5 +53,5 @@ export default async function FormularioPage({ params }: PageProps) {
     capiToken = settings?.capi_token || '';
   }
 
-  return <MultiStepForm formData={formData} clinicLogo={clinicLogo} pixelId={pixelId} capiToken={capiToken} />;
+  return <MultiStepForm formData={formData} clinicLogo={clinicLogo} pixelId={pixelId} capiToken={capiToken} demo={demo === 'true'} />;
 }

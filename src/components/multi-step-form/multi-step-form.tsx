@@ -43,9 +43,10 @@ interface Props {
   clinicLogo?: string;
   pixelId?: string;
   capiToken?: string;
+  demo?: boolean;
 }
 
-export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken }: Props) {
+export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken, demo }: Props) {
   const steps = formData.steps?.length > 0 ? formData.steps : DEFAULT_STEPS;
   const [state, setState] = useState<ScreenState>({ type: 'step', index: 0 });
   const theme = getTheme(formData.theme);
@@ -281,6 +282,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
                 theme={theme}
                 onTrackEvent={trackEvent}
                 customTexts={formData.customTexts}
+                demo={demo}
               />
             )}
           </motion.div>
