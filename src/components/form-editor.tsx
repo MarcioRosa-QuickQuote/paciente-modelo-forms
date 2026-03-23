@@ -116,6 +116,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     afterImage: initialData?.afterImage || '',
     photos: buildInitialPhotos(),
     singlePhoto: initialData?.singlePhoto ?? false,
+    showOnlyInstallment: initialData?.showOnlyInstallment ?? false,
     headline: initialData?.headline || templateData?.headline || '',
     supportText: initialData?.supportText || templateData?.supportText || '',
     whatsappMessage: initialData?.whatsappMessage || '',
@@ -583,6 +584,20 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                       </div>
                     </div>
                   </div>
+
+                  {/* Exibir somente parcelado */}
+                  <label className="flex items-center justify-between gap-3 py-2 cursor-pointer select-none">
+                    <span className="text-sm font-medium text-gray-700">Exibir somente valor parcelado</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={form.showOnlyInstallment}
+                      onClick={() => updateField('showOnlyInstallment', !form.showOnlyInstallment)}
+                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${form.showOnlyInstallment ? 'bg-[#6B1C3A]' : 'bg-gray-300'}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.showOnlyInstallment ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  </label>
 
                   {/* Parcelamento */}
                   <div>

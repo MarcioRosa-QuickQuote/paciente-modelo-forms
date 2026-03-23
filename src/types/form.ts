@@ -59,6 +59,7 @@ export interface FormData {
   afterImage: string;
   photos: PhotoPair[];
   singlePhoto: boolean;
+  showOnlyInstallment: boolean;
   headline: string;
   supportText: string;
   isActive: boolean;
@@ -90,6 +91,7 @@ export interface FormInput {
   afterImage: string;
   photos: PhotoPair[];
   singlePhoto: boolean;
+  showOnlyInstallment: boolean;
   headline: string;
   supportText: string;
   whatsappMessage: string;

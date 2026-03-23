@@ -13,6 +13,7 @@ interface Props {
   modelPrice: number;
   installmentCount: number;
   installmentAmount: number;
+  showOnlyInstallment?: boolean;
   onYes: () => void;
   onNo: () => void;
   theme: Theme;
@@ -27,7 +28,7 @@ function resolveTokens(text: string, procedureName: string, regularPrice: number
     .replace(/\{preco\}/g, formatCurrency(regularPrice));
 }
 
-export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
+export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, showOnlyInstallment, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
   const discount = Math.round(((regularPrice - modelPrice) / regularPrice) * 100);
   const hasInstallment = installmentCount > 0 && installmentAmount > 0;
 
@@ -35,13 +36,13 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
   const [showInstallment, setShowInstallment] = useState(hasInstallment);
 
   useEffect(() => {
-    if (!hasInstallment) return;
+    if (!hasInstallment || showOnlyInstallment) return;
     setShowInstallment(true);
     const timer = setInterval(() => {
       setShowInstallment(prev => !prev);
     }, 2500);
     return () => clearInterval(timer);
-  }, [hasInstallment]);
+  }, [hasInstallment, showOnlyInstallment]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
@@ -107,7 +108,7 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         {/* Área de preço com altura fixa para não pular */}
         <div className="h-20 flex flex-col items-center justify-center">
           <AnimatePresence mode="wait">
-            {hasInstallment && showInstallment ? (
+            {hasInstallment && (showOnlyInstallment || showInstallment) ? (
               <motion.div key="installment"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}

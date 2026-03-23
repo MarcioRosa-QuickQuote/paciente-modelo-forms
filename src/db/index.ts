@@ -96,6 +96,7 @@ export interface FormRow {
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
   single_photo: boolean;
+  show_only_installment: boolean;
   user_id: string;
   steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
   custom_texts: Record<string, string>;
@@ -129,6 +130,7 @@ interface CreateFormInput {
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
   single_photo: boolean;
+  show_only_installment: boolean;
   user_id: string;
   steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
   custom_texts: Record<string, string>;
@@ -326,6 +328,7 @@ export function rowToFormData(row: FormRow) {
     formFields: row.form_fields || defaultFields,
     theme: row.theme || 'purple',
     singlePhoto: row.single_photo ?? false,
+    showOnlyInstallment: row.show_only_installment ?? false,
     userId: row.user_id || '',
     steps: Array.isArray(row.steps) ? (row.steps as { id: string; type: 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta'; question?: string; yesText?: string; noText?: string }[]) : [],
     customTexts: (row.custom_texts as Record<string, string>) || {},

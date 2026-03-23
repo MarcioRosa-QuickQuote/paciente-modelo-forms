@@ -171,6 +171,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             modelPrice={formData.modelPrice}
             installmentCount={formData.installmentCount}
             installmentAmount={formData.installmentAmount}
+            showOnlyInstallment={formData.showOnlyInstallment}
             onYes={handleYes}
             onNo={handleNo}
             theme={theme}

@@ -27,6 +27,7 @@ export const formInputSchema = z.object({
   }).default({ name: true, whatsapp: true, email: true }),
   theme: z.string().default('purple'),
   singlePhoto: z.boolean().default(false),
+  showOnlyInstallment: z.boolean().default(false),
   customTexts: z.object({
     availabilityQuestion: z.string().optional(),
     durationNote: z.string().optional(),
