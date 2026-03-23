@@ -132,7 +132,7 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                       <p className="text-sm text-gray-500">
                         <span className="text-gray-400">Procedimento:</span>{' '}
-                        <span className="font-semibold text-gray-700">{form.procedureName}</span>
+                        <span className="font-semibold text-gray-700">{form.procedureName?.replace(/<[^>]*>/g, '')}</span>
                       </p>
                       <p className="text-sm text-gray-500">
                         <span className="text-gray-400">Profissional:</span>{' '}

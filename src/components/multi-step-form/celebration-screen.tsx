@@ -110,15 +110,16 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
 
       <motion.a
         href={whatsappUrl}
-        target="_blank"
         rel="noopener noreferrer"
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
           fetch('/api/responses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ formId, step: 5, answer: 'sim' }),
           }).catch(() => {});
           onTrackEvent?.('Contact');
+          window.open(whatsappUrl, '_blank');
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
