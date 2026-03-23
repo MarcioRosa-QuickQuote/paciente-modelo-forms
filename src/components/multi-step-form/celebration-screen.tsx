@@ -42,7 +42,9 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
   }, [launchConfetti]);
 
   const defaultMessage = `Olá! Tenho interesse em ser paciente modelo para ${procedureName}!`;
-  const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(
+  const rawPhone = whatsappNumber.replace(/\D/g, '');
+  const e164Phone = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`;
+  const whatsappUrl = `https://wa.me/${e164Phone}?text=${encodeURIComponent(
     whatsappMessage || defaultMessage
   )}`;
 
