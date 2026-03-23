@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import TransitionLink from '@/components/transition-link';
 
 const DEMO_URL = '/formulario/blefaroplastia?demo=true';
 const SIGNUP_URL = '/admin/cadastro';
@@ -76,13 +77,13 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/admin/login" className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2">
+            <TransitionLink href="/admin/login" className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2">
               Entrar
-            </Link>
-            <Link href={SIGNUP_URL}
+            </TransitionLink>
+            <TransitionLink href={SIGNUP_URL}
               className="text-sm font-semibold px-5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 transition-opacity">
               Começar grátis
-            </Link>
+            </TransitionLink>
           </div>
 
           <button className="md:hidden p-2 text-gray-400" onClick={() => setMenuOpen(!menuOpen)}>
@@ -97,10 +98,10 @@ export default function LandingPage() {
             <a href="#funcionalidades" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">Funcionalidades</a>
             <a href="#nichos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">Nichos</a>
             <a href="#planos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">Planos</a>
-            <Link href="/admin/login" className="text-gray-400 hover:text-white">Entrar</Link>
-            <Link href={SIGNUP_URL} className="font-semibold text-center py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500">
+            <TransitionLink href="/admin/login" className="text-gray-400 hover:text-white">Entrar</TransitionLink>
+            <TransitionLink href={SIGNUP_URL} className="font-semibold text-center py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500">
               Começar grátis
-            </Link>
+            </TransitionLink>
           </div>
         )}
       </nav>
@@ -140,10 +141,10 @@ export default function LandingPage() {
                 </svg>
                 Ver demonstração ao vivo
               </Link>
-              <Link href={SIGNUP_URL}
+              <TransitionLink href={SIGNUP_URL}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl border border-white/10 bg-white/5 font-semibold text-base hover:bg-white/10 transition-all">
                 Começar grátis — 7 dias
-              </Link>
+              </TransitionLink>
             </div>
 
             <p className="mt-3 text-sm text-gray-500 text-center lg:text-left">Sem cartão de crédito · Cancele quando quiser</p>
@@ -358,10 +359,10 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href={SIGNUP_URL}
+              <TransitionLink href={SIGNUP_URL}
                 className="block text-center py-3 rounded-xl border border-violet-500 text-violet-400 font-semibold hover:bg-violet-500/10 transition-colors">
                 Começar grátis
-              </Link>
+              </TransitionLink>
             </div>
 
             {/* Pro */}
@@ -382,10 +383,10 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href={SIGNUP_URL}
+              <TransitionLink href={SIGNUP_URL}
                 className="block text-center py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 font-bold hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/30">
                 Começar grátis
-              </Link>
+              </TransitionLink>
             </div>
           </div>
         </div>
@@ -404,10 +405,10 @@ export default function LandingPage() {
               Crie seu primeiro funil em menos de 3 minutos. Grátis por 7 dias.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href={SIGNUP_URL}
+              <TransitionLink href={SIGNUP_URL}
                 className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 font-bold text-xl hover:opacity-90 transition-all shadow-xl shadow-violet-500/30 hover:scale-105">
                 Experimentar grátis por 7 dias
-              </Link>
+              </TransitionLink>
               <Link href={DEMO_URL}
                 className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-white/10 font-semibold hover:bg-white/5 transition-all">
                 Ver demo primeiro
@@ -425,8 +426,8 @@ export default function LandingPage() {
             <span>© {new Date().getFullYear()} Capta+. Todos os direitos reservados.</span>
           </div>
           <div className="flex items-center gap-6">
-            <Link href="/admin/login" className="hover:text-gray-300 transition-colors">Entrar</Link>
-            <Link href={SIGNUP_URL} className="hover:text-gray-300 transition-colors">Cadastrar</Link>
+            <TransitionLink href="/admin/login" className="hover:text-gray-300 transition-colors">Entrar</TransitionLink>
+            <TransitionLink href={SIGNUP_URL} className="hover:text-gray-300 transition-colors">Cadastrar</TransitionLink>
           </div>
         </div>
       </footer>
