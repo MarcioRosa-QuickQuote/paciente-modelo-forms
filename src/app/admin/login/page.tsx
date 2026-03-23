@@ -254,7 +254,13 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="text-center mt-5">
+          <div className="text-center mt-5 flex flex-col items-center gap-3">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors font-medium">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Voltar para Página Capta+
+            </Link>
             <Link href="/admin/ativar" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">
               Ativar conta de owner
             </Link>
