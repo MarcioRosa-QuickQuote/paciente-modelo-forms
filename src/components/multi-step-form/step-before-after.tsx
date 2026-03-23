@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
 import { PhotoPair } from '@/types/form';
@@ -64,8 +63,8 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
             /* Single centered photo */
             currentPhoto.before && (
               <div className="w-3/4 mx-auto">
-                <Image src={currentPhoto.before} alt="Foto" width={600} height={800}
-                  className="w-full h-auto rounded-2xl shadow-lg" style={{ objectFit: 'contain' }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={currentPhoto.before} alt="Foto" className="w-full h-auto rounded-2xl shadow-lg" />
               </div>
             )
           ) : (
@@ -80,8 +79,8 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
               >
                 {currentPhoto.before && (
                   <div className="relative">
-                    <Image src={currentPhoto.before} alt="Antes" width={600} height={800}
-                      className="w-full h-auto rounded-2xl shadow-lg" style={{ objectFit: 'contain' }} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={currentPhoto.before} alt="Antes" className="w-full h-auto rounded-2xl shadow-lg" />
                     <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
                       ANTES
                     </span>
@@ -89,8 +88,8 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
                 )}
                 {currentPhoto.after && (
                   <div className="relative">
-                    <Image src={currentPhoto.after} alt="Depois" width={600} height={800}
-                      className="w-full h-auto rounded-2xl shadow-lg" style={{ objectFit: 'contain' }} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={currentPhoto.after} alt="Depois" className="w-full h-auto rounded-2xl shadow-lg" />
                     <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs font-bold px-3 py-1 rounded-full"
                       style={{ background: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
                       DEPOIS
