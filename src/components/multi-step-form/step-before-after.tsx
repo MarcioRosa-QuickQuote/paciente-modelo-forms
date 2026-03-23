@@ -33,7 +33,6 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
   }, [validPhotos.length]);
 
   const currentPhoto = validPhotos[photoIndex] || { before: '', after: '' };
-  const headlineText = headline || `Deseja ser paciente modelo de ${procedureName}?`;
   const resolvedYesText = yesText || (headline ? 'Quero corrigir!' : 'Sim, quero!');
   const resolvedNoText = noText || 'Não';
 
@@ -64,10 +63,9 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
           {singlePhoto ? (
             /* Single centered photo */
             currentPhoto.before && (
-              <div className="relative w-3/4 mx-auto">
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
-                  <Image src={currentPhoto.before} alt="Foto" fill className="object-cover" />
-                </div>
+              <div className="w-3/4 mx-auto">
+                <Image src={currentPhoto.before} alt="Foto" width={600} height={800}
+                  className="w-full h-auto rounded-2xl shadow-lg" style={{ objectFit: 'contain' }} />
               </div>
             )
           ) : (
@@ -82,9 +80,8 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
               >
                 {currentPhoto.before && (
                   <div className="relative">
-                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
-                      <Image src={currentPhoto.before} alt="Antes" fill className="object-cover" />
-                    </div>
+                    <Image src={currentPhoto.before} alt="Antes" width={600} height={800}
+                      className="w-full h-auto rounded-2xl shadow-lg" style={{ objectFit: 'contain' }} />
                     <span className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
                       ANTES
                     </span>
@@ -92,9 +89,8 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
                 )}
                 {currentPhoto.after && (
                   <div className="relative">
-                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
-                      <Image src={currentPhoto.after} alt="Depois" fill className="object-cover" />
-                    </div>
+                    <Image src={currentPhoto.after} alt="Depois" width={600} height={800}
+                      className="w-full h-auto rounded-2xl shadow-lg" style={{ objectFit: 'contain' }} />
                     <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white text-xs font-bold px-3 py-1 rounded-full"
                       style={{ background: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
                       DEPOIS
