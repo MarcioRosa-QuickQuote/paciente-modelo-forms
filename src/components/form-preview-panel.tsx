@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { FormInput, FormStep, PhotoPair } from '@/types/form';
 import { getTheme, Theme } from '@/lib/themes';
 import { formatCurrency } from '@/lib/utils';
@@ -57,8 +56,9 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
       {form.singlePhoto ? (
         /* Single centered photo */
         validPhotos.length > 0 && photo.before ? (
-          <div className="relative aspect-[3/4] rounded-xl overflow-hidden w-3/4 mx-auto">
-            <Image src={photo.before} alt="Foto" fill className="object-cover" />
+          <div className="w-3/4 mx-auto">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photo.before} alt="Foto" className="w-full h-auto rounded-xl shadow" />
           </div>
         ) : (
           <div className="aspect-[3/4] bg-gray-100 rounded-xl flex items-center justify-center w-3/4 mx-auto">
@@ -69,8 +69,9 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
         <div className={`grid grid-cols-2 w-full ${desktop ? 'gap-4' : 'gap-2'}`}>
           {(['before', 'after'] as const).map(type => (
             photo[type] ? (
-              <div key={type} className="relative aspect-[3/4] rounded-xl overflow-hidden">
-                <Image src={photo[type]} alt={type} fill className="object-cover" />
+              <div key={type} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo[type]} alt={type} className="w-full h-auto rounded-xl shadow" />
                 <span
                   className="absolute bottom-1 left-1/2 -translate-x-1/2 text-white font-bold px-2 py-0.5 rounded-full"
                   style={{
