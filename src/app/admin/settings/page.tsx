@@ -158,35 +158,6 @@ export default function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-700">Token da API de Conversões (CAPI)</label>
                 <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Server-side</span>
               </div>
-              <p className="text-xs text-gray-400 mb-2">
-                Envia o evento <code className="bg-gray-100 px-1 py-0.5 rounded">Lead</code> direto do servidor — não pode ser bloqueado por ad blockers nem pelo iOS.
-                Complementa o Pixel e melhora a qualidade das conversões.
-                Encontre em Gerenciador de Eventos → Configurações → API de Conversões → Gerar Token de Acesso.
-              </p>
-
-              {/* Visual de qualidade de rastreamento */}
-              <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-xl">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-500">Sem CAPI (só Pixel)</span>
-                    <span className="text-xs font-semibold text-orange-600">~60% dos eventos</span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full w-[60%] bg-orange-400 rounded-full" />
-                  </div>
-                </div>
-                <span className="text-gray-300">→</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-500">Com Pixel + CAPI</span>
-                    <span className="text-xs font-semibold text-green-600">~95% dos eventos</span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full w-[95%] bg-green-500 rounded-full" />
-                  </div>
-                </div>
-              </div>
-
               <div className="relative">
                 <input
                   type={showToken ? 'text' : 'password'}
