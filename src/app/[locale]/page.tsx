@@ -209,26 +209,18 @@ export default function LandingPage() {
               >
                 Teste aqui!
               </motion.span>
-              {/* Seta curvada SVG */}
-              <motion.svg
-                width="72" height="52" viewBox="0 0 72 52" fill="none"
-              >
-                <path
-                  d="M4 4 C 20 2, 50 6, 66 42"
-                  stroke="url(#arrowGrad)" strokeWidth="2.5" strokeLinecap="round"
-                  fill="none" strokeDasharray="4 3"
-                />
-                {/* Ponta da seta */}
-                <path
-                  d="M58 36 L66 43 L56 46"
-                  stroke="url(#arrowGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                  fill="none"
-                />
+              {/* Seta curvada neon */}
+              <motion.svg width="72" height="52" viewBox="0 0 72 52" fill="none">
+                {/* Glow layer */}
+                <path d="M4 4 C 20 2, 50 6, 66 42" stroke="#e879f9" strokeWidth="6" strokeLinecap="round" fill="none" opacity="0.3" filter="url(#neonBlur)" />
+                <path d="M58 36 L66 43 L56 46" stroke="#e879f9" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.3" filter="url(#neonBlur)" />
+                {/* Main line */}
+                <path d="M4 4 C 20 2, 50 6, 66 42" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                <path d="M58 36 L66 43 L56 46" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                 <defs>
-                  <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#a78bfa" />
-                    <stop offset="100%" stopColor="#f472b6" />
-                  </linearGradient>
+                  <filter id="neonBlur" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                  </filter>
                 </defs>
               </motion.svg>
             </motion.div>
