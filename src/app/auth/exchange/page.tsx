@@ -13,8 +13,12 @@ function Exchange() {
     if (!code) { router.replace('/admin/login'); return; }
 
     supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) router.replace('/admin/login');
-      else router.replace('/admin');
+      if (error) {
+        console.error('[auth/exchange] error:', error.message);
+        router.replace(`/admin/login?auth_error=${encodeURIComponent(error.message)}`);
+      } else {
+        router.replace('/admin');
+      }
     });
   }, [router, searchParams]);
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-client';
@@ -17,15 +17,16 @@ const GoogleIcon = () => (
   </svg>
 );
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => searchParams.get('auth_error') || '');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [logoReady, setLogoReady] = useState(false);
   const [typedText, setTypedText] = useState('');
@@ -186,11 +187,6 @@ export default function LoginPage() {
             </div>
 
             <div className="p-8">
-              {tab === 'signup' && (
-                <p className="text-center text-sm text-emerald-600 font-medium bg-emerald-50 rounded-xl py-2 px-3 mb-5">
-                  3 dias grátis — sem precisar de cartão
-                </p>
-              )}
 
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm text-center">
@@ -276,5 +272,13 @@ export default function LoginPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageInner />
+    </Suspense>
   );
 }
