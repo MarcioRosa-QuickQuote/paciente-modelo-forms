@@ -74,7 +74,7 @@ function SubscriptionModal({ user, onClose, onSubscribe, onPortal }: {
               </div>
             </div>
             <div className="h-1.5 bg-amber-200 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${Math.max(5, (daysLeft / 3) * 100)}%` }} />
+              <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${Math.max(5, (daysLeft / 7) * 100)}%` }} />
             </div>
           </div>
         )}
@@ -238,7 +238,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const trialEndsAt = user.user_metadata?.trial_ends_at as number | undefined;
         const now = Date.now();
         if (!trialEndsAt) {
-          const trialEnd = now + 3 * 24 * 60 * 60 * 1000;
+          const trialEnd = now + 7 * 24 * 60 * 60 * 1000;
           supabase.auth.updateUser({ data: { trial_ends_at: trialEnd } });
         } else if (trialEndsAt < now) {
           router.push('/admin/subscribe?expired=true');
