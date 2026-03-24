@@ -160,7 +160,7 @@ export default function LoginPage() {
           {/* Brand header */}
           <div className="mb-5 pl-1 logo-slide" onAnimationEnd={() => setLogoReady(true)}>
             <div className="flex items-center gap-3">
-              <Image src="/capta.png" alt="Logo" width={48} height={48} className="object-contain rounded-xl flex-shrink-0" />
+              <Image src="/capta.png" alt="Logo" width={72} height={72} className="object-contain rounded-xl flex-shrink-0" />
               <p className={`text-2xl font-bold leading-tight ${logoReady && typedText.length < TYPEWRITER_TEXT.length ? 'typewriter-cursor' : ''}`}
                 style={{ background: 'linear-gradient(135deg, #6B1C3A 0%, #9B2D5E 60%, #C44B82 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 {typedText || '\u00A0'}
