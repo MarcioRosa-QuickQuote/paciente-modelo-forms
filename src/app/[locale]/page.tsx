@@ -336,7 +336,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features ── */}
-      <section id="funcionalidades" className="py-24 px-6 scroll-mt-4">
+      <section id="funcionalidades" className="py-24 px-6 [scroll-margin-top:-80px]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('features.eyebrow')}</p>
