@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -73,6 +73,12 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mockupClicked, setMockupClicked] = useState(false);
   const locale = useLocale();
+
+  useEffect(() => {
+    const handleBlur = () => setMockupClicked(true);
+    window.addEventListener('blur', handleBlur);
+    return () => window.removeEventListener('blur', handleBlur);
+  }, []);
 
   const features = t.raw('features.items') as Array<{ icon: string; title: string; desc: string }>;
   const niches = t.raw('niches.items') as Array<{ emoji: string; label: string }>;
@@ -273,7 +279,6 @@ export default function LandingPage() {
                   src="/formulario/blefaroplastia?demo=true"
                   style={{ width: 292, height: 560, border: 'none', display: 'block' }}
                   title="Demo Capta+"
-                  onFocus={() => setMockupClicked(true)}
                 />
 
                 {/* Home indicator */}
