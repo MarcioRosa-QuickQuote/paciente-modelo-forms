@@ -137,7 +137,7 @@ export default function LandingPage() {
         <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-16">
 
           {/* Text with staggered animation */}
-          <div className="flex-1 text-center lg:text-left">
+          <div className="flex-1 text-center lg:text-left lg:pt-10">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -193,7 +193,7 @@ export default function LandingPage() {
           </div>
 
           {/* Phone mockup */}
-          <div className="flex-shrink-0 relative flex flex-col items-center mt-10 lg:mt-16">
+          <div className="flex-shrink-0 relative flex flex-col items-center mt-10 lg:mt-8">
             <div className="absolute -inset-10 bg-violet-600/15 rounded-full blur-[100px] pointer-events-none" />
 
             {/* "Teste aqui" label com seta curvada */}
