@@ -276,7 +276,7 @@ export default function LandingPage() {
             className="text-gray-400 text-lg leading-relaxed mb-8"
           >
             O problema é o funil.<br /><br />
-            <span className="text-white font-light text-xl tracking-wide" style={{ fontStyle: 'italic' }}>Criamos um sistema que atrai, qualifica<br />e entrega pacientes prontos para o procedimento.</span>
+            <span className="text-white font-light text-xl tracking-wide" style={{ fontStyle: 'italic' }}>Criamos um sistema que atrai, qualifica<br />e entrega pacientes prontos para o agendamento e procedimento.</span>
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -303,7 +303,7 @@ export default function LandingPage() {
             transition={{ delay: 0.4 }}
             className="mt-6 text-violet-300 font-semibold text-lg"
           >
-            ↓ A Capta+ resolve tudo isso ↓
+            O Capta+ resolve tudo isso!
           </motion.div>
         </div>
       </section>
