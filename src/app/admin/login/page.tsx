@@ -261,6 +261,11 @@ export default function LoginPage() {
               </svg>
               Voltar para Página Capta+
             </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/privacidade" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Privacidade</Link>
+              <span className="text-gray-200">·</span>
+              <Link href="/termos" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Termos</Link>
+            </div>
             <Link href="/admin/ativar" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">
               Ativar conta de owner
             </Link>

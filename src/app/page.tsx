@@ -426,6 +426,8 @@ export default function LandingPage() {
             <span>© {new Date().getFullYear()} Capta+. Todos os direitos reservados.</span>
           </div>
           <div className="flex items-center gap-6">
+            <Link href="/privacidade" className="hover:text-gray-300 transition-colors">Privacidade</Link>
+            <Link href="/termos" className="hover:text-gray-300 transition-colors">Termos</Link>
             <TransitionLink href="/admin/login" className="hover:text-gray-300 transition-colors">Entrar</TransitionLink>
             <TransitionLink href={SIGNUP_URL} className="hover:text-gray-300 transition-colors">Cadastrar</TransitionLink>
           </div>
