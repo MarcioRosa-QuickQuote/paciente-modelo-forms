@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { supabase } from '@/lib/supabase-client';
 
 function SuccessContent() {
   const router = useRouter();
@@ -22,16 +23,20 @@ function SuccessContent() {
       body: JSON.stringify({ sessionId }),
     })
       .then(res => res.json())
-      .then(data => {
+      .then(async (data) => {
         if (data.ok) {
+          // Force JWT refresh so layout reads updated subscription_status
+          await supabase.auth.refreshSession();
           setStatus('done');
           setTimeout(() => router.push('/admin'), 2000);
         } else {
+          await supabase.auth.refreshSession();
           setStatus('error');
           setTimeout(() => router.push('/admin'), 3000);
         }
       })
-      .catch(() => {
+      .catch(async () => {
+        await supabase.auth.refreshSession();
         setStatus('error');
         setTimeout(() => router.push('/admin'), 3000);
       });
