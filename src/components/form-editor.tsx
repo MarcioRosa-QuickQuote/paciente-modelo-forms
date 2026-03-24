@@ -1071,6 +1071,12 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                   </div>
                 </div>
 
+                <div className="flex justify-center pt-4 border-t border-gray-100">
+                  <button type="button" onClick={() => setConfigModalOpen(false)}
+                    className="px-8 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer">
+                    Fechar
+                  </button>
+                </div>
 
               </div>
             </div>
