@@ -193,7 +193,7 @@ export default function LandingPage() {
           </div>
 
           {/* Phone mockup */}
-          <div className="flex-shrink-0 relative flex flex-col items-center">
+          <div className="flex-shrink-0 relative flex flex-col items-center mt-10 lg:mt-16">
             <div className="absolute -inset-10 bg-violet-600/15 rounded-full blur-[100px] pointer-events-none" />
 
             {/* "Teste aqui" label com seta curvada */}
