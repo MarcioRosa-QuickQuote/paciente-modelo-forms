@@ -196,18 +196,13 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex-shrink-0 flex flex-col items-center"
           >
-            {/* Glow atrás do player */}
-            <div className="absolute w-72 h-72 bg-violet-500/20 blur-[80px] rounded-full pointer-events-none" />
+            {/* Glow atrás do player — só desktop */}
+            <div className="hidden lg:block absolute w-72 h-72 bg-violet-500/20 blur-[80px] rounded-full pointer-events-none" />
 
             {/* Container do vídeo vertical 9:16 — full-width mobile, fixo desktop */}
             <div
-              className="relative w-full lg:w-[280px] overflow-hidden shadow-2xl shadow-violet-900/50 rounded-3xl"
-              style={{
-                aspectRatio: '9/16',
-                maxHeight: '80vh',
-                border: '1px solid rgba(139,92,246,0.3)',
-                background: '#0d0d14',
-              }}
+              className="relative w-full lg:w-[280px] overflow-hidden rounded-none lg:rounded-3xl lg:border lg:border-violet-500/30 lg:shadow-2xl lg:shadow-violet-900/50"
+              style={{ aspectRatio: '9/16', maxHeight: '80vh' }}
             >
               {/* Troque VIDEO_ID pelo ID do seu vídeo no Pandavideo */}
               <iframe
