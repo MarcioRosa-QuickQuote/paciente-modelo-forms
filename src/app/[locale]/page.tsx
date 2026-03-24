@@ -158,7 +158,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-gray-400 max-w-2xl mb-8 leading-relaxed"
+            className="text-lg text-gray-400 max-w-2xl mb-8 leading-relaxed whitespace-pre-line"
           >
             {t('hero.p')}
           </motion.p>
