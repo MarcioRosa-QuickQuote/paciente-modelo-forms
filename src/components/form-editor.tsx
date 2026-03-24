@@ -64,6 +64,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   const saveRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [stepPickerOpen, setStepPickerOpen] = useState(false);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Parse initial dates from string
@@ -316,13 +317,19 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             onCurrentIndexChange={setCurrentStepIndex}
             hasCelebration
             onConfigOpen={() => setConfigModalOpen(true)}
+            onPickerChange={setStepPickerOpen}
           />
 
           {/* Divider */}
           <div className="border-t border-gray-100" />
 
           {/* Step content area */}
-          {currentStep && (
+          {stepPickerOpen && (
+            <div className="flex-1 flex items-center justify-center text-gray-300 text-sm">
+              Escolha o tipo de etapa acima
+            </div>
+          )}
+          {!stepPickerOpen && currentStep && (
             <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
 
               {/* ── FOTO ── */}
@@ -847,7 +854,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           )}
 
           {/* ── Aba Celebração ── */}
-          {currentStepIndex === steps.length && (
+          {!stepPickerOpen && currentStepIndex === steps.length && (
             <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
               <div>
                 <label className={labelClass}>Título <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>

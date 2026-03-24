@@ -284,10 +284,10 @@ function PreviewLivre({ step, desktop }: { step: FormStep; desktop: boolean }) {
     <div className={`flex flex-col gap-3 ${desktop ? 'px-6 py-8' : 'px-4 py-6'}`}>
       {elements.map(el => {
         if (el.type === 'heading') return (
-          <h2 key={el.id} className={`font-bold text-gray-900 ${desktop ? 'text-xl' : 'text-base'}`}>{el.content || 'Título'}</h2>
+          <h2 key={el.id} className={`font-bold text-gray-900 ${desktop ? 'text-xl' : 'text-base'}`} dangerouslySetInnerHTML={{ __html: el.content || 'Título' }} />
         );
         if (el.type === 'text') return (
-          <p key={el.id} className={`text-gray-600 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`}>{el.content || 'Texto...'}</p>
+          <p key={el.id} className={`text-gray-600 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: el.content || 'Texto...' }} />
         );
         if (el.type === 'image') return (
           el.imageUrl ? (

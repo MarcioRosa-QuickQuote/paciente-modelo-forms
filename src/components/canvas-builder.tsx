@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CanvasElement, CanvasElementType } from '@/types/form';
+import RichTextField from './rich-text-field';
 
 // ── Palette definitions ────────────────────────────────────────────────────────
 
@@ -145,21 +146,20 @@ function CanvasItem({ el, onChange, onRemove, onImageUpload }: {
       {/* Content */}
       <div className="pl-8 pr-8 py-3">
         {el.type === 'heading' && (
-          <input
-            type="text"
+          <RichTextField
             value={el.content || ''}
-            onChange={e => onChange({ ...el, content: e.target.value })}
+            onChange={v => onChange({ ...el, content: v })}
             placeholder="Título..."
-            className="w-full text-lg font-bold text-gray-900 outline-none border-b border-dashed border-gray-200 focus:border-violet-400 bg-transparent pb-1"
+            singleLine
+            className="w-full text-lg font-bold text-gray-900 border-b border-dashed border-gray-200 pb-1 cursor-text"
           />
         )}
         {el.type === 'text' && (
-          <textarea
+          <RichTextField
             value={el.content || ''}
-            onChange={e => onChange({ ...el, content: e.target.value })}
+            onChange={v => onChange({ ...el, content: v })}
             placeholder="Texto..."
-            rows={3}
-            className="w-full text-sm text-gray-700 outline-none border border-dashed border-gray-200 focus:border-violet-400 rounded-lg p-2 resize-none bg-transparent"
+            className="w-full text-sm text-gray-700 border border-dashed border-gray-200 rounded-lg p-2 cursor-text min-h-[60px]"
           />
         )}
         {el.type === 'image' && (

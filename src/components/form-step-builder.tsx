@@ -89,6 +89,7 @@ interface FormStepBuilderProps {
   onCurrentIndexChange: (index: number) => void;
   hasCelebration?: boolean;
   onConfigOpen?: () => void;
+  onPickerChange?: (open: boolean) => void;
 }
 
 // ─── Sortable Dot ─────────────────────────────────────────────────────────────
@@ -203,8 +204,14 @@ export default function FormStepBuilder({
   onCurrentIndexChange,
   hasCelebration = false,
   onConfigOpen,
+  onPickerChange,
 }: FormStepBuilderProps) {
   const [showPicker, setShowPicker] = useState(false);
+
+  function togglePicker(open: boolean) {
+    setShowPicker(open);
+    onPickerChange?.(open);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -283,7 +290,7 @@ export default function FormStepBuilder({
         {/* Add step button */}
         <button
           type="button"
-          onClick={() => setShowPicker(!showPicker)}
+          onClick={() => togglePicker(!showPicker)}
           className="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-lg flex-shrink-0 hover:opacity-90 transition-opacity"
         >
           + Criar Tela
@@ -337,9 +344,9 @@ export default function FormStepBuilder({
           <AddStepPicker
             onAdd={(type) => {
               addStep(type);
-              setShowPicker(false);
+              togglePicker(false);
             }}
-            onClose={() => setShowPicker(false)}
+            onClose={() => togglePicker(false)}
           />
         </div>
       )}
