@@ -123,11 +123,11 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="pt-20 pb-16 px-6 relative overflow-hidden">
+      <section className="pt-12 pb-8 lg:pt-20 lg:pb-16 px-6 relative overflow-hidden">
         {/* Glow background */}
         <div className="absolute top-0 right-1/4 w-[700px] h-[600px] bg-violet-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-6 lg:gap-16">
 
           {/* ── Texto (esquerda) ── */}
           <div className="flex-1 flex flex-col items-start text-left">
@@ -248,7 +248,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pain section ── */}
-      <section className="py-20 px-6 border-t border-white/5">
+      <section className="py-10 lg:py-20 px-6 border-t border-white/5">
         <div className="max-w-3xl mx-auto text-center">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -310,9 +310,9 @@ export default function LandingPage() {
 
 
       {/* ── Features ── */}
-      <section id="funcionalidades" className="py-24 px-6 [scroll-margin-top:-80px]">
+      <section id="funcionalidades" className="py-10 lg:py-24 px-6 [scroll-margin-top:-80px]">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 lg:mb-16">
             <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('features.eyebrow')}</p>
             <h2 className="text-4xl md:text-5xl font-black mb-4">
               {t('features.h2a')}<br />
@@ -340,14 +340,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── Niches ── */}
-      <section id="nichos" className="py-24 px-6 border-t border-white/5 scroll-mt-4">
+      <section id="nichos" className="py-10 lg:py-24 px-6 border-t border-white/5 scroll-mt-4">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('niches.eyebrow')}</p>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
             {t('niches.h2a')}{' '}
             <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">{t('niches.h2b')}</span>
           </h2>
-          <p className="text-gray-400 text-lg mb-12 max-w-2xl mx-auto">
+          <p className="text-gray-400 text-lg mb-6 lg:mb-12 max-w-2xl mx-auto">
             {t('niches.p')}
           </p>
 
@@ -370,13 +370,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="planos" className="py-24 px-6 border-t border-white/5 [scroll-margin-top:-90px]">
+      <section id="planos" className="py-10 lg:py-24 px-6 border-t border-white/5 [scroll-margin-top:-90px]">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('pricing.eyebrow')}</p>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
             {t('pricing.h2')}
           </h2>
-          <p className="text-gray-400 text-lg mb-14">{t('pricing.p')}</p>
+          <p className="text-gray-400 text-lg mb-8 lg:mb-14">{t('pricing.p')}</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Starter */}
@@ -440,7 +440,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA final ── */}
-      <section className="py-24 px-6 border-t border-white/5">
+      <section className="py-10 lg:py-24 px-6 border-t border-white/5">
         <div className="max-w-3xl mx-auto text-center relative">
           <div className="absolute inset-0 bg-violet-600/15 rounded-full blur-[100px] pointer-events-none" />
           <div className="relative">
