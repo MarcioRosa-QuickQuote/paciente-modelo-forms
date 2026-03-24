@@ -107,10 +107,6 @@ export default function LandingPage() {
             <TransitionLink href="/admin/login" className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2">
               {t('nav.login')}
             </TransitionLink>
-            <TransitionLink href={SIGNUP_URL}
-              className="text-sm font-semibold px-5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 hover:opacity-90 transition-opacity">
-              {t('nav.start')}
-            </TransitionLink>
           </div>
 
           <div className="md:hidden flex items-center gap-2">
@@ -129,9 +125,6 @@ export default function LandingPage() {
             <a href="#nichos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.niches')}</a>
             <a href="#planos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.plans')}</a>
             <TransitionLink href="/admin/login" className="text-gray-400 hover:text-white">{t('nav.login')}</TransitionLink>
-            <TransitionLink href={SIGNUP_URL} className="font-semibold text-center py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500">
-              {t('nav.start')}
-            </TransitionLink>
           </div>
         )}
       </nav>
