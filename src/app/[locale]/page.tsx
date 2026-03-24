@@ -281,15 +281,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Stand */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 0 }}>
-              <div style={{ width: 28, height: 22, background: 'linear-gradient(to bottom, #2a2a2e, #1a1a1c)', borderRadius: '0 0 4px 4px', boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.05)' }} />
-              <div style={{ width: 80, height: 10, background: 'linear-gradient(to bottom, #252528, #1a1a1c)', borderRadius: '0 0 6px 6px', boxShadow: '0 4px 8px rgba(0,0,0,0.5)' }} />
-              <div style={{ width: 140, height: 10, marginTop: 2, background: 'linear-gradient(to bottom, #222225, #111113)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.7), 0 2px 0 rgba(255,255,255,0.03)' }} />
-            </div>
-
-            {/* Floor shadow */}
-            <div style={{ width: 180, height: 14, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,0,0,0.7) 0%, transparent 70%)', filter: 'blur(8px)', marginTop: -2 }} />
           </div>
 
         </div>
