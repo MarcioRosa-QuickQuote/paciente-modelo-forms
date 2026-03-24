@@ -71,6 +71,7 @@ function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
 export default function LandingPage() {
   const t = useTranslations();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mockupClicked, setMockupClicked] = useState(false);
   const locale = useLocale();
 
   const features = t.raw('features.items') as Array<{ icon: string; title: string; desc: string }>;
@@ -200,8 +201,8 @@ export default function LandingPage() {
             <motion.div
               className="absolute -left-36 top-8 hidden lg:flex flex-col items-start gap-0 z-20 pointer-events-none select-none"
               initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: [0, 1, 1, 0], x: [-10, 0, 0, 0] }}
-              transition={{ delay: 1.2, duration: 3, times: [0, 0.2, 0.7, 1], repeat: Infinity, repeatDelay: 3 }}
+              animate={mockupClicked ? { opacity: 0 } : { opacity: [0, 1, 1, 0], x: [-10, 0, 0, 0] }}
+              transition={mockupClicked ? { duration: 0.3 } : { delay: 1.2, duration: 3, times: [0, 0.2, 0.7, 1], repeat: Infinity, repeatDelay: 3 }}
             >
               {/* Seta em arco: começa embaixo-esquerda, sobe e aponta para o mockup */}
               <svg width="100" height="60" viewBox="0 0 100 60" fill="none">
@@ -272,6 +273,7 @@ export default function LandingPage() {
                   src="/formulario/blefaroplastia?demo=true"
                   style={{ width: 292, height: 560, border: 'none', display: 'block' }}
                   title="Demo Capta+"
+                  onFocus={() => setMockupClicked(true)}
                 />
 
                 {/* Home indicator */}
