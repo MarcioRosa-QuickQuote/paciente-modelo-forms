@@ -134,7 +134,7 @@ export default function LandingPage() {
         {/* Glow background */}
         <div className="absolute top-0 right-1/4 w-[700px] h-[500px] bg-violet-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-16">
 
           {/* Text with staggered animation */}
           <div className="flex-1 text-center lg:text-left">
