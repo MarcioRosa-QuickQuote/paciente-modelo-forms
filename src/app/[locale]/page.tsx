@@ -198,18 +198,24 @@ export default function LandingPage() {
 
             {/* "Teste aqui" label com seta curvada */}
             <motion.div
-              className="absolute -left-32 top-10 hidden lg:flex flex-col items-center gap-0 z-20 pointer-events-none select-none"
+              className="absolute -left-44 top-16 hidden lg:flex flex-row items-center gap-1 z-20 pointer-events-none select-none"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: [0, 1, 1, 0], x: [-10, 0, 0, 0] }}
               transition={{ delay: 1.2, duration: 3, times: [0, 0.2, 0.7, 1], repeat: Infinity, repeatDelay: 3 }}
             >
-              {/* Seta curvada neon — acima do texto */}
-              <svg width="80" height="56" viewBox="0 0 80 56" fill="none">
+              <span
+                className="text-white font-bold text-base whitespace-nowrap"
+                style={{ fontFamily: 'cursive', textShadow: '0 0 16px rgba(232,121,249,0.8)' }}
+              >
+                Teste aqui!
+              </span>
+
+              {/* Seta curvada neon apontando para a direita (para o mockup) */}
+              <svg width="72" height="40" viewBox="0 0 72 40" fill="none">
                 <defs>
                   <filter id="neonBlur" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3.5" />
+                    <feGaussianBlur stdDeviation="3" />
                   </filter>
-                  {/* Marcador de ponta de seta */}
                   <marker id="neonHead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
                     <path d="M0,0.5 L0,5.5 L5.5,3 z" fill="#e879f9" />
                   </marker>
@@ -218,17 +224,10 @@ export default function LandingPage() {
                   </marker>
                 </defs>
                 {/* Glow */}
-                <path d="M10 8 C 30 4, 60 10, 72 46" stroke="#e879f9" strokeWidth="7" strokeLinecap="round" fill="none" opacity="0.25" filter="url(#neonBlur)" markerEnd="url(#neonHeadGlow)" />
+                <path d="M4 32 C 16 30, 40 4, 68 18" stroke="#e879f9" strokeWidth="7" strokeLinecap="round" fill="none" opacity="0.25" filter="url(#neonBlur)" markerEnd="url(#neonHeadGlow)" />
                 {/* Linha principal */}
-                <path d="M10 8 C 30 4, 60 10, 72 46" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" fill="none" markerEnd="url(#neonHead)" />
+                <path d="M4 32 C 16 30, 40 4, 68 18" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" fill="none" markerEnd="url(#neonHead)" />
               </svg>
-
-              <span
-                className="text-white font-bold text-base -mt-1"
-                style={{ fontFamily: 'cursive', textShadow: '0 0 16px rgba(232,121,249,0.8)' }}
-              >
-                Teste aqui!
-              </span>
             </motion.div>
 
             <div className="relative"
