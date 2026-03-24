@@ -37,6 +37,48 @@ export default function AdminDashboard() {
     }
   }
 
+  async function handleDuplicate(form: FormData) {
+    try {
+      const res = await authFetch('/api/forms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `Cópia de ${form.name}`,
+          procedureName: form.procedureName,
+          availableDays: form.availableDays,
+          regularPrice: form.regularPrice,
+          modelPrice: form.modelPrice,
+          feeAmount: form.feeAmount,
+          installmentCount: form.installmentCount,
+          installmentAmount: form.installmentAmount,
+          procedureDuration: form.procedureDuration,
+          professionalName: form.professionalName,
+          instagramHandle: form.instagramHandle,
+          whatsappNumber: form.whatsappNumber,
+          beforeImage: form.beforeImage,
+          afterImage: form.afterImage,
+          photos: form.photos,
+          singlePhoto: form.singlePhoto,
+          showOnlyInstallment: form.showOnlyInstallment,
+          headline: form.headline,
+          supportText: form.supportText,
+          whatsappMessage: form.whatsappMessage,
+          finalScreenType: form.finalScreenType,
+          formFields: form.formFields,
+          theme: form.theme,
+          pixelId: form.pixelId,
+          capiToken: form.capiToken,
+          steps: form.steps,
+          customTexts: form.customTexts,
+        }),
+      });
+      if (res.ok) await fetchForms();
+      else alert('Erro ao duplicar formulário');
+    } catch {
+      alert('Erro ao duplicar formulário');
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Tem certeza que deseja excluir este formulário?')) return;
 
@@ -184,6 +226,15 @@ export default function AdminDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                     </Link>
+                    <button
+                      onClick={() => handleDuplicate(form)}
+                      className="p-2.5 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
+                      title="Duplicar"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
                     <Link
                       href={`/admin/forms/${form.id}`}
                       className="p-2.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all"
