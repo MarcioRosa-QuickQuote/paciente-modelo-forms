@@ -24,16 +24,14 @@ function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
 
   const switchLocale = (newLocale: string) => {
     setOpen(false);
-    // For 'pt' (default), strip locale prefix; for others, add prefix
-    let newPath: string;
-    // Remove any existing locale prefix
     const withoutLocale = pathname.replace(/^\/(en|es)(\/|$)/, '/');
+    let newPath: string;
     if (newLocale === 'pt') {
       newPath = withoutLocale || '/';
     } else {
       newPath = `/${newLocale}${withoutLocale === '/' ? '' : withoutLocale}`;
     }
-    router.push(newPath);
+    window.location.href = newPath;
   };
 
   const current = LANGUAGES.find(l => l.code === currentLocale) ?? LANGUAGES[0];
@@ -308,45 +306,6 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* ── Video Demo ── */}
-      <section className="py-20 px-6 border-t border-white/5">
-        <motion.div
-          className="max-w-4xl mx-auto text-center"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">Demo</p>
-          <h2 className="text-4xl md:text-5xl font-black leading-tight mb-4">
-            {t('videoDemo.h2')}
-          </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            {t('videoDemo.p')}
-          </p>
-
-          {/* Video placeholder */}
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-white/5 to-white/[0.02] border border-white/10 aspect-video mt-8 flex flex-col items-center justify-center gap-4 group">
-            {/* Glow */}
-            <div className="absolute inset-0 bg-violet-600/5 pointer-events-none" />
-            {/* Play button ring */}
-            <div className="relative z-10 flex flex-col items-center gap-4">
-              <div className="w-20 h-20 rounded-full border-2 border-violet-500/40 bg-violet-600/10 flex items-center justify-center group-hover:border-violet-400/60 group-hover:bg-violet-600/20 transition-all duration-300">
-                <svg className="w-8 h-8 text-violet-400 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-              <p className="text-gray-500 text-sm font-medium tracking-wide">{t('videoDemo.placeholder')}</p>
-            </div>
-            {/* Corner decorations */}
-            <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-violet-500/30 rounded-tl-lg" />
-            <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-violet-500/30 rounded-tr-lg" />
-            <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-violet-500/30 rounded-bl-lg" />
-            <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-violet-500/30 rounded-br-lg" />
-          </div>
-        </motion.div>
       </section>
 
       {/* ── Features ── */}
