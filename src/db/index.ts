@@ -179,12 +179,17 @@ export async function getAllStats() {
   return result;
 }
 
-export async function getFormStats(formId: string) {
+export async function getFormStats(formId: string, from?: string, to?: string) {
   const supabase = getSupabase();
-  const { data, error } = await supabase
+  let query = supabase
     .from('responses')
     .select('step, answer')
     .eq('form_id', formId);
+
+  if (from) query = query.gte('created_at', from);
+  if (to) query = query.lte('created_at', to);
+
+  const { data, error } = await query;
 
   if (error) throw error;
 

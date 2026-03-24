@@ -7,7 +7,9 @@ export async function GET(
 ) {
   try {
     const { formId } = await params;
-    const stats = await getFormStats(formId);
+    const from = request.nextUrl.searchParams.get('from') ?? undefined;
+    const to = request.nextUrl.searchParams.get('to') ?? undefined;
+    const stats = await getFormStats(formId, from, to);
     return NextResponse.json(stats);
   } catch (error) {
     console.error('Error fetching stats:', error);
