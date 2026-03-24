@@ -396,7 +396,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="planos" className="py-24 px-6 border-t border-white/5 scroll-mt-4">
+      <section id="planos" className="py-24 px-6 border-t border-white/5 [scroll-margin-top:-90px]">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('pricing.eyebrow')}</p>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
