@@ -12,9 +12,9 @@ const DEMO_URL = '/formulario/blefaroplastia?demo=true';
 const SIGNUP_URL = '/admin/cadastro';
 
 const LANGUAGES = [
-  { code: 'pt', label: 'PT', flag: '🇧🇷' },
-  { code: 'en', label: 'EN', flag: '🇺🇸' },
-  { code: 'es', label: 'ES', flag: '🇪🇸' },
+  { code: 'pt', label: 'Português', flagSrc: 'https://flagcdn.com/w40/br.png' },
+  { code: 'en', label: 'English',   flagSrc: 'https://flagcdn.com/w40/us.png' },
+  { code: 'es', label: 'Español',   flagSrc: 'https://flagcdn.com/w40/es.png' },
 ];
 
 function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
@@ -40,23 +40,25 @@ function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-sm font-medium hover:bg-white/10 transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-sm font-medium hover:bg-white/10 transition-colors"
       >
-        <span>{current.flag}</span>
-        <span>{current.label}</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={current.flagSrc} alt={current.label} className="w-5 h-3.5 object-cover rounded-sm" />
+        <span className="text-gray-200">{current.label}</span>
         <svg className={`w-3 h-3 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-28 rounded-xl border border-white/10 bg-[#12001e] shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1 w-36 rounded-xl border border-white/10 bg-[#12001e] shadow-xl z-50 overflow-hidden">
           {LANGUAGES.map(lang => (
             <button
               key={lang.code}
               onClick={() => switchLocale(lang.code)}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/10 transition-colors ${lang.code === currentLocale ? 'text-violet-400 font-semibold' : 'text-gray-300'}`}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-white/10 transition-colors ${lang.code === currentLocale ? 'text-violet-400 font-semibold bg-white/5' : 'text-gray-300'}`}
             >
-              <span>{lang.flag}</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={lang.flagSrc} alt={lang.label} className="w-5 h-3.5 object-cover rounded-sm flex-shrink-0" />
               <span>{lang.label}</span>
             </button>
           ))}
