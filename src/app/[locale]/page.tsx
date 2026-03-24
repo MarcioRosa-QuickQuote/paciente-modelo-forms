@@ -276,7 +276,7 @@ export default function LandingPage() {
             className="text-gray-400 text-lg leading-relaxed mb-8"
           >
             O problema é o funil.<br /><br />
-            <strong className="text-white">Criamos um sistema que atrai, qualifica<br />e entrega pacientes prontos para o procedimento.</strong>
+            <span className="text-white font-light text-xl tracking-wide" style={{ fontStyle: 'italic' }}>Criamos um sistema que atrai, qualifica<br />e entrega pacientes prontos para o procedimento.</span>
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
