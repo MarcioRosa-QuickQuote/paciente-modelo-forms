@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FormData, FormStep } from '@/types/form';
 import { getTheme } from '@/lib/themes';
@@ -105,6 +105,13 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
     firePixelEvent(eventName, eventId);
     fireCapiEvent(eventName, eventId);
   }, [firePixelEvent, fireCapiEvent]);
+
+  // PageView via CAPI no mount (fbq já dispara pelo script inline)
+  useEffect(() => {
+    const eventId = crypto.randomUUID();
+    fireCapiEvent('PageView', eventId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function handleYes() {
     if (state.type !== 'step') return;
