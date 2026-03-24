@@ -137,7 +137,7 @@ export default function LandingPage() {
         <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-16">
 
           {/* Text with staggered animation */}
-          <div className="flex-1 text-center lg:text-left lg:pt-24">
+          <div className="flex-1 text-center lg:text-left lg:pt-32">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
