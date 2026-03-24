@@ -2,7 +2,10 @@ export type FinalScreenType = 'whatsapp' | 'form';
 
 export type FormStepType = 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta' | 'livre';
 
-export type CanvasElementType = 'heading' | 'text' | 'image' | 'buttons' | 'spacer' | 'divider';
+export type CanvasElementType =
+  | 'heading' | 'text' | 'image' | 'buttons' | 'spacer' | 'divider'
+  | 'input-text' | 'input-phone' | 'input-email' | 'input-number' | 'input-date' | 'input-select'
+  | 'checklist' | 'video' | 'highlight';
 
 export interface CanvasElement {
   id: string;
@@ -11,6 +14,12 @@ export interface CanvasElement {
   imageUrl?: string;
   yesText?: string;
   noText?: string;
+  label?: string;
+  placeholder?: string;
+  required?: boolean;
+  options?: string;
+  videoUrl?: string;
+  color?: string;
 }
 
 export interface FormStep {
