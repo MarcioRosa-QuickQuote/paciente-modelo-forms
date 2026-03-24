@@ -67,6 +67,8 @@ export interface FormData {
   finalScreenType: FinalScreenType;
   formFields: FormFields;
   theme: string;
+  pixelId: string;
+  capiToken: string;
   userId: string;
   steps: FormStep[];
   customTexts: CustomTexts;
@@ -98,6 +100,8 @@ export interface FormInput {
   finalScreenType: FinalScreenType;
   formFields: FormFields;
   theme: string;
+  pixelId: string;
+  capiToken: string;
   steps: FormStep[];
   customTexts: CustomTexts;
 }

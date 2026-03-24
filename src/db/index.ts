@@ -95,6 +95,8 @@ export interface FormRow {
   final_screen_type: string;
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
+  pixel_id: string;
+  capi_token: string;
   single_photo: boolean;
   show_only_installment: boolean;
   user_id: string;
@@ -129,6 +131,8 @@ interface CreateFormInput {
   final_screen_type: string;
   form_fields: { name: boolean; whatsapp: boolean; email: boolean };
   theme: string;
+  pixel_id: string;
+  capi_token: string;
   single_photo: boolean;
   show_only_installment: boolean;
   user_id: string;
@@ -327,6 +331,8 @@ export function rowToFormData(row: FormRow) {
     finalScreenType: (row.final_screen_type as 'whatsapp' | 'form') || 'whatsapp',
     formFields: row.form_fields || defaultFields,
     theme: row.theme || 'purple',
+    pixelId: row.pixel_id || '',
+    capiToken: row.capi_token || '',
     singlePhoto: row.single_photo ?? false,
     showOnlyInstallment: row.show_only_installment ?? false,
     userId: row.user_id || '',

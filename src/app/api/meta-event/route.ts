@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFormById, getClinicSettingsByUserId, rowToFormData } from '@/db';
+import { getFormById, rowToFormData } from '@/db';
 import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -14,12 +14,10 @@ export async function POST(request: NextRequest) {
     if (!row) return NextResponse.json({ error: 'Formulário não encontrado' }, { status: 404 });
 
     const formData = rowToFormData(row);
-    if (!formData.userId) return NextResponse.json({ skipped: true });
 
-    // Load settings for this user
-    const settings = await getClinicSettingsByUserId(formData.userId);
-    const pixelId = settings?.pixel_id;
-    const capiToken = settings?.capi_token;
+    // Use per-form pixel/capi
+    const pixelId = formData.pixelId;
+    const capiToken = formData.capiToken;
 
     if (!pixelId || !capiToken) return NextResponse.json({ skipped: true });
 

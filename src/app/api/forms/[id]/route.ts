@@ -73,6 +73,8 @@ export async function PUT(
     if (data.finalScreenType !== undefined) updateData.final_screen_type = data.finalScreenType;
     if (data.formFields !== undefined) updateData.form_fields = data.formFields;
     if (data.theme !== undefined) updateData.theme = data.theme;
+    if (data.pixelId !== undefined) updateData.pixel_id = data.pixelId;
+    if (data.capiToken !== undefined) updateData.capi_token = data.capiToken;
     if (data.singlePhoto !== undefined) updateData.single_photo = data.singlePhoto;
     if (data.showOnlyInstallment !== undefined) updateData.show_only_installment = data.showOnlyInstallment;
     if (data.steps !== undefined) updateData.steps = data.steps;

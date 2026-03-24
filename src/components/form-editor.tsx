@@ -123,6 +123,8 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     finalScreenType: initialData?.finalScreenType || 'whatsapp',
     formFields: initialData?.formFields || { name: true, whatsapp: true, email: true },
     theme: initialData?.theme || templateData?.theme || 'purple',
+    pixelId: initialData?.pixelId || '',
+    capiToken: initialData?.capiToken || '',
     steps: [],
     customTexts: initialData?.customTexts || {},
   });
@@ -1004,6 +1006,32 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Meta Pixel */}
+                <div className="border-t border-gray-100 pt-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-base font-semibold text-gray-900">Meta Ads (Facebook & Instagram)</h3>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Opcional</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-4">Rastreamento exclusivo para este formulário</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className={labelClass}>ID do Pixel</label>
+                      <p className="text-xs text-gray-400 mb-2">Encontre em Gerenciador de Eventos → Configurações.</p>
+                      <input type="text" value={form.pixelId} onChange={e => updateField('pixelId', e.target.value)}
+                        placeholder="Ex: 1234567890123456" className={inputClass} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <label className={labelClass}>Token da API de Conversões (CAPI)</label>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Server-side</span>
+                      </div>
+                      <input type="password" value={form.capiToken} onChange={e => updateField('capiToken', e.target.value)}
+                        placeholder="EAAMxxxxxxxx..." className={`${inputClass} font-mono text-sm`} />
+                      <p className="text-xs text-orange-600 mt-1.5">⚠️ Nunca compartilhe este token.</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-center pt-2 border-t border-gray-100">

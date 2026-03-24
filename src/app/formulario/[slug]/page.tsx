@@ -3,6 +3,7 @@ import { getFormBySlug, rowToFormData, initializeDb, getClinicSettingsByUserId }
 import MultiStepForm from '@/components/multi-step-form/multi-step-form';
 import type { Metadata } from 'next';
 
+
 interface PageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ demo?: string }>;
@@ -42,16 +43,12 @@ export default async function FormularioPage({ params, searchParams }: PageProps
 
   const formData = rowToFormData(row);
 
-  // Load clinic settings for this form's owner
+  // Load clinic logo from user settings; pixel/capi are now per-form
   let clinicLogo = '';
-  let pixelId = '';
-  let capiToken = '';
   if (formData.userId) {
     const settings = await getClinicSettingsByUserId(formData.userId);
     clinicLogo = settings?.clinic_logo || '';
-    pixelId = settings?.pixel_id || '';
-    capiToken = settings?.capi_token || '';
   }
 
-  return <MultiStepForm formData={formData} clinicLogo={clinicLogo} pixelId={pixelId} capiToken={capiToken} demo={demo === 'true'} />;
+  return <MultiStepForm formData={formData} clinicLogo={clinicLogo} pixelId={formData.pixelId} capiToken={formData.capiToken} demo={demo === 'true'} />;
 }

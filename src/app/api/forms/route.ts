@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
       final_screen_type: data.finalScreenType || 'whatsapp',
       form_fields: data.formFields || { name: true, whatsapp: true, email: true },
       theme: data.theme || 'purple',
+      pixel_id: data.pixelId || '',
+      capi_token: data.capiToken || '',
       single_photo: data.singlePhoto ?? false,
       show_only_installment: data.showOnlyInstallment ?? false,
       user_id: userId,
