@@ -79,10 +79,8 @@
     "items": [
       { "emoji": "✨", "label": "Clínicas Estéticas" },
       { "emoji": "🦷", "label": "Dentistas" },
-      { "emoji": "💉", "label": "Médicos HOF" },
-      { "emoji": "🩺", "label": "Dermatologistas" },
-      { "emoji": "💆", "label": "Biomédicos Estetas" },
-      { "emoji": "🧴", "label": "Esteticistas" }
+      { "emoji": "🩺", "label": "Médicos" },
+      { "emoji": "💉", "label": "HOF" }
     ]
   },
   "pricing": {
