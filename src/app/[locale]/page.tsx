@@ -336,7 +336,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features ── */}
-      <section id="funcionalidades" className="py-24 px-6 scroll-mt-20">
+      <section id="funcionalidades" className="py-24 px-6 scroll-mt-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('features.eyebrow')}</p>
@@ -366,7 +366,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Niches ── */}
-      <section id="nichos" className="py-24 px-6 border-t border-white/5 scroll-mt-20">
+      <section id="nichos" className="py-24 px-6 border-t border-white/5 scroll-mt-4">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('niches.eyebrow')}</p>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
@@ -396,7 +396,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="planos" className="py-24 px-6 border-t border-white/5 scroll-mt-20">
+      <section id="planos" className="py-24 px-6 border-t border-white/5 scroll-mt-4">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('pricing.eyebrow')}</p>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
