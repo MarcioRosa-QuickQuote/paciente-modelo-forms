@@ -60,7 +60,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   const [saving, setSaving] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<string | null>(null);
-  const saveRef = useRef<() => Promise<void>>();
+  const saveRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
