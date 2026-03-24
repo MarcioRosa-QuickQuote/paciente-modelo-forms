@@ -1046,19 +1046,17 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           </div>
         )}
 
-        {/* ── Submit bar — aparece apenas na aba de Celebração ── */}
-        {currentStepIndex === steps.length && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between">
-            <button type="button" onClick={() => router.push('/admin')}
-              className="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors">
-              Cancelar
-            </button>
-            <button type="submit" disabled={saving}
-              className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? 'Salvando...' : mode === 'create' ? 'Criar Formulário' : 'Salvar Alterações'}
-            </button>
-          </div>
-        )}
+        {/* ── Submit bar — sempre visível ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between">
+          <button type="button" onClick={() => router.push('/admin')}
+            className="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" disabled={saving}
+            className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
+            {saving ? 'Salvando...' : mode === 'create' ? 'Criar Formulário' : 'Salvar Alterações'}
+          </button>
+        </div>
 
       </div>
     </form>
