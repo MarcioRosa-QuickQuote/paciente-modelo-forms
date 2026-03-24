@@ -198,31 +198,37 @@ export default function LandingPage() {
 
             {/* "Teste aqui" label com seta curvada */}
             <motion.div
-              className="absolute -left-28 top-16 hidden lg:flex flex-col items-center gap-1 z-20 pointer-events-none select-none"
+              className="absolute -left-32 top-10 hidden lg:flex flex-col items-center gap-0 z-20 pointer-events-none select-none"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: [0, 1, 1, 0], x: [-10, 0, 0, 0] }}
               transition={{ delay: 1.2, duration: 3, times: [0, 0.2, 0.7, 1], repeat: Infinity, repeatDelay: 3 }}
             >
-              <motion.span
-                className="text-white font-bold text-base"
-                style={{ fontFamily: 'cursive', textShadow: '0 0 20px rgba(167,139,250,0.6)' }}
-              >
-                Teste aqui!
-              </motion.span>
-              {/* Seta curvada neon */}
-              <motion.svg width="72" height="52" viewBox="0 0 72 52" fill="none">
-                {/* Glow layer */}
-                <path d="M4 4 C 20 2, 50 6, 66 42" stroke="#e879f9" strokeWidth="6" strokeLinecap="round" fill="none" opacity="0.3" filter="url(#neonBlur)" />
-                <path d="M58 36 L66 43 L56 46" stroke="#e879f9" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.3" filter="url(#neonBlur)" />
-                {/* Main line */}
-                <path d="M4 4 C 20 2, 50 6, 66 42" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                <path d="M58 36 L66 43 L56 46" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              {/* Seta curvada neon — acima do texto */}
+              <svg width="80" height="56" viewBox="0 0 80 56" fill="none">
                 <defs>
                   <filter id="neonBlur" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feGaussianBlur stdDeviation="3.5" />
                   </filter>
+                  {/* Marcador de ponta de seta */}
+                  <marker id="neonHead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <path d="M0,0.5 L0,5.5 L5.5,3 z" fill="#e879f9" />
+                  </marker>
+                  <marker id="neonHeadGlow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <path d="M0,0.5 L0,5.5 L5.5,3 z" fill="#e879f9" opacity="0.4" />
+                  </marker>
                 </defs>
-              </motion.svg>
+                {/* Glow */}
+                <path d="M10 8 C 30 4, 60 10, 72 46" stroke="#e879f9" strokeWidth="7" strokeLinecap="round" fill="none" opacity="0.25" filter="url(#neonBlur)" markerEnd="url(#neonHeadGlow)" />
+                {/* Linha principal */}
+                <path d="M10 8 C 30 4, 60 10, 72 46" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" fill="none" markerEnd="url(#neonHead)" />
+              </svg>
+
+              <span
+                className="text-white font-bold text-base -mt-1"
+                style={{ fontFamily: 'cursive', textShadow: '0 0 16px rgba(232,121,249,0.8)' }}
+              >
+                Teste aqui!
+              </span>
             </motion.div>
 
             <div className="relative"
