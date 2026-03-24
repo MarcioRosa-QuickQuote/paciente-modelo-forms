@@ -37,6 +37,12 @@ export async function POST(request: NextRequest) {
       if (userId && session.subscription) {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
         await setSubscriptionStatus(userId, 'active', (sub as unknown as { current_period_end: number }).current_period_end);
+        // Save trial_ends_at so the UI can show the trial countdown
+        if (sub.status === 'trialing' && sub.trial_end) {
+          await supabaseAdmin.auth.admin.updateUserById(userId, {
+            user_metadata: { trial_ends_at: sub.trial_end * 1000 },
+          });
+        }
       }
     } else if (event.type === 'customer.subscription.updated') {
       const sub = event.data.object as Stripe.Subscription;

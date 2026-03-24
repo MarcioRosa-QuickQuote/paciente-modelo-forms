@@ -64,8 +64,8 @@ function SubscribeContent() {
 
         {!expired && (
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Acesso ao Painel</h1>
-            <p className="text-gray-400 text-sm mt-1">Assine para criar e gerenciar seus formulários</p>
+            <h1 className="text-2xl font-bold text-gray-900">Comece grátis por 7 dias</h1>
+            <p className="text-gray-400 text-sm mt-1">Sem cobrança agora — cancele a qualquer momento</p>
           </div>
         )}
 
@@ -75,7 +75,7 @@ function SubscribeContent() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs font-semibold text-[#6B1C3A] uppercase tracking-wide mb-1">Plano Profissional</p>
-                <p className="text-3xl font-black text-gray-900">R$ 97<span className="text-base font-normal text-gray-400">/mês</span></p>
+                <p className="text-3xl font-black text-gray-900">R$ 97<span className="text-base font-normal text-gray-400">/mês após 7 dias</span></p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#6B1C3A] to-[#9B2D5E] flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,11 +112,11 @@ function SubscribeContent() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Redirecionando...
               </span>
-            ) : 'Assinar agora — R$ 97/mês'}
+            ) : 'Começar teste grátis — 7 dias'}
           </button>
 
           <p className="text-xs text-gray-400 text-center mt-3">
-            Pagamento seguro via Stripe · Cancele a qualquer momento
+            Cartão necessário · Sem cobrança nos primeiros 7 dias · Cancele quando quiser
           </p>
         </div>
 

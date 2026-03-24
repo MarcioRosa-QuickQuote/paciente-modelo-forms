@@ -235,14 +235,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const isOwner = ALLOWED_EMAILS.includes(user.email ?? '');
       const isSubscribed = user.user_metadata?.subscription_status === 'active';
       if (!isOwner && !isSubscribed) {
-        const trialEndsAt = user.user_metadata?.trial_ends_at as number | undefined;
-        const now = Date.now();
-        if (!trialEndsAt) {
-          const trialEnd = now + 7 * 24 * 60 * 60 * 1000;
-          supabase.auth.updateUser({ data: { trial_ends_at: trialEnd } });
-        } else if (trialEndsAt < now) {
-          router.push('/admin/subscribe?expired=true');
-        }
+        const wasSubscribed = user.user_metadata?.subscription_status === 'inactive';
+        router.push(wasSubscribed ? '/admin/subscribe?expired=true' : '/admin/subscribe');
       }
     }
   }, [loading, user, pathname, router]);

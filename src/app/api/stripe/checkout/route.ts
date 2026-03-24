@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       locale: 'pt-BR',
       subscription_data: {
         metadata: { supabase_user_id: userId },
-        trial_period_days: 3,
+        trial_period_days: 7,
       },
     });
 
