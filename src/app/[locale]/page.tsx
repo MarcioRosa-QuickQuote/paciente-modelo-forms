@@ -40,12 +40,12 @@ function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-sm font-medium hover:bg-white/10 transition-colors"
+        className="flex items-center gap-1.5 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs md:text-sm font-medium hover:bg-white/10 transition-colors"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={current.flagSrc} alt={current.label} className="w-5 h-3.5 object-cover rounded-sm" />
+        <img src={current.flagSrc} alt={current.label} className="w-4 h-3 md:w-5 md:h-3.5 object-cover rounded-sm" />
         <span className="text-gray-200">{current.label}</span>
-        <svg className={`w-3 h-3 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`w-2.5 h-2.5 md:w-3 md:h-3 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
