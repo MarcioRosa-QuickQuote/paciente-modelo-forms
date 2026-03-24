@@ -113,16 +113,16 @@ export default function LoginPage() {
 
   if (signupSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#080010] flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/30">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Conta criada!</h2>
-          <p className="text-gray-500 mb-2">Verifique seu e-mail para confirmar o cadastro.</p>
-          <p className="text-gray-400 text-sm mb-8">Após confirmar, faça login para ativar seu período de teste gratuito.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Conta criada!</h2>
+          <p className="text-gray-400 mb-2">Verifique seu e-mail para confirmar o cadastro.</p>
+          <p className="text-gray-500 text-sm mb-8">Após confirmar, faça login para ativar seu período de teste gratuito.</p>
           <button onClick={() => { setSignupSuccess(false); switchTab('login'); }}
             className="inline-flex px-8 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 cursor-pointer">
             Ir para Login
@@ -154,15 +154,18 @@ export default function LoginPage() {
         }
       `}</style>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-rose-50/30 flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen bg-[#080010] flex items-center justify-center px-4 relative overflow-hidden">
+        {/* Glow background igual à landing */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-violet-600/20 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="w-full max-w-md relative z-10">
 
           {/* Brand header */}
           <div className="mb-5 pl-1 logo-slide" onAnimationEnd={() => setLogoReady(true)}>
             <div className="flex items-center gap-3">
               <Image src="/capta.png" alt="Logo" width={72} height={72} className="object-contain rounded-xl flex-shrink-0" />
               <p className={`text-2xl font-bold leading-tight ${logoReady && typedText.length < TYPEWRITER_TEXT.length ? 'typewriter-cursor' : ''}`}
-                style={{ background: 'linear-gradient(135deg, #6B1C3A 0%, #9B2D5E 60%, #C44B82 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                style={{ background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 60%, #f472b6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 {typedText || '\u00A0'}
               </p>
             </div>
@@ -255,18 +258,18 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center mt-5 flex flex-col items-center gap-3">
-            <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-600 hover:border-gray-300 hover:text-gray-900 hover:shadow-sm transition-all">
+            <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm font-semibold text-gray-300 hover:border-white/20 hover:text-white hover:bg-white/10 transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Voltar para Página Capta+
             </Link>
             <div className="flex items-center gap-4">
-              <Link href="/privacidade" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Privacidade</Link>
-              <span className="text-gray-200">·</span>
-              <Link href="/termos" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Termos</Link>
+              <Link href="/privacidade" className="text-gray-500 hover:text-gray-300 text-xs transition-colors">Privacidade</Link>
+              <span className="text-gray-700">·</span>
+              <Link href="/termos" className="text-gray-500 hover:text-gray-300 text-xs transition-colors">Termos</Link>
             </div>
-            <Link href="/admin/ativar" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">
+            <Link href="/admin/ativar" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
               Ativar conta de owner
             </Link>
           </div>
