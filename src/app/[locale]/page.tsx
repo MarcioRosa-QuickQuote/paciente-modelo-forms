@@ -117,16 +117,12 @@ export default function LandingPage() {
             <a href="#funcionalidades" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.features')}</a>
             <a href="#nichos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.niches')}</a>
             <a href="#planos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.plans')}</a>
-            <TransitionLink
+            <a
               href="/admin/login"
-              className="text-center font-semibold text-white px-4 py-2.5 rounded-xl transition-all"
-              style={{
-                border: '1px solid #a855f7',
-                boxShadow: '0 0 10px rgba(168,85,247,0.5), inset 0 0 10px rgba(168,85,247,0.1)',
-              }}
+              className="text-center font-semibold text-white px-4 py-2.5 rounded-xl transition-all border border-violet-500 [box-shadow:0_0_10px_rgba(168,85,247,0.5),inset_0_0_10px_rgba(168,85,247,0.1)]"
             >
               {t('nav.login')}
-            </TransitionLink>
+            </a>
           </div>
         )}
       </nav>
