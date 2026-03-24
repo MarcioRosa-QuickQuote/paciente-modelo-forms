@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FormData, FormInput, PhotoPair, FormStep, CustomTexts } from '@/types/form';
 import { generateSlug } from '@/lib/utils';
@@ -58,7 +58,9 @@ interface FormEditorProps {
 export default function FormEditor({ initialData, mode, templateData }: FormEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<string | null>(null);
+  const saveRef = useRef<() => Promise<void>>();
   const [showCalendar, setShowCalendar] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -254,6 +256,41 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
       setSaving(false);
     }
   }
+
+  // Auto-save (edit mode only) — ref stores latest save fn to avoid stale closures
+  saveRef.current = async () => {
+    if (mode !== 'edit' || !initialData?.id || saving) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+      const firstPhoto = photos[0] || { before: '', after: '' };
+      const res = await fetch(`/api/forms/${initialData.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+          ...form,
+          whatsappNumber: form.whatsappNumber.replace(/\D/g, ''),
+          photos,
+          beforeImage: firstPhoto.before,
+          afterImage: firstPhoto.after,
+          steps,
+          customTexts,
+        }),
+      });
+      if (res.ok) {
+        setSavedToast(true);
+        setTimeout(() => setSavedToast(false), 2000);
+      }
+    } catch { /* silent */ }
+  };
+
+  useEffect(() => {
+    if (mode !== 'edit') return;
+    const timer = setTimeout(() => saveRef.current?.(), 1500);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, photos, steps, customTexts]);
 
   const inputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
   const stepInputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
@@ -1046,17 +1083,25 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           </div>
         )}
 
-        {/* ── Submit bar — sempre visível ── */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between">
-          <button type="button" onClick={() => router.push('/admin')}
-            className="px-5 py-2.5 text-gray-600 hover:text-gray-900 font-medium transition-colors">
-            Cancelar
-          </button>
-          <button type="submit" disabled={saving}
-            className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-            {saving ? 'Salvando...' : mode === 'create' ? 'Criar Formulário' : 'Salvar Alterações'}
-          </button>
-        </div>
+        {/* ── Submit bar: só aparece no modo criar ── */}
+        {mode === 'create' && (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex justify-end">
+            <button type="submit" disabled={saving}
+              className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving ? 'Criando...' : 'Criar Formulário'}
+            </button>
+          </div>
+        )}
+
+        {/* ── Toast auto-save (edit mode) ── */}
+        {savedToast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-2xl shadow-xl text-sm font-medium animate-fade-in">
+            <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Salvo automaticamente
+          </div>
+        )}
 
       </div>
     </form>

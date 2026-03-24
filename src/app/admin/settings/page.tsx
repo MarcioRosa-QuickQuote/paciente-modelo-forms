@@ -6,9 +6,9 @@ import { supabase } from '@/lib/supabase-client';
 
 export default function SettingsPage() {
   const [clinicLogo, setClinicLogo] = useState('');
-  const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const logoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -23,9 +23,32 @@ export default function SettingsPage() {
         const data = await res.json();
         setClinicLogo(data.clinicLogo || '');
       }
+      setInitialized(true);
     }
     loadSettings();
   }, []);
+
+  // Auto-save when clinicLogo changes (after initial load)
+  useEffect(() => {
+    if (!initialized) return;
+    async function save() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`,
+        },
+        body: JSON.stringify({ clinicLogo }),
+      });
+      if (res.ok) {
+        setSavedToast(true);
+        setTimeout(() => setSavedToast(false), 2000);
+      }
+    }
+    save();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clinicLogo]);
 
   async function uploadLogo(file: File) {
     setUploading(true);
@@ -40,32 +63,6 @@ export default function SettingsPage() {
       alert('Erro ao fazer upload');
     } finally {
       setUploading(false);
-    }
-  }
-
-  async function handleSave() {
-    setSaving(true);
-    setSaved(false);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token || ''}`,
-        },
-        body: JSON.stringify({ clinicLogo }),
-      });
-      if (res.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-      } else {
-        alert('Erro ao salvar configurações');
-      }
-    } catch {
-      alert('Erro ao salvar configurações');
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -121,21 +118,15 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Save button */}
-        <div className="flex items-center justify-end gap-3">
-          {saved && (
-            <span className="text-green-600 text-sm font-medium flex items-center gap-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Salvo com sucesso!
-            </span>
-          )}
-          <button onClick={handleSave} disabled={saving}
-            className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50">
-            {saving ? 'Salvando...' : 'Salvar Configurações'}
-          </button>
-        </div>
+        {/* Toast auto-save */}
+        {savedToast && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-2xl shadow-xl text-sm font-medium">
+            <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Salvo automaticamente
+          </div>
+        )}
       </div>
     </div>
   );

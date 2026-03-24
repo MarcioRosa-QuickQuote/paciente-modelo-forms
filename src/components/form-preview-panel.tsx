@@ -438,26 +438,6 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
             />
           </div>
 
-          {/* Navigation buttons */}
-          <div className="flex items-center justify-between mt-3 px-1">
-            <button
-              type="button"
-              onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
-              disabled={activeIndex === 0}
-              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded-xl transition-colors cursor-pointer"
-            >
-              ← Anterior
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveIndex(Math.min(steps.length, activeIndex + 1))}
-              disabled={activeIndex >= steps.length}
-              className="px-4 py-2 text-sm font-medium text-white rounded-xl transition-colors cursor-pointer disabled:opacity-30"
-              style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-            >
-              Próximo →
-            </button>
-          </div>
         </div>
       </div>
     </div>
