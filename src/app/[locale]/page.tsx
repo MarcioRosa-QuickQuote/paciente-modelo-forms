@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import TransitionLink from '@/components/transition-link';
 
 const DEMO_URL = '/formulario/blefaroplastia?demo=true';
-const SIGNUP_URL = '/admin/cadastro';
+const SIGNUP_URL = '/admin/login';
 
 const LANGUAGES = [
   { code: 'pt', label: 'Português', flagSrc: 'https://flagcdn.com/w40/br.png' },
