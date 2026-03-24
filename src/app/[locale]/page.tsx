@@ -123,89 +123,99 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="pt-20 pb-10 px-6 relative overflow-hidden">
+      <section className="pt-20 pb-16 px-6 relative overflow-hidden">
         {/* Glow background */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-violet-600/15 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-0 right-1/4 w-[700px] h-[600px] bg-violet-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="relative max-w-4xl mx-auto flex flex-col items-start text-left">
+        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
 
-          {/* Badge */}
+          {/* ── Texto (esquerda) ── */}
+          <div className="flex-1 flex flex-col items-start text-left">
+
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-sm font-medium mb-7"
+            >
+              <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+              {t('hero.badge')}
+            </motion.div>
+
+            {/* H1 */}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-5"
+            >
+              {t('hero.h1a')}{' '}
+              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
+                {t('hero.h1b')}
+              </span>
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg text-gray-400 mb-8 leading-relaxed whitespace-pre-line"
+            >
+              {t('hero.p')}
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-start gap-3 mb-3 w-full"
+            >
+              <TransitionLink href={SIGNUP_URL}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 font-bold text-base hover:opacity-90 transition-all shadow-xl shadow-violet-500/30 hover:scale-105">
+                {t('hero.cta_start')}
+              </TransitionLink>
+              <Link href={DEMO_URL}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl border border-white/10 bg-white/5 font-semibold text-base hover:bg-white/10 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {t('hero.cta_demo')}
+              </Link>
+            </motion.div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-sm text-gray-500"
+            >
+              {t('hero.fine_print')}
+            </motion.p>
+          </div>
+
+          {/* ── VSL Vertical (direita) ── */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-sm font-medium mb-7"
-          >
-            <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-            {t('hero.badge')}
-          </motion.div>
-
-          {/* H1 */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl sm:text-6xl md:text-7xl font-black leading-tight mb-5"
-          >
-            {t('hero.h1a')}{' '}
-            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-              {t('hero.h1b')}
-            </span>
-          </motion.h1>
-
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-gray-400 max-w-2xl mb-8 leading-relaxed whitespace-pre-line text-center"
-          >
-            {t('hero.p')}
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-start justify-start gap-3 mb-3"
-          >
-            <TransitionLink href={SIGNUP_URL}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-violet-500/30 hover:scale-105">
-              {t('hero.cta_start')}
-            </TransitionLink>
-            <Link href={DEMO_URL}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl border border-white/10 bg-white/5 font-semibold text-lg hover:bg-white/10 transition-all">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {t('hero.cta_demo')}
-            </Link>
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-sm text-gray-500 mb-12"
-          >
-            {t('hero.fine_print')}
-          </motion.p>
-
-          {/* ── VSL ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="w-full"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex-shrink-0 flex flex-col items-center"
           >
             {/* Glow atrás do player */}
-            <div className="absolute left-1/2 -translate-x-1/2 w-[600px] h-[60px] bg-violet-500/20 blur-[60px] rounded-full pointer-events-none" />
+            <div className="absolute w-72 h-72 bg-violet-500/20 blur-[80px] rounded-full pointer-events-none" />
 
+            {/* Container do vídeo vertical 9:16 */}
             <div
-              className="relative w-full rounded-2xl overflow-hidden shadow-2xl shadow-violet-900/40"
-              style={{ aspectRatio: '16/9', border: '1px solid rgba(139,92,246,0.25)' }}
+              className="relative rounded-3xl overflow-hidden shadow-2xl shadow-violet-900/50"
+              style={{
+                width: 280,
+                height: 498,
+                border: '1px solid rgba(139,92,246,0.3)',
+                background: '#0d0d14',
+              }}
             >
               {/* Troque VIDEO_ID pelo ID do seu vídeo no Pandavideo */}
               <iframe
@@ -217,6 +227,11 @@ export default function LandingPage() {
                 title="Capta+ VSL"
               />
             </div>
+
+            {/* Label abaixo do vídeo */}
+            <p className="mt-4 text-xs text-gray-500 text-center max-w-[220px]">
+              Veja como funciona em 2 minutos
+            </p>
           </motion.div>
 
         </div>
