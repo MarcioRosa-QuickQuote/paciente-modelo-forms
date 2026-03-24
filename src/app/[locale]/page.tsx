@@ -320,31 +320,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Demo section ── */}
-      <section className="py-20 px-6 border-t border-white/5">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-4">{t('demo.eyebrow')}</p>
-          <h2 className="text-4xl md:text-5xl font-black leading-tight mb-6">
-            {t('demo.h2a')}{' '}
-            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">{t('demo.h2b')}</span>
-          </h2>
-          <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
-            {t('demo.p')}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={DEMO_URL}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-violet-500/30 hover:scale-105">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              {t('demo.cta_demo')}
-            </Link>
-            <Link href={SIGNUP_URL} className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl border border-white/10 bg-white/5 font-semibold text-lg hover:bg-white/10 transition-all">
-              {t('demo.cta_create')}
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* ── Features ── */}
       <section id="funcionalidades" className="py-24 px-6 [scroll-margin-top:-80px]">
