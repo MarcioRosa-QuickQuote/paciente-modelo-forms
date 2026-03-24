@@ -130,7 +130,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="pt-24 pb-4 px-6 relative overflow-hidden">
+      <section className="pt-14 pb-4 px-6 relative overflow-hidden">
         {/* Glow background */}
         <div className="absolute top-0 right-1/4 w-[700px] h-[500px] bg-violet-600/15 rounded-full blur-[140px] pointer-events-none" />
 
