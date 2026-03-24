@@ -198,36 +198,36 @@ export default function LandingPage() {
 
             {/* "Teste aqui" label com seta curvada */}
             <motion.div
-              className="absolute -left-44 top-16 hidden lg:flex flex-row items-center gap-1 z-20 pointer-events-none select-none"
+              className="absolute -left-36 top-8 hidden lg:flex flex-col items-start gap-0 z-20 pointer-events-none select-none"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: [0, 1, 1, 0], x: [-10, 0, 0, 0] }}
               transition={{ delay: 1.2, duration: 3, times: [0, 0.2, 0.7, 1], repeat: Infinity, repeatDelay: 3 }}
             >
+              {/* Seta em arco: começa embaixo-esquerda, sobe e aponta para o mockup */}
+              <svg width="100" height="60" viewBox="0 0 100 60" fill="none">
+                <defs>
+                  <filter id="neonBlur2" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="3" />
+                  </filter>
+                  <marker id="neonHead2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                    <path d="M0,0.5 L0,6.5 L6.5,3.5 z" fill="#e879f9" />
+                  </marker>
+                  <marker id="neonHeadGlow2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                    <path d="M0,0.5 L0,6.5 L6.5,3.5 z" fill="#e879f9" opacity="0.35" />
+                  </marker>
+                </defs>
+                {/* Glow */}
+                <path d="M8 54 C 12 20, 55 4, 94 26" stroke="#e879f9" strokeWidth="8" strokeLinecap="round" fill="none" opacity="0.22" filter="url(#neonBlur2)" markerEnd="url(#neonHeadGlow2)" />
+                {/* Linha principal */}
+                <path d="M8 54 C 12 20, 55 4, 94 26" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" fill="none" markerEnd="url(#neonHead2)" />
+              </svg>
+
               <span
-                className="text-white font-bold text-base whitespace-nowrap"
+                className="text-white font-bold text-base -mt-1 ml-1"
                 style={{ fontFamily: 'cursive', textShadow: '0 0 16px rgba(232,121,249,0.8)' }}
               >
                 Teste aqui!
               </span>
-
-              {/* Seta curvada neon apontando para a direita (para o mockup) */}
-              <svg width="72" height="40" viewBox="0 0 72 40" fill="none">
-                <defs>
-                  <filter id="neonBlur" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="3" />
-                  </filter>
-                  <marker id="neonHead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0.5 L0,5.5 L5.5,3 z" fill="#e879f9" />
-                  </marker>
-                  <marker id="neonHeadGlow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0.5 L0,5.5 L5.5,3 z" fill="#e879f9" opacity="0.4" />
-                  </marker>
-                </defs>
-                {/* Glow */}
-                <path d="M4 32 C 16 30, 40 4, 68 18" stroke="#e879f9" strokeWidth="7" strokeLinecap="round" fill="none" opacity="0.25" filter="url(#neonBlur)" markerEnd="url(#neonHeadGlow)" />
-                {/* Linha principal */}
-                <path d="M4 32 C 16 30, 40 4, 68 18" stroke="#e879f9" strokeWidth="2.5" strokeLinecap="round" fill="none" markerEnd="url(#neonHead)" />
-              </svg>
             </motion.div>
 
             <div className="relative"
