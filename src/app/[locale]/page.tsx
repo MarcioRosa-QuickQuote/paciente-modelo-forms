@@ -92,8 +92,8 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#080010]/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image src="/capta.png" alt="Capta+" width={36} height={36} className="rounded-lg" />
-            <span className="font-bold text-lg">Capta<span className="text-pink-400">+</span></span>
+            <Image src="/capta.png" alt="Capta+" width={48} height={48} className="rounded-lg" />
+            <span className="font-bold text-xl">Capta<span className="text-pink-400">+</span></span>
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
