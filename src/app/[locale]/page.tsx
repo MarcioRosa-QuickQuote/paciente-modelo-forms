@@ -102,7 +102,7 @@ export default function LandingPage() {
             </TransitionLink>
           </div>
 
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden ml-auto flex items-center gap-2">
             <LanguageSwitcher currentLocale={locale} />
             <button className="p-2 text-gray-400" onClick={() => setMenuOpen(!menuOpen)}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +117,16 @@ export default function LandingPage() {
             <a href="#funcionalidades" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.features')}</a>
             <a href="#nichos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.niches')}</a>
             <a href="#planos" onClick={() => setMenuOpen(false)} className="text-gray-400 hover:text-white">{t('nav.plans')}</a>
-            <TransitionLink href="/admin/login" className="text-gray-400 hover:text-white">{t('nav.login')}</TransitionLink>
+            <TransitionLink
+              href="/admin/login"
+              className="text-center font-semibold text-white px-4 py-2.5 rounded-xl transition-all"
+              style={{
+                border: '1px solid #a855f7',
+                boxShadow: '0 0 10px rgba(168,85,247,0.5), inset 0 0 10px rgba(168,85,247,0.1)',
+              }}
+            >
+              {t('nav.login')}
+            </TransitionLink>
           </div>
         )}
       </nav>
