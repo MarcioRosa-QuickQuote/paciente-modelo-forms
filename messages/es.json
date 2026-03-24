@@ -1,0 +1,142 @@
+{
+  "nav": {
+    "features": "Funciones",
+    "niches": "Nichos",
+    "plans": "Precios",
+    "login": "Iniciar sesión",
+    "start": "Comenzar gratis"
+  },
+  "hero": {
+    "badge": "Embudos interactivos para cualquier nicho",
+    "h1a": "Tus leads llegan",
+    "h1b": "listos para cerrar",
+    "p": "Crea embudos interactivos con fotos, calificación automática y tarifa de reserva. Funciona para clínicas, entrenadores, consultores y mucho más.",
+    "cta_demo": "Ver demo en vivo",
+    "cta_start": "Comenzar gratis — 7 días",
+    "fine_print": "Sin tarjeta de crédito · Cancela cuando quieras"
+  },
+  "stats": {
+    "forms": "Embudos creados",
+    "leads": "Leads generados",
+    "niches": "Nichos atendidos",
+    "time": "Para publicar"
+  },
+  "demo": {
+    "eyebrow": "Míralo en vivo",
+    "h2a": "Prueba un embudo",
+    "h2b": "completo ahora",
+    "p": "Haz clic y vive la experiencia que tendrán tus leads — fotos, calificación, precio y tarifa de reserva en un flujo fluido.",
+    "cta_demo": "Abrir formulario demo",
+    "cta_create": "Crear mi embudo →"
+  },
+  "videoDemo": {
+    "h2": "Míralo en 60 segundos",
+    "p": "Cómo un lead recorre el embudo de principio a fin",
+    "placeholder": "[ Video próximamente ]"
+  },
+  "features": {
+    "eyebrow": "Funciones",
+    "h2a": "Todo lo que necesitas para",
+    "h2b": "calificar leads de verdad",
+    "items": [
+      {
+        "icon": "📸",
+        "title": "Fotos Antes y Después",
+        "desc": "Muestra resultados reales que convencen. Carrusel automático con múltiples casos."
+      },
+      {
+        "icon": "🎯",
+        "title": "Preguntas de Calificación",
+        "desc": "Filtra leads no calificados antes de que lleguen a ti. Solo los que valen tu tiempo pasan."
+      },
+      {
+        "icon": "💰",
+        "title": "Tarifa de Reserva",
+        "desc": "Los leads que pagan una tarifa simbólica son serios. Reduce las ausencias y aumenta el compromiso."
+      },
+      {
+        "icon": "📱",
+        "title": "WhatsApp Automático",
+        "desc": "¿Lead calificado? Va directamente a tu WhatsApp con el mensaje correcto, listo para cerrar."
+      },
+      {
+        "icon": "🎨",
+        "title": "Totalmente Personalizable",
+        "desc": "Colores, textos, fotos y preguntas. Tu embudo con tu identidad visual."
+      },
+      {
+        "icon": "⚡",
+        "title": "Listo en Minutos",
+        "desc": "Elige una plantilla de tu nicho, ajusta y publica. Sin necesidad de programador."
+      }
+    ]
+  },
+  "niches": {
+    "eyebrow": "Nichos",
+    "h2a": "Funciona para tu",
+    "h2b": "sector",
+    "p": "Plantillas listas para docenas de nichos. Elige, personaliza y publica en minutos.",
+    "items": [
+      { "emoji": "✨", "label": "Clínicas Estéticas" },
+      { "emoji": "🦷", "label": "Dentistas" },
+      { "emoji": "💪", "label": "Entrenadores Personales" },
+      { "emoji": "🏠", "label": "Inmobiliarias" },
+      { "emoji": "🧠", "label": "Coaches y Mentores" },
+      { "emoji": "💇", "label": "Salones de Belleza" },
+      { "emoji": "🥗", "label": "Nutricionistas" },
+      { "emoji": "⚖️", "label": "Abogados" },
+      { "emoji": "📊", "label": "Consultores" },
+      { "emoji": "🏋️", "label": "Gimnasios" },
+      { "emoji": "👁️", "label": "Oftalmólogos" },
+      { "emoji": "🐾", "label": "Veterinarios" }
+    ]
+  },
+  "pricing": {
+    "eyebrow": "Precios",
+    "h2": "Simple y sin sorpresas",
+    "p": "7 días gratis para probar. Cancela cuando quieras.",
+    "most_popular": "MÁS POPULAR",
+    "monthly": "/mes",
+    "billed_monthly": "Facturado mensualmente",
+    "start_free": "Comenzar gratis",
+    "starter": {
+      "name": "Starter",
+      "price": "R$97",
+      "features": [
+        "Hasta 5 embudos",
+        "Leads ilimitados",
+        "Fotos antes y después",
+        "Preguntas personalizadas",
+        "Enlace para compartir",
+        "Soporte por email"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "R$197",
+      "features": [
+        "Embudos ilimitados",
+        "Leads ilimitados",
+        "Todas las funciones del Starter",
+        "Tarifa de reserva integrada",
+        "Pixel de Meta (Facebook/Instagram)",
+        "Múltiples usuarios",
+        "Soporte prioritario por WhatsApp"
+      ]
+    }
+  },
+  "cta": {
+    "h2a": "¿Listo para recibir leads",
+    "h2b": "que realmente cierran?",
+    "p": "Crea tu primer embudo en menos de 3 minutos. Gratis por 7 días.",
+    "start": "Probar gratis por 7 días",
+    "demo": "Ver demo primero"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados.",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  }
+}

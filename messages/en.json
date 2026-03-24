@@ -1,0 +1,142 @@
+{
+  "nav": {
+    "features": "Features",
+    "niches": "Niches",
+    "plans": "Pricing",
+    "login": "Log in",
+    "start": "Start free"
+  },
+  "hero": {
+    "badge": "Interactive funnels for any niche",
+    "h1a": "Your leads arrive",
+    "h1b": "ready to close",
+    "p": "Build interactive funnels with photos, automatic qualification, and a reservation fee. Works for clinics, trainers, consultants, and much more.",
+    "cta_demo": "See live demo",
+    "cta_start": "Start free — 7 days",
+    "fine_print": "No credit card · Cancel anytime"
+  },
+  "stats": {
+    "forms": "Funnels created",
+    "leads": "Leads generated",
+    "niches": "Niches served",
+    "time": "To publish"
+  },
+  "demo": {
+    "eyebrow": "See it live",
+    "h2a": "Try a complete funnel",
+    "h2b": "right now",
+    "p": "Click and experience what your leads will feel — photos, qualification, pricing and reservation fee in one fluid flow.",
+    "cta_demo": "Open demo form",
+    "cta_create": "Create my funnel →"
+  },
+  "videoDemo": {
+    "h2": "See it in 60 seconds",
+    "p": "How a lead moves through the funnel from start to finish",
+    "placeholder": "[ Video coming soon ]"
+  },
+  "features": {
+    "eyebrow": "Features",
+    "h2a": "Everything you need to",
+    "h2b": "qualify leads for real",
+    "items": [
+      {
+        "icon": "📸",
+        "title": "Before & After Photos",
+        "desc": "Show real results that convince. Automatic carousel with multiple cases."
+      },
+      {
+        "icon": "🎯",
+        "title": "Qualification Questions",
+        "desc": "Filter unqualified leads before they reach you. Only those worth your time get through."
+      },
+      {
+        "icon": "💰",
+        "title": "Reservation Fee",
+        "desc": "Leads who pay a symbolic fee are serious. Reduce no-shows and increase commitment."
+      },
+      {
+        "icon": "📱",
+        "title": "Automatic WhatsApp",
+        "desc": "Qualified lead? Goes straight to your WhatsApp with the right message, ready to close."
+      },
+      {
+        "icon": "🎨",
+        "title": "Fully Customizable",
+        "desc": "Colors, texts, photos, and questions. Your funnel with your visual identity."
+      },
+      {
+        "icon": "⚡",
+        "title": "Ready in Minutes",
+        "desc": "Choose a template for your niche, adjust, and publish. No developer needed."
+      }
+    ]
+  },
+  "niches": {
+    "eyebrow": "Niches",
+    "h2a": "Works for your",
+    "h2b": "industry",
+    "p": "Ready-made templates for dozens of niches. Choose, customize, and publish in minutes.",
+    "items": [
+      { "emoji": "✨", "label": "Aesthetic Clinics" },
+      { "emoji": "🦷", "label": "Dentists" },
+      { "emoji": "💪", "label": "Personal Trainers" },
+      { "emoji": "🏠", "label": "Real Estate" },
+      { "emoji": "🧠", "label": "Coaches & Mentors" },
+      { "emoji": "💇", "label": "Beauty Salons" },
+      { "emoji": "🥗", "label": "Nutritionists" },
+      { "emoji": "⚖️", "label": "Lawyers" },
+      { "emoji": "📊", "label": "Consultants" },
+      { "emoji": "🏋️", "label": "Gyms" },
+      { "emoji": "👁️", "label": "Ophthalmologists" },
+      { "emoji": "🐾", "label": "Veterinarians" }
+    ]
+  },
+  "pricing": {
+    "eyebrow": "Pricing",
+    "h2": "Simple and no surprises",
+    "p": "7 days free to try. Cancel anytime.",
+    "most_popular": "MOST POPULAR",
+    "monthly": "/mo",
+    "billed_monthly": "Billed monthly",
+    "start_free": "Start free",
+    "starter": {
+      "name": "Starter",
+      "price": "R$97",
+      "features": [
+        "Up to 5 funnels",
+        "Unlimited leads",
+        "Before & after photos",
+        "Custom questions",
+        "Shareable link",
+        "Email support"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "R$197",
+      "features": [
+        "Unlimited funnels",
+        "Unlimited leads",
+        "All Starter features",
+        "Integrated reservation fee",
+        "Meta Pixel (Facebook/Instagram)",
+        "Multiple users",
+        "Priority WhatsApp support"
+      ]
+    }
+  },
+  "cta": {
+    "h2a": "Ready to receive leads",
+    "h2b": "that actually close?",
+    "p": "Create your first funnel in less than 3 minutes. Free for 7 days.",
+    "start": "Try free for 7 days",
+    "demo": "See demo first"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "login": "Log in",
+    "register": "Sign up"
+  }
+}

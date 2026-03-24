@@ -1,0 +1,142 @@
+{
+  "nav": {
+    "features": "Funcionalidades",
+    "niches": "Nichos",
+    "plans": "Planos",
+    "login": "Entrar",
+    "start": "Começar grátis"
+  },
+  "hero": {
+    "badge": "Funis interativos para qualquer nicho",
+    "h1a": "Seus leads chegam",
+    "h1b": "prontos para fechar",
+    "p": "Crie funis interativos com fotos, qualificação automática e taxa de reserva. Funciona para clínicas, treinadores, consultores e muito mais.",
+    "cta_demo": "Ver demonstração ao vivo",
+    "cta_start": "Começar grátis — 7 dias",
+    "fine_print": "Sem cartão de crédito · Cancele quando quiser"
+  },
+  "stats": {
+    "forms": "Formulários criados",
+    "leads": "Leads gerados",
+    "niches": "Nichos atendidos",
+    "time": "Para publicar"
+  },
+  "demo": {
+    "eyebrow": "Veja ao vivo",
+    "h2a": "Experimente um funil",
+    "h2b": "completo agora",
+    "p": "Clique e viva a experiência que seus leads terão — fotos, qualificação, preço e taxa de reserva em um fluxo fluido.",
+    "cta_demo": "Abrir formulário demo",
+    "cta_create": "Criar meu formulário →"
+  },
+  "videoDemo": {
+    "h2": "Veja em 60 segundos",
+    "p": "Como um lead passa pelo funil do início ao fim",
+    "placeholder": "[ Vídeo em breve ]"
+  },
+  "features": {
+    "eyebrow": "Funcionalidades",
+    "h2a": "Tudo que você precisa para",
+    "h2b": "qualificar leads de verdade",
+    "items": [
+      {
+        "icon": "📸",
+        "title": "Fotos Antes e Depois",
+        "desc": "Mostre resultados reais que convencem. Carrossel automático com múltiplos casos."
+      },
+      {
+        "icon": "🎯",
+        "title": "Perguntas de Qualificação",
+        "desc": "Filtre leads não qualificados antes de chegar até você. Só quem vale o seu tempo passa."
+      },
+      {
+        "icon": "💰",
+        "title": "Taxa de Reserva",
+        "desc": "Leads que pagam uma taxa simbólica são sérios. Reduza no-shows e aumente compromisso."
+      },
+      {
+        "icon": "📱",
+        "title": "WhatsApp Automático",
+        "desc": "Lead qualificado? Cai direto no seu WhatsApp com a mensagem certa, pronto para fechar."
+      },
+      {
+        "icon": "🎨",
+        "title": "Totalmente Personalizável",
+        "desc": "Cores, textos, fotos e perguntas. Seu funil com a sua identidade visual."
+      },
+      {
+        "icon": "⚡",
+        "title": "Pronto em Minutos",
+        "desc": "Escolha um template do seu nicho, ajuste e publique. Sem precisar de programador."
+      }
+    ]
+  },
+  "niches": {
+    "eyebrow": "Nichos",
+    "h2a": "Funciona para o seu",
+    "h2b": "segmento",
+    "p": "Templates prontos para dezenas de nichos. Escolha, personalize e publique em minutos.",
+    "items": [
+      { "emoji": "✨", "label": "Clínicas Estéticas" },
+      { "emoji": "🦷", "label": "Dentistas" },
+      { "emoji": "💪", "label": "Personal Trainers" },
+      { "emoji": "🏠", "label": "Imobiliárias" },
+      { "emoji": "🧠", "label": "Coaches & Mentores" },
+      { "emoji": "💇", "label": "Salões de Beleza" },
+      { "emoji": "🥗", "label": "Nutricionistas" },
+      { "emoji": "⚖️", "label": "Advogados" },
+      { "emoji": "📊", "label": "Consultores" },
+      { "emoji": "🏋️", "label": "Academias" },
+      { "emoji": "👁️", "label": "Oftalmologistas" },
+      { "emoji": "🐾", "label": "Veterinários" }
+    ]
+  },
+  "pricing": {
+    "eyebrow": "Planos",
+    "h2": "Simples e sem surpresas",
+    "p": "7 dias grátis para testar. Cancele quando quiser.",
+    "most_popular": "MAIS POPULAR",
+    "monthly": "/mês",
+    "billed_monthly": "Cobrado mensalmente",
+    "start_free": "Começar grátis",
+    "starter": {
+      "name": "Starter",
+      "price": "R$97",
+      "features": [
+        "Até 5 formulários",
+        "Leads ilimitados",
+        "Fotos antes e depois",
+        "Perguntas personalizadas",
+        "Link de compartilhamento",
+        "Suporte por e-mail"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "R$197",
+      "features": [
+        "Formulários ilimitados",
+        "Leads ilimitados",
+        "Todos os recursos do Starter",
+        "Taxa de reserva integrada",
+        "Pixel da Meta (Facebook/Instagram)",
+        "Múltiplos usuários",
+        "Suporte prioritário no WhatsApp"
+      ]
+    }
+  },
+  "cta": {
+    "h2a": "Pronto para receber leads",
+    "h2b": "que realmente fecham?",
+    "p": "Crie seu primeiro funil em menos de 3 minutos. Grátis por 7 dias.",
+    "start": "Experimentar grátis por 7 dias",
+    "demo": "Ver demo primeiro"
+  },
+  "footer": {
+    "rights": "Todos os direitos reservados.",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "login": "Entrar",
+    "register": "Cadastrar"
+  }
+}
