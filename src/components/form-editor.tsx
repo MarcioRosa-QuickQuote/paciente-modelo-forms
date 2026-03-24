@@ -1071,12 +1071,6 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                   </div>
                 </div>
 
-                <div className="flex justify-center pt-2 border-t border-gray-100">
-                  <button type="button" onClick={() => setConfigModalOpen(false)}
-                    className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all">
-                    Salvar
-                  </button>
-                </div>
 
               </div>
             </div>
