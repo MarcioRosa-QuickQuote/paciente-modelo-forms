@@ -200,7 +200,7 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
                 <p className="text-gray-500 text-sm mb-4">Prontos para fechar, direto no seu WhatsApp.</p>
                 <Link
                   href="/admin/cadastro"
-                  className="block w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold text-base hover:opacity-90 transition-opacity shadow-lg"
+                  className="block w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold text-base hover:opacity-90 transition-opacity shadow-lg text-center"
                 >
                   Experimentar Grátis<br />por 7 dias →
                 </Link>
