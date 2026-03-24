@@ -1,13 +1,25 @@
 export type FinalScreenType = 'whatsapp' | 'form';
 
-export type FormStepType = 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta';
+export type FormStepType = 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta' | 'livre';
+
+export type CanvasElementType = 'heading' | 'text' | 'image' | 'buttons' | 'spacer' | 'divider';
+
+export interface CanvasElement {
+  id: string;
+  type: CanvasElementType;
+  content?: string;
+  imageUrl?: string;
+  yesText?: string;
+  noText?: string;
+}
 
 export interface FormStep {
   id: string;
   type: FormStepType;
-  question?: string;   // only for 'pergunta' type
-  yesText?: string;    // only for 'pergunta' type
-  noText?: string;     // only for 'pergunta' type
+  question?: string;
+  yesText?: string;
+  noText?: string;
+  elements?: CanvasElement[]; // only for 'livre' type
 }
 
 export interface CustomTexts {

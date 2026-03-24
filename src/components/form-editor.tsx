@@ -14,6 +14,7 @@ import 'react-day-picker/style.css';
 import FormStepBuilder from './form-step-builder';
 import FormPreviewPanel from './form-preview-panel';
 import RichTextField from './rich-text-field';
+import CanvasBuilder from './canvas-builder';
 
 const DEFAULT_STEPS: FormStep[] = [
   { id: 'default-foto', type: 'foto' },
@@ -825,6 +826,21 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* ── LIVRE ── */}
+              {currentStep.type === 'livre' && (
+                <CanvasBuilder
+                  elements={currentStep.elements || []}
+                  onChange={elements => updateCurrentStep({ elements })}
+                  onImageUpload={async (file) => {
+                    const fd = new globalThis.FormData();
+                    fd.append('file', file);
+                    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                    const data = await res.json();
+                    return data.url || '';
+                  }}
+                />
               )}
 
             </div>

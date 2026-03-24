@@ -76,6 +76,7 @@ const STEP_TYPES: { type: FormStepType; label: string; description: string; icon
 ];
 
 export function getStepInfo(type: FormStepType) {
+  if (type === 'livre') return { label: 'Tela Livre', icon: null };
   return STEP_TYPES.find(s => s.type === type) || STEP_TYPES[0];
 }
 
@@ -143,6 +144,27 @@ function AddStepPicker({ onAdd, onClose }: AddStepPickerProps) {
   return (
     <div className="border border-dashed border-[#6B1C3A]/40 rounded-xl p-4 bg-[#6B1C3A]/5 mt-3">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Escolha o tipo de etapa</p>
+
+      {/* Blank canvas option */}
+      <button
+        type="button"
+        onClick={() => { onAdd('livre'); onClose(); }}
+        className="w-full flex items-center gap-3 p-3 mb-2 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 hover:border-violet-400 hover:shadow-sm transition-all text-left group cursor-pointer"
+      >
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center text-violet-600 shadow-sm">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-sm font-bold text-violet-700">Inserir Etapa Nova</p>
+          <p className="text-xs text-violet-500">Tela em branco — arraste e solte elementos</p>
+        </div>
+      </button>
+
+      <div className="border-t border-[#6B1C3A]/10 my-3" />
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Etapas prontas</p>
+
       <div className="space-y-2">
         {STEP_TYPES.map(({ type, label, description, icon }) => (
           <button

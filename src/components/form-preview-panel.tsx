@@ -266,6 +266,51 @@ function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Them
   );
 }
 
+function PreviewLivre({ step, desktop }: { step: FormStep; desktop: boolean }) {
+  const elements = step.elements || [];
+  if (elements.length === 0) {
+    return (
+      <div className={`flex flex-col items-center justify-center text-center gap-3 ${desktop ? 'px-6 py-12' : 'px-4 py-10'}`}>
+        <div className="text-gray-300">
+          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+        <p className="text-gray-400 text-sm">Tela em branco — arraste elementos para construir</p>
+      </div>
+    );
+  }
+  return (
+    <div className={`flex flex-col gap-3 ${desktop ? 'px-6 py-8' : 'px-4 py-6'}`}>
+      {elements.map(el => {
+        if (el.type === 'heading') return (
+          <h2 key={el.id} className={`font-bold text-gray-900 ${desktop ? 'text-xl' : 'text-base'}`}>{el.content || 'Título'}</h2>
+        );
+        if (el.type === 'text') return (
+          <p key={el.id} className={`text-gray-600 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`}>{el.content || 'Texto...'}</p>
+        );
+        if (el.type === 'image') return (
+          el.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={el.id} src={el.imageUrl} alt="" className="w-full rounded-xl object-cover max-h-48" />
+          ) : (
+            <div key={el.id} className="w-full h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-xs">Imagem</div>
+          )
+        );
+        if (el.type === 'buttons') return (
+          <div key={el.id} className="flex gap-2">
+            <div className="flex-1 py-2.5 text-center font-bold rounded-xl text-sm text-white bg-gradient-to-r from-violet-500 to-purple-600">{el.yesText || 'Sim'}</div>
+            <div className="flex-1 py-2.5 text-center font-bold rounded-xl text-sm bg-gray-100 text-gray-600">{el.noText || 'Não'}</div>
+          </div>
+        );
+        if (el.type === 'spacer') return <div key={el.id} className="h-4" />;
+        if (el.type === 'divider') return <hr key={el.id} className="border-gray-200" />;
+        return null;
+      })}
+    </div>
+  );
+}
+
 function PreviewCelebration({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
   const ct = form.customTexts || {};
   const title = ct.celebrationTitle || 'Parabéns!';
@@ -290,7 +335,7 @@ function PreviewCelebration({ form, theme, desktop }: { form: FormInput; theme: 
 
 const STEP_LABELS: Record<string, string> = {
   foto: 'Fotos', disponibilidade: 'Disponibilidade',
-  preco: 'Preço', taxa: 'Taxa', pergunta: 'Pergunta',
+  preco: 'Preço', taxa: 'Taxa', pergunta: 'Pergunta', livre: 'Tela Livre',
 };
 
 export default function FormPreviewPanel({ form, photos, steps, currentIndex, onCurrentIndexChange }: Props) {
@@ -319,6 +364,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
       case 'preco': return <PreviewPreco form={form} theme={theme} desktop={desktop} step={step} />;
       case 'taxa': return <PreviewTaxa form={form} theme={theme} desktop={desktop} step={step} />;
       case 'pergunta': return <PreviewPergunta step={step} theme={theme} desktop={desktop} />;
+      case 'livre': return <PreviewLivre step={step} desktop={desktop} />;
     }
   }
 

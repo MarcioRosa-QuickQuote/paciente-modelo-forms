@@ -46,10 +46,18 @@ export const formInputSchema = z.object({
   }).default({}),
   steps: z.array(z.object({
     id: z.string(),
-    type: z.enum(['foto', 'disponibilidade', 'preco', 'taxa', 'pergunta']),
+    type: z.enum(['foto', 'disponibilidade', 'preco', 'taxa', 'pergunta', 'livre']),
     question: z.string().optional(),
     yesText: z.string().optional(),
     noText: z.string().optional(),
+    elements: z.array(z.object({
+      id: z.string(),
+      type: z.enum(['heading', 'text', 'image', 'buttons', 'spacer', 'divider']),
+      content: z.string().optional(),
+      imageUrl: z.string().optional(),
+      yesText: z.string().optional(),
+      noText: z.string().optional(),
+    })).optional(),
   })).default([]),
 });
 
