@@ -199,12 +199,12 @@ export default function LandingPage() {
             {/* Glow atrás do player */}
             <div className="absolute w-72 h-72 bg-violet-500/20 blur-[80px] rounded-full pointer-events-none" />
 
-            {/* Container do vídeo vertical 9:16 */}
+            {/* Container do vídeo vertical 9:16 — full-width mobile, fixo desktop */}
             <div
-              className="relative rounded-3xl overflow-hidden shadow-2xl shadow-violet-900/50"
+              className="relative w-full lg:w-[280px] overflow-hidden shadow-2xl shadow-violet-900/50 rounded-3xl"
               style={{
-                width: 280,
-                height: 498,
+                aspectRatio: '9/16',
+                maxHeight: '80vh',
                 border: '1px solid rgba(139,92,246,0.3)',
                 background: '#0d0d14',
               }}
@@ -280,7 +280,8 @@ export default function LandingPage() {
             transition={{ delay: 0.2 }}
             className="text-gray-400 text-lg leading-relaxed mb-8"
           >
-            É porque você não está usando o funil da maneira correta. Desenvolvemos um funil diferente de qualquer outro — que leva o paciente até você com <strong className="text-white">previsibilidade</strong>, qualifica automaticamente cada lead e transforma em paciente pronto para fazer o procedimento.
+            O problema é o funil.<br /><br />
+            <strong className="text-white">Criamos um sistema que atrai, qualifica<br />e entrega pacientes prontos para o procedimento.</strong>
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
