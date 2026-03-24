@@ -202,7 +202,7 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
                   href="/admin/cadastro"
                   className="block w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 text-white font-bold text-base hover:opacity-90 transition-opacity shadow-lg"
                 >
-                  Experimentar grátis por 7 dias →
+                  Experimentar Grátis<br />por 7 dias →
                 </Link>
                 <button
                   onClick={() => { window.location.reload(); }}
