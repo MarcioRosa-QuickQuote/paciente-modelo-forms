@@ -1,100 +1,100 @@
 {
   "nav": {
     "features": "Funcionalidades",
-    "niches": "Nichos",
+    "niches": "Especialidades",
     "plans": "Planos",
     "login": "Entrar",
     "start": "Começar grátis"
   },
   "hero": {
-    "badge": "Funis interativos para qualquer nicho",
-    "h1a": "Seus leads chegam",
-    "h1b": "prontos para fechar",
-    "p": "Crie funis interativos com fotos, qualificação automática e taxa de reserva. Funciona para clínicas, treinadores, consultores e muito mais.",
+    "badge": "O funil que transforma investimento em agenda cheia",
+    "h1a": "Seus pacientes chegam",
+    "h1b": "prontos para agendar",
+    "p": "Você investe em anúncios e não vê resultado? É porque o funil faz toda a diferença. Nossa plataforma qualifica automaticamente cada lead e entrega só os pacientes certos na sua agenda.",
     "cta_demo": "Ver demonstração ao vivo",
-    "cta_start": "Começar grátis — 7 dias",
-    "fine_print": "Sem cartão de crédito · Cancele quando quiser"
+    "cta_start": "Experimentar grátis — 7 dias",
+    "fine_print": "7 dias grátis com cartão · Após esse período, cobrança automática"
   },
   "stats": {
-    "forms": "Formulários criados",
-    "leads": "Leads gerados",
-    "niches": "Nichos atendidos",
+    "forms": "Funis criados",
+    "leads": "Pacientes gerados",
+    "niches": "Especialidades atendidas",
     "time": "Para publicar"
   },
   "demo": {
     "eyebrow": "Veja ao vivo",
-    "h2a": "Experimente um funil",
-    "h2b": "completo agora",
-    "p": "Clique e viva a experiência que seus leads terão — fotos, qualificação, preço e taxa de reserva em um fluxo fluido.",
-    "cta_demo": "Abrir formulário demo",
-    "cta_create": "Criar meu formulário →"
+    "h2a": "Experimente o funil",
+    "h2b": "do jeito que seu paciente vê",
+    "p": "Clique e viva a experiência que seus pacientes terão — fotos reais, qualificação inteligente e agendamento direto no seu WhatsApp.",
+    "cta_demo": "Abrir demonstração",
+    "cta_create": "Criar meu funil →"
   },
   "videoDemo": {
     "h2": "Veja em 60 segundos",
-    "p": "Como um lead passa pelo funil do início ao fim",
+    "p": "Como um paciente passa pelo funil do início ao agendamento",
     "placeholder": "[ Vídeo em breve ]"
   },
   "features": {
     "eyebrow": "Funcionalidades",
     "h2a": "Tudo que você precisa para",
-    "h2b": "qualificar leads de verdade",
+    "h2b": "ter agenda cheia todo mês",
     "items": [
       {
         "icon": "📸",
         "title": "Fotos Antes e Depois",
-        "desc": "Mostre resultados reais que convencem. Carrossel automático com múltiplos casos."
+        "desc": "Mostre resultados reais de pacientes que convencem. Carrossel automático com múltiplos casos clínicos."
       },
       {
         "icon": "🎯",
-        "title": "Perguntas de Qualificação",
-        "desc": "Filtre leads não qualificados antes de chegar até você. Só quem vale o seu tempo passa."
+        "title": "Qualificação Automática",
+        "desc": "Filtre automaticamente quem não é paciente ideal. Só quem realmente quer o procedimento chega até você."
       },
       {
         "icon": "💰",
         "title": "Taxa de Reserva",
-        "desc": "Leads que pagam uma taxa simbólica são sérios. Reduza no-shows e aumente compromisso."
+        "desc": "Pacientes que pagam uma taxa simbólica para reservar são sérios. Reduza faltas e aumente o compromisso."
       },
       {
         "icon": "📱",
         "title": "WhatsApp Automático",
-        "desc": "Lead qualificado? Cai direto no seu WhatsApp com a mensagem certa, pronto para fechar."
+        "desc": "Paciente qualificado? Vai direto para o seu WhatsApp com a mensagem certa, pronto para agendar."
       },
       {
         "icon": "🎨",
-        "title": "Totalmente Personalizável",
-        "desc": "Cores, textos, fotos e perguntas. Seu funil com a sua identidade visual."
+        "title": "Sua Identidade Visual",
+        "desc": "Cores, textos, fotos e perguntas personalizadas. Seu funil com a cara da sua clínica."
       },
       {
         "icon": "⚡",
         "title": "Pronto em Minutos",
-        "desc": "Escolha um template do seu nicho, ajuste e publique. Sem precisar de programador."
+        "desc": "Escolha o template da sua especialidade, ajuste e publique. Sem precisar de programador."
       }
     ]
   },
   "niches": {
-    "eyebrow": "Nichos",
-    "h2a": "Funciona para o seu",
-    "h2b": "segmento",
-    "p": "Templates prontos para dezenas de nichos. Escolha, personalize e publique em minutos.",
+    "eyebrow": "Especialidades",
+    "h2a": "Feito para profissionais",
+    "h2b": "da saúde",
+    "p": "Templates prontos para as principais especialidades. Escolha, personalize com seus casos reais e publique em minutos.",
     "items": [
       { "emoji": "✨", "label": "Clínicas Estéticas" },
       { "emoji": "🦷", "label": "Dentistas" },
-      { "emoji": "💪", "label": "Personal Trainers" },
-      { "emoji": "🏠", "label": "Imobiliárias" },
-      { "emoji": "🧠", "label": "Coaches & Mentores" },
-      { "emoji": "💇", "label": "Salões de Beleza" },
-      { "emoji": "🥗", "label": "Nutricionistas" },
-      { "emoji": "⚖️", "label": "Advogados" },
-      { "emoji": "📊", "label": "Consultores" },
-      { "emoji": "🏋️", "label": "Academias" },
       { "emoji": "👁️", "label": "Oftalmologistas" },
-      { "emoji": "🐾", "label": "Veterinários" }
+      { "emoji": "💉", "label": "Médicos HOF" },
+      { "emoji": "🩺", "label": "Dermatologistas" },
+      { "emoji": "💆", "label": "Biomédicos Estetas" },
+      { "emoji": "🥗", "label": "Nutricionistas" },
+      { "emoji": "🦴", "label": "Ortopedistas" },
+      { "emoji": "🧴", "label": "Esteticistas" },
+      { "emoji": "💪", "label": "Fisioterapeutas" },
+      { "emoji": "🧠", "label": "Psicólogos" },
+      { "emoji": "👶", "label": "Pediatras" }
     ]
   },
   "pricing": {
     "eyebrow": "Planos",
     "h2": "Simples e sem surpresas",
-    "p": "7 dias grátis para testar. Cancele quando quiser.",
+    "p": "7 dias grátis com cartão. Após o período, cobrança automática. Cancele quando quiser.",
     "most_popular": "MAIS POPULAR",
     "monthly": "/mês",
     "billed_monthly": "Cobrado mensalmente",
@@ -103,10 +103,10 @@
       "name": "Starter",
       "price": "R$97",
       "features": [
-        "Até 5 formulários",
-        "Leads ilimitados",
+        "Até 5 funis",
+        "Pacientes ilimitados",
         "Fotos antes e depois",
-        "Perguntas personalizadas",
+        "Perguntas de qualificação",
         "Link de compartilhamento",
         "Suporte por e-mail"
       ]
@@ -115,8 +115,8 @@
       "name": "Pro",
       "price": "R$119",
       "features": [
-        "Formulários ilimitados",
-        "Leads ilimitados",
+        "Funis ilimitados",
+        "Pacientes ilimitados",
         "Todos os recursos do Starter",
         "Taxa de reserva integrada",
         "Pixel da Meta (Facebook/Instagram)",
@@ -126,11 +126,11 @@
     }
   },
   "cta": {
-    "h2a": "Pronto para receber leads",
-    "h2b": "que realmente fecham?",
-    "p": "Crie seu primeiro funil em menos de 3 minutos. Grátis por 7 dias.",
+    "h2a": "Pronto para ter pacientes",
+    "h2b": "chegando prontos para agendar?",
+    "p": "Crie seu primeiro funil em menos de 3 minutos. Grátis por 7 dias com cartão.",
     "start": "Experimentar grátis por 7 dias",
-    "demo": "Ver demo primeiro"
+    "demo": "Ver demonstração primeiro"
   },
   "footer": {
     "rights": "Todos os direitos reservados.",

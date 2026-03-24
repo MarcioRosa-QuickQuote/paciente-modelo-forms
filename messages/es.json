@@ -1,100 +1,100 @@
 {
   "nav": {
     "features": "Funciones",
-    "niches": "Nichos",
+    "niches": "Especialidades",
     "plans": "Precios",
     "login": "Iniciar sesión",
     "start": "Comenzar gratis"
   },
   "hero": {
-    "badge": "Embudos interactivos para cualquier nicho",
-    "h1a": "Tus leads llegan",
-    "h1b": "listos para cerrar",
-    "p": "Crea embudos interactivos con fotos, calificación automática y tarifa de reserva. Funciona para clínicas, entrenadores, consultores y mucho más.",
+    "badge": "El embudo que convierte inversión en agenda llena",
+    "h1a": "Tus pacientes llegan",
+    "h1b": "listos para agendar",
+    "p": "¿Inviertes en anuncios y no ves resultados? El embudo hace toda la diferencia. Nuestra plataforma califica automáticamente cada lead y entrega solo los pacientes correctos a tu agenda.",
     "cta_demo": "Ver demo en vivo",
-    "cta_start": "Comenzar gratis — 7 días",
-    "fine_print": "Sin tarjeta de crédito · Cancela cuando quieras"
+    "cta_start": "Probar gratis — 7 días",
+    "fine_print": "7 días gratis con tarjeta · Cobro automático después del período"
   },
   "stats": {
     "forms": "Embudos creados",
-    "leads": "Leads generados",
-    "niches": "Nichos atendidos",
+    "leads": "Pacientes generados",
+    "niches": "Especialidades atendidas",
     "time": "Para publicar"
   },
   "demo": {
     "eyebrow": "Míralo en vivo",
-    "h2a": "Prueba un embudo",
-    "h2b": "completo ahora",
-    "p": "Haz clic y vive la experiencia que tendrán tus leads — fotos, calificación, precio y tarifa de reserva en un flujo fluido.",
-    "cta_demo": "Abrir formulario demo",
+    "h2a": "Prueba el embudo",
+    "h2b": "como lo ve tu paciente",
+    "p": "Haz clic y vive la experiencia que tendrán tus pacientes — fotos reales, calificación inteligente y agendamiento directo en tu WhatsApp.",
+    "cta_demo": "Abrir demostración",
     "cta_create": "Crear mi embudo →"
   },
   "videoDemo": {
     "h2": "Míralo en 60 segundos",
-    "p": "Cómo un lead recorre el embudo de principio a fin",
+    "p": "Cómo un paciente recorre el embudo desde el inicio hasta el agendamiento",
     "placeholder": "[ Video próximamente ]"
   },
   "features": {
     "eyebrow": "Funciones",
     "h2a": "Todo lo que necesitas para",
-    "h2b": "calificar leads de verdad",
+    "h2b": "tener agenda llena cada mes",
     "items": [
       {
         "icon": "📸",
         "title": "Fotos Antes y Después",
-        "desc": "Muestra resultados reales que convencen. Carrusel automático con múltiples casos."
+        "desc": "Muestra resultados reales de pacientes que convencen. Carrusel automático con múltiples casos clínicos."
       },
       {
         "icon": "🎯",
-        "title": "Preguntas de Calificación",
-        "desc": "Filtra leads no calificados antes de que lleguen a ti. Solo los que valen tu tiempo pasan."
+        "title": "Calificación Automática",
+        "desc": "Filtra automáticamente a quienes no son pacientes ideales. Solo quienes realmente quieren el procedimiento llegan a ti."
       },
       {
         "icon": "💰",
         "title": "Tarifa de Reserva",
-        "desc": "Los leads que pagan una tarifa simbólica son serios. Reduce las ausencias y aumenta el compromiso."
+        "desc": "Los pacientes que pagan una tarifa simbólica son serios. Reduce ausencias y aumenta el compromiso."
       },
       {
         "icon": "📱",
         "title": "WhatsApp Automático",
-        "desc": "¿Lead calificado? Va directamente a tu WhatsApp con el mensaje correcto, listo para cerrar."
+        "desc": "¿Paciente calificado? Va directo a tu WhatsApp con el mensaje correcto, listo para agendar."
       },
       {
         "icon": "🎨",
-        "title": "Totalmente Personalizable",
-        "desc": "Colores, textos, fotos y preguntas. Tu embudo con tu identidad visual."
+        "title": "Tu Identidad Visual",
+        "desc": "Colores, textos, fotos y preguntas personalizadas. Tu embudo con la imagen de tu clínica."
       },
       {
         "icon": "⚡",
         "title": "Listo en Minutos",
-        "desc": "Elige una plantilla de tu nicho, ajusta y publica. Sin necesidad de programador."
+        "desc": "Elige la plantilla de tu especialidad, ajusta y publica. Sin necesidad de programador."
       }
     ]
   },
   "niches": {
-    "eyebrow": "Nichos",
-    "h2a": "Funciona para tu",
-    "h2b": "sector",
-    "p": "Plantillas listas para docenas de nichos. Elige, personaliza y publica en minutos.",
+    "eyebrow": "Especialidades",
+    "h2a": "Hecho para profesionales",
+    "h2b": "de la salud",
+    "p": "Plantillas listas para las principales especialidades. Elige, personaliza con tus casos reales y publica en minutos.",
     "items": [
       { "emoji": "✨", "label": "Clínicas Estéticas" },
       { "emoji": "🦷", "label": "Dentistas" },
-      { "emoji": "💪", "label": "Entrenadores Personales" },
-      { "emoji": "🏠", "label": "Inmobiliarias" },
-      { "emoji": "🧠", "label": "Coaches y Mentores" },
-      { "emoji": "💇", "label": "Salones de Belleza" },
-      { "emoji": "🥗", "label": "Nutricionistas" },
-      { "emoji": "⚖️", "label": "Abogados" },
-      { "emoji": "📊", "label": "Consultores" },
-      { "emoji": "🏋️", "label": "Gimnasios" },
       { "emoji": "👁️", "label": "Oftalmólogos" },
-      { "emoji": "🐾", "label": "Veterinarios" }
+      { "emoji": "💉", "label": "Médicos HOF" },
+      { "emoji": "🩺", "label": "Dermatólogos" },
+      { "emoji": "💆", "label": "Biomédicos Estetas" },
+      { "emoji": "🥗", "label": "Nutricionistas" },
+      { "emoji": "🦴", "label": "Ortopedistas" },
+      { "emoji": "🧴", "label": "Esteticistas" },
+      { "emoji": "💪", "label": "Fisioterapeutas" },
+      { "emoji": "🧠", "label": "Psicólogos" },
+      { "emoji": "👶", "label": "Pediatras" }
     ]
   },
   "pricing": {
     "eyebrow": "Precios",
     "h2": "Simple y sin sorpresas",
-    "p": "7 días gratis para probar. Cancela cuando quieras.",
+    "p": "7 días gratis con tarjeta. Cobro automático después del período. Cancela cuando quieras.",
     "most_popular": "MÁS POPULAR",
     "monthly": "/mes",
     "billed_monthly": "Facturado mensualmente",
@@ -104,9 +104,9 @@
       "price": "$19",
       "features": [
         "Hasta 5 embudos",
-        "Leads ilimitados",
+        "Pacientes ilimitados",
         "Fotos antes y después",
-        "Preguntas personalizadas",
+        "Preguntas de calificación",
         "Enlace para compartir",
         "Soporte por email"
       ]
@@ -116,7 +116,7 @@
       "price": "$23",
       "features": [
         "Embudos ilimitados",
-        "Leads ilimitados",
+        "Pacientes ilimitados",
         "Todas las funciones del Starter",
         "Tarifa de reserva integrada",
         "Pixel de Meta (Facebook/Instagram)",
@@ -126,11 +126,11 @@
     }
   },
   "cta": {
-    "h2a": "¿Listo para recibir leads",
-    "h2b": "que realmente cierran?",
-    "p": "Crea tu primer embudo en menos de 3 minutos. Gratis por 7 días.",
+    "h2a": "¿Listo para tener pacientes",
+    "h2b": "llegando listos para agendar?",
+    "p": "Crea tu primer embudo en menos de 3 minutos. Gratis por 7 días con tarjeta.",
     "start": "Probar gratis por 7 días",
-    "demo": "Ver demo primero"
+    "demo": "Ver demostración primero"
   },
   "footer": {
     "rights": "Todos los derechos reservados.",

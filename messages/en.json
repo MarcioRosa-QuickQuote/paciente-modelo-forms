@@ -1,100 +1,100 @@
 {
   "nav": {
     "features": "Features",
-    "niches": "Niches",
+    "niches": "Specialties",
     "plans": "Pricing",
     "login": "Log in",
     "start": "Start free"
   },
   "hero": {
-    "badge": "Interactive funnels for any niche",
-    "h1a": "Your leads arrive",
-    "h1b": "ready to close",
-    "p": "Build interactive funnels with photos, automatic qualification, and a reservation fee. Works for clinics, trainers, consultants, and much more.",
+    "badge": "The funnel that turns investment into a full schedule",
+    "h1a": "Your patients arrive",
+    "h1b": "ready to book",
+    "p": "Investing in ads and not seeing results? The funnel makes all the difference. Our platform automatically qualifies every lead and delivers only the right patients to your schedule.",
     "cta_demo": "See live demo",
-    "cta_start": "Start free — 7 days",
-    "fine_print": "No credit card · Cancel anytime"
+    "cta_start": "Try free — 7 days",
+    "fine_print": "7 days free with card · Auto-billed after trial"
   },
   "stats": {
     "forms": "Funnels created",
-    "leads": "Leads generated",
-    "niches": "Niches served",
+    "leads": "Patients generated",
+    "niches": "Specialties served",
     "time": "To publish"
   },
   "demo": {
     "eyebrow": "See it live",
-    "h2a": "Try a complete funnel",
-    "h2b": "right now",
-    "p": "Click and experience what your leads will feel — photos, qualification, pricing and reservation fee in one fluid flow.",
-    "cta_demo": "Open demo form",
+    "h2a": "Try the funnel",
+    "h2b": "the way your patient sees it",
+    "p": "Click and experience what your patients will feel — real photos, smart qualification, and direct booking to your WhatsApp.",
+    "cta_demo": "Open demo",
     "cta_create": "Create my funnel →"
   },
   "videoDemo": {
     "h2": "See it in 60 seconds",
-    "p": "How a lead moves through the funnel from start to finish",
+    "p": "How a patient moves through the funnel from start to booking",
     "placeholder": "[ Video coming soon ]"
   },
   "features": {
     "eyebrow": "Features",
     "h2a": "Everything you need to",
-    "h2b": "qualify leads for real",
+    "h2b": "fill your schedule every month",
     "items": [
       {
         "icon": "📸",
         "title": "Before & After Photos",
-        "desc": "Show real results that convince. Automatic carousel with multiple cases."
+        "desc": "Show real patient results that convince. Automatic carousel with multiple clinical cases."
       },
       {
         "icon": "🎯",
-        "title": "Qualification Questions",
-        "desc": "Filter unqualified leads before they reach you. Only those worth your time get through."
+        "title": "Automatic Qualification",
+        "desc": "Automatically filter out non-ideal patients. Only those who truly want the procedure reach you."
       },
       {
         "icon": "💰",
         "title": "Reservation Fee",
-        "desc": "Leads who pay a symbolic fee are serious. Reduce no-shows and increase commitment."
+        "desc": "Patients who pay a symbolic fee to reserve are serious. Reduce no-shows and increase commitment."
       },
       {
         "icon": "📱",
         "title": "Automatic WhatsApp",
-        "desc": "Qualified lead? Goes straight to your WhatsApp with the right message, ready to close."
+        "desc": "Qualified patient? Goes straight to your WhatsApp with the right message, ready to book."
       },
       {
         "icon": "🎨",
-        "title": "Fully Customizable",
-        "desc": "Colors, texts, photos, and questions. Your funnel with your visual identity."
+        "title": "Your Visual Identity",
+        "desc": "Colors, texts, photos, and custom questions. Your funnel with your clinic's look and feel."
       },
       {
         "icon": "⚡",
         "title": "Ready in Minutes",
-        "desc": "Choose a template for your niche, adjust, and publish. No developer needed."
+        "desc": "Choose your specialty template, adjust, and publish. No developer needed."
       }
     ]
   },
   "niches": {
-    "eyebrow": "Niches",
-    "h2a": "Works for your",
-    "h2b": "industry",
-    "p": "Ready-made templates for dozens of niches. Choose, customize, and publish in minutes.",
+    "eyebrow": "Specialties",
+    "h2a": "Built for health",
+    "h2b": "professionals",
+    "p": "Ready-made templates for the main specialties. Choose, customize with your real cases, and publish in minutes.",
     "items": [
       { "emoji": "✨", "label": "Aesthetic Clinics" },
       { "emoji": "🦷", "label": "Dentists" },
-      { "emoji": "💪", "label": "Personal Trainers" },
-      { "emoji": "🏠", "label": "Real Estate" },
-      { "emoji": "🧠", "label": "Coaches & Mentors" },
-      { "emoji": "💇", "label": "Beauty Salons" },
-      { "emoji": "🥗", "label": "Nutritionists" },
-      { "emoji": "⚖️", "label": "Lawyers" },
-      { "emoji": "📊", "label": "Consultants" },
-      { "emoji": "🏋️", "label": "Gyms" },
       { "emoji": "👁️", "label": "Ophthalmologists" },
-      { "emoji": "🐾", "label": "Veterinarians" }
+      { "emoji": "💉", "label": "HOF Physicians" },
+      { "emoji": "🩺", "label": "Dermatologists" },
+      { "emoji": "💆", "label": "Aesthetic Biomedics" },
+      { "emoji": "🥗", "label": "Nutritionists" },
+      { "emoji": "🦴", "label": "Orthopedists" },
+      { "emoji": "🧴", "label": "Estheticians" },
+      { "emoji": "💪", "label": "Physiotherapists" },
+      { "emoji": "🧠", "label": "Psychologists" },
+      { "emoji": "👶", "label": "Pediatricians" }
     ]
   },
   "pricing": {
     "eyebrow": "Pricing",
     "h2": "Simple and no surprises",
-    "p": "7 days free to try. Cancel anytime.",
+    "p": "7 days free with card. Auto-billed after trial. Cancel anytime.",
     "most_popular": "MOST POPULAR",
     "monthly": "/mo",
     "billed_monthly": "Billed monthly",
@@ -104,9 +104,9 @@
       "price": "$19",
       "features": [
         "Up to 5 funnels",
-        "Unlimited leads",
+        "Unlimited patients",
         "Before & after photos",
-        "Custom questions",
+        "Qualification questions",
         "Shareable link",
         "Email support"
       ]
@@ -116,7 +116,7 @@
       "price": "$23",
       "features": [
         "Unlimited funnels",
-        "Unlimited leads",
+        "Unlimited patients",
         "All Starter features",
         "Integrated reservation fee",
         "Meta Pixel (Facebook/Instagram)",
@@ -126,9 +126,9 @@
     }
   },
   "cta": {
-    "h2a": "Ready to receive leads",
-    "h2b": "that actually close?",
-    "p": "Create your first funnel in less than 3 minutes. Free for 7 days.",
+    "h2a": "Ready to have patients",
+    "h2b": "arriving ready to book?",
+    "p": "Create your first funnel in less than 3 minutes. Free for 7 days with card.",
     "start": "Try free for 7 days",
     "demo": "See demo first"
   },

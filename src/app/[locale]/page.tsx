@@ -309,6 +309,66 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Pain section ── */}
+      <section className="py-20 px-6 border-t border-white/5">
+        <div className="max-w-3xl mx-auto text-center">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-violet-400 font-semibold text-sm uppercase tracking-widest mb-6"
+          >
+            Você profissional da saúde
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl md:text-4xl font-black mb-6 leading-tight"
+          >
+            Investe em anúncios e{' '}
+            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">não vê resultado?</span>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-400 text-lg leading-relaxed mb-8"
+          >
+            É porque você não está usando o funil da maneira correta. Desenvolvemos um funil diferente de qualquer outro — que leva o paciente até você com <strong className="text-white">previsibilidade</strong>, qualifica automaticamente cada lead e transforma em paciente pronto para fazer o procedimento.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+          >
+            {[
+              { icon: '😰', text: 'Investe em anúncios e agenda vazia' },
+              { icon: '📉', text: 'Leads que somem ou não aparecem' },
+              { icon: '😤', text: 'Pacientes sem compromisso e faltas' },
+            ].map((item, i) => (
+              <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/10">
+                <span className="text-3xl">{item.icon}</span>
+                <p className="text-gray-400 text-sm text-center">{item.text}</p>
+              </div>
+            ))}
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="mt-6 text-violet-300 font-semibold text-lg"
+          >
+            ↓ A Capta+ resolve tudo isso ↓
+          </motion.div>
+        </div>
+      </section>
+
       {/* ── Demo section ── */}
       <section className="py-20 px-6 border-t border-white/5">
         <div className="max-w-4xl mx-auto text-center">
