@@ -127,7 +127,7 @@ export default function LandingPage() {
         {/* Glow background */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-violet-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="relative max-w-4xl mx-auto flex flex-col items-center text-center">
+        <div className="relative max-w-4xl mx-auto flex flex-col items-start text-left">
 
           {/* Badge */}
           <motion.div
@@ -168,7 +168,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-3"
+            className="flex flex-col sm:flex-row items-start justify-start gap-3 mb-3"
           >
             <TransitionLink href={SIGNUP_URL}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-pink-500 font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-violet-500/30 hover:scale-105">
