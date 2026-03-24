@@ -51,8 +51,8 @@
       },
       {
         "icon": "💰",
-        "title": "Tarifa de Reserva",
-        "desc": "Los pacientes que pagan una tarifa simbólica son serios. Reduce ausencias y aumenta el compromiso."
+        "title": "Tarifa de Agendamiento",
+        "desc": "Los pacientes que pagan una tarifa simbólica de agendamiento son serios. Reduce ausencias y aumenta el compromiso."
       },
       {
         "icon": "📱",
@@ -118,7 +118,7 @@
         "Embudos ilimitados",
         "Pacientes ilimitados",
         "Todas las funciones del Starter",
-        "Tarifa de reserva integrada",
+        "Tarifa de agendamiento integrada",
         "Pixel de Meta (Facebook/Instagram)",
         "Múltiples usuarios",
         "Soporte prioritario por WhatsApp"

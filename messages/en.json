@@ -51,8 +51,8 @@
       },
       {
         "icon": "💰",
-        "title": "Reservation Fee",
-        "desc": "Patients who pay a symbolic fee to reserve are serious. Reduce no-shows and increase commitment."
+        "title": "Booking Fee",
+        "desc": "Patients who pay a symbolic booking fee are serious. Reduce no-shows and increase commitment."
       },
       {
         "icon": "📱",
@@ -118,7 +118,7 @@
         "Unlimited funnels",
         "Unlimited patients",
         "All Starter features",
-        "Integrated reservation fee",
+        "Integrated booking fee",
         "Meta Pixel (Facebook/Instagram)",
         "Multiple users",
         "Priority WhatsApp support"

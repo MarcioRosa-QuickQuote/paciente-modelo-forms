@@ -51,8 +51,8 @@
       },
       {
         "icon": "💰",
-        "title": "Taxa de Reserva",
-        "desc": "Pacientes que pagam uma taxa simbólica para reservar são sérios. Reduza faltas e aumente o compromisso."
+        "title": "Taxa de Agendamento",
+        "desc": "Pacientes que pagam uma taxa simbólica para agendar são sérios. Reduza faltas e aumente o compromisso."
       },
       {
         "icon": "📱",
@@ -110,7 +110,7 @@
         "Funis ilimitados",
         "Pacientes ilimitados",
         "Todos os recursos do Starter",
-        "Taxa de reserva integrada",
+        "Taxa de agendamento integrada",
         "Pixel da Meta (Facebook/Instagram)",
         "Múltiplos usuários",
         "Suporte prioritário no WhatsApp"
