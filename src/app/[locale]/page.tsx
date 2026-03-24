@@ -200,22 +200,18 @@ export default function LandingPage() {
             <motion.div
               className="absolute -left-28 top-16 hidden lg:flex flex-col items-center gap-1 z-20 pointer-events-none select-none"
               initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.2, duration: 0.6 }}
+              animate={{ opacity: [0, 1, 1, 0], x: [-10, 0, 0, 0] }}
+              transition={{ delay: 1.2, duration: 3, times: [0, 0.2, 0.7, 1], repeat: Infinity, repeatDelay: 3 }}
             >
               <motion.span
                 className="text-white font-bold text-base"
                 style={{ fontFamily: 'cursive', textShadow: '0 0 20px rgba(167,139,250,0.6)' }}
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               >
                 Teste aqui!
               </motion.span>
               {/* Seta curvada SVG */}
               <motion.svg
                 width="72" height="52" viewBox="0 0 72 52" fill="none"
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
               >
                 <path
                   d="M4 4 C 20 2, 50 6, 66 42"
