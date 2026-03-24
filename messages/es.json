@@ -101,7 +101,7 @@
     "start_free": "Comenzar gratis",
     "starter": {
       "name": "Starter",
-      "price": "R$97",
+      "price": "$19",
       "features": [
         "Hasta 5 embudos",
         "Leads ilimitados",
@@ -113,7 +113,7 @@
     },
     "pro": {
       "name": "Pro",
-      "price": "R$197",
+      "price": "$23",
       "features": [
         "Embudos ilimitados",
         "Leads ilimitados",
