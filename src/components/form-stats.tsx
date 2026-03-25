@@ -86,7 +86,7 @@ function StepPhonePreview({ step, formData }: { step: number; formData: FormData
   return (
     <div className="flex-shrink-0 shadow-2xl" style={{ width: PHONE_W }}>
       {/* Phone shell */}
-      <div className="bg-gray-900 rounded-[26px] p-[6px]">
+      <div className="bg-gray-900 rounded-[26px] p-[6px] overflow-hidden">
         {/* Screen */}
         <div className="bg-white rounded-[22px] overflow-hidden" style={{ height: PHONE_H }}>
           {/* Notch */}
@@ -574,7 +574,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
       {hoveredStep !== null && (
         <div
           ref={tooltipRef}
-          className="fixed inset-0 z-[300] pointer-events-none flex items-center justify-center"
+          className="fixed right-6 top-1/2 -translate-y-1/2 z-[300] pointer-events-none"
         >
           <StepPhonePreview step={hoveredStep} formData={formData} />
         </div>
