@@ -96,11 +96,17 @@ export function isPresetStepIcon(value?: string): boolean {
   return !!value && Object.prototype.hasOwnProperty.call(STEP_ICON_RENDERERS, value);
 }
 
+export function isUploadedStepIcon(value?: string): boolean {
+  const normalizedValue = value?.trim() || '';
+  return /^data:image\//i.test(normalizedValue) || /^https?:\/\//i.test(normalizedValue) || /^\//.test(normalizedValue);
+}
+
 interface StepIconGlyphProps {
   value?: string;
   type: FormStepType;
   svgClassName?: string;
   emojiClassName?: string;
+  imgClassName?: string;
 }
 
 export function StepIconGlyph({
@@ -108,11 +114,23 @@ export function StepIconGlyph({
   type,
   svgClassName = 'w-6 h-6 text-white',
   emojiClassName = 'text-2xl leading-none',
+  imgClassName = 'w-8 h-8 object-contain',
 }: StepIconGlyphProps) {
   const resolvedValue = value?.trim() || getDefaultStepIconId(type);
   const preset = STEP_ICON_RENDERERS[resolvedValue];
 
   if (preset) return <>{preset(svgClassName)}</>;
+  if (isUploadedStepIcon(resolvedValue)) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={resolvedValue}
+        alt=""
+        aria-hidden="true"
+        className={imgClassName}
+      />
+    );
+  }
 
   return <span className={emojiClassName}>{resolvedValue}</span>;
 }

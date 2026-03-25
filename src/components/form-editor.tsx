@@ -2,10 +2,18 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FormData, FormInput, PhotoPair, FormStep, CustomTexts } from '@/types/form';
+import { FormData, FormInput, PhotoPair, FormStep, FormStepType, CustomTexts } from '@/types/form';
 import { generateSlug } from '@/lib/utils';
 import { THEMES, getTheme } from '@/lib/themes';
-import { STEP_ICON_OPTIONS, StepIconGlyph, canCustomizeStepIcon, getDefaultStepIconId, isPresetStepIcon } from '@/lib/step-icons';
+import { STEP_ICON_OPTIONS, StepIconGlyph, canCustomizeStepIcon, getDefaultStepIconId, isPresetStepIcon, isUploadedStepIcon } from '@/lib/step-icons';
+import {
+  getDefaultHeadline,
+  getDefaultSupportText,
+  getDefaultWhatsappMessage,
+  getNewStepDefaults,
+  isBlankFormLike,
+  mergeCustomTextsWithDefaults,
+} from '@/lib/form-text-defaults';
 import { supabase } from '@/lib/supabase-client';
 import Image from 'next/image';
 import { DayPicker } from 'react-day-picker';
@@ -54,20 +62,27 @@ interface TemplateData {
 interface FormEditorProps {
   initialData?: FormData;
   mode: 'create' | 'edit';
+  templateId?: string;
   templateData?: TemplateData;
 }
 
-export default function FormEditor({ initialData, mode, templateData }: FormEditorProps) {
+export default function FormEditor({ initialData, mode, templateId, templateData }: FormEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<string | null>(null);
+  const [uploadingStepIcon, setUploadingStepIcon] = useState(false);
   const saveRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [stepPickerOpen, setStepPickerOpen] = useState(false);
   const [insertPanelOpen, setInsertPanelOpen] = useState(false);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const stepIconInputRef = useRef<HTMLInputElement | null>(null);
+  const initialProcedureName = initialData?.procedureName || templateData?.procedureName || '';
+  const initialProcedureDuration = initialData?.procedureDuration || templateData?.procedureDuration || '';
+  const shouldPrefillTextDefaults = templateId !== 'em-branco' && (mode === 'create' || !isBlankFormLike(initialData));
+  const initialCustomTexts = mergeCustomTextsWithDefaults(initialData?.customTexts, initialProcedureDuration, shouldPrefillTextDefaults);
 
   // Parse initial dates from string
   const parseDates = (str: string): Date[] => {
@@ -96,25 +111,33 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
   const [photos, setPhotos] = useState<PhotoPair[]>(buildInitialPhotos());
 
+  function buildStepForEditor(type: FormStepType): FormStep {
+    return {
+      id: crypto.randomUUID(),
+      type,
+      ...getNewStepDefaults(type, shouldPrefillTextDefaults),
+    };
+  }
+
   const buildInitialSteps = (): FormStep[] => {
     if (initialData?.steps?.length) return initialData.steps;
-    return DEFAULT_STEPS.map(s => ({ ...s, id: crypto.randomUUID() }));
+    return DEFAULT_STEPS.map(s => buildStepForEditor(s.type));
   };
 
   const [steps, setSteps] = useState<FormStep[]>(buildInitialSteps());
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [customTexts, setCustomTexts] = useState<CustomTexts>(initialData?.customTexts || {});
+  const [customTexts, setCustomTexts] = useState<CustomTexts>(initialCustomTexts);
 
   const [form, setForm] = useState<FormInput>({
     name: initialData?.name || '',
-    procedureName: initialData?.procedureName || templateData?.procedureName || '',
+    procedureName: initialProcedureName,
     availableDays: initialData?.availableDays || '',
     regularPrice: initialData?.regularPrice || 0,
     modelPrice: initialData?.modelPrice || 0,
     feeAmount: initialData?.feeAmount || 0,
     installmentCount: initialData?.installmentCount || 0,
     installmentAmount: initialData?.installmentAmount || 0,
-    procedureDuration: initialData?.procedureDuration || templateData?.procedureDuration || '',
+    procedureDuration: initialProcedureDuration,
     professionalName: initialData?.professionalName || templateData?.professionalName || '',
     instagramHandle: initialData?.instagramHandle || '',
     whatsappNumber: initialData?.whatsappNumber ? formatPhone(initialData.whatsappNumber) : '',
@@ -123,16 +146,16 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     photos: buildInitialPhotos(),
     singlePhoto: initialData?.singlePhoto ?? false,
     showOnlyInstallment: initialData?.showOnlyInstallment ?? false,
-    headline: initialData?.headline || templateData?.headline || '',
-    supportText: initialData?.supportText || templateData?.supportText || '',
-    whatsappMessage: initialData?.whatsappMessage || '',
+    headline: initialData?.headline || templateData?.headline || (shouldPrefillTextDefaults ? getDefaultHeadline(initialProcedureName) : ''),
+    supportText: initialData?.supportText || templateData?.supportText || (shouldPrefillTextDefaults ? getDefaultSupportText() : ''),
+    whatsappMessage: initialData?.whatsappMessage || (shouldPrefillTextDefaults ? getDefaultWhatsappMessage(initialProcedureName) : ''),
     finalScreenType: initialData?.finalScreenType || 'whatsapp',
     formFields: initialData?.formFields || { name: true, whatsapp: true, email: true },
     theme: initialData?.theme || templateData?.theme || 'purple',
     pixelId: initialData?.pixelId || '',
     capiToken: initialData?.capiToken || '',
     steps: [],
-    customTexts: initialData?.customTexts || {},
+    customTexts: initialCustomTexts,
   });
 
   const [regularPriceDisplay, setRegularPriceDisplay] = useState(formatBRL(form.regularPrice));
@@ -195,17 +218,8 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     setUploadingIndex(key);
 
     try {
-      const formData = new globalThis.FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-
-      if (res.ok) {
-        updatePhoto(index, type, data.url);
-      } else {
-        alert(data.error || 'Erro ao fazer upload');
-      }
+      const url = await uploadImageFile(file);
+      updatePhoto(index, type, url);
     } catch {
       alert('Erro ao fazer upload da imagem');
     } finally {
@@ -213,16 +227,45 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     }
   }
 
-  async function uploadCanvasImage(file: File): Promise<string> {
+  async function uploadImageFile(file: File): Promise<string> {
     const fd = new globalThis.FormData();
     fd.append('file', file);
     const res = await fetch('/api/upload', { method: 'POST', body: fd });
     const data = await res.json();
-    return data.url || '';
+
+    if (!res.ok || !data.url) {
+      throw new Error(data.error || 'Erro ao fazer upload');
+    }
+
+    return data.url;
+  }
+
+  async function uploadCanvasImage(file: File): Promise<string> {
+    try {
+      return await uploadImageFile(file);
+    } catch {
+      alert('Erro ao fazer upload da imagem');
+      return '';
+    }
+  }
+
+  async function uploadStepIcon(file: File) {
+    const currentStepId = steps[currentStepIndex]?.id;
+    if (!currentStepId) return;
+
+    setUploadingStepIcon(true);
+    try {
+      const url = await uploadImageFile(file);
+      setSteps(prev => prev.map(step => step.id === currentStepId ? { ...step, icon: url } : step));
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao fazer upload do ícone');
+    } finally {
+      setUploadingStepIcon(false);
+    }
   }
 
   function updateCurrentStep(updates: Partial<FormStep>) {
-    setSteps(steps.map((s, i) => i === currentStepIndex ? { ...s, ...updates } : s));
+    setSteps(prev => prev.map((s, i) => i === currentStepIndex ? { ...s, ...updates } : s));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -318,6 +361,8 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   const currentStepSupportsIcon = !!currentStep && canCustomizeStepIcon(currentStep.type);
   const activeStepIcon = currentStepSupportsIcon ? (currentStep.icon?.trim() || getDefaultStepIconId(currentStep.type)) : '';
   const customStepIcon = currentStepSupportsIcon && currentStep?.icon && !isPresetStepIcon(currentStep.icon) ? currentStep.icon : '';
+  const hasUploadedStepIcon = currentStepSupportsIcon && isUploadedStepIcon(currentStep?.icon);
+  const hasLegacyCustomIcon = currentStepSupportsIcon && !!currentStep?.icon && !isPresetStepIcon(currentStep.icon) && !hasUploadedStepIcon;
 
   return (
     <div className="w-full">
@@ -357,6 +402,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             onChange={setSteps}
             currentIndex={currentStepIndex}
             onCurrentIndexChange={setCurrentStepIndex}
+            createStep={buildStepForEditor}
             hasCelebration
             onConfigOpen={() => setConfigModalOpen(true)}
             onPickerChange={setStepPickerOpen}
@@ -389,9 +435,14 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                         type={currentStep.type}
                         svgClassName="w-6 h-6 text-white"
                         emojiClassName="text-2xl leading-none"
+                        imgClassName="w-7 h-7 object-contain"
                       />
                     </div>
-                    <div>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold text-gray-900">Icone da etapa</p>
+                      <p className="text-xs text-gray-400">Escolha um icone comum ou envie um icone proprio em imagem.</p>
+                    </div>
+                    <div className="hidden">
                       <p className="text-sm font-semibold text-gray-900">Ícone da etapa</p>
                       <p className="text-xs text-gray-400">Escolha um ícone comum ou use um emoji/símbolo personalizado.</p>
                     </div>
@@ -420,7 +471,58 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
                     })}
                   </div>
 
-                  <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => stepIconInputRef.current?.click()}
+                      className="px-4 py-3 text-xs font-semibold text-[#6B1C3A] bg-white border border-[#6B1C3A]/20 rounded-xl hover:bg-[#6B1C3A]/5 transition-all cursor-pointer"
+                    >
+                      {uploadingStepIcon ? 'Enviando icone...' : hasUploadedStepIcon ? 'Trocar icone' : 'Enviar icone'}
+                    </button>
+                    <input
+                      ref={stepIconInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadStepIcon(file);
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                    {hasUploadedStepIcon && (
+                      <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 flex items-center justify-center">
+                          <StepIconGlyph
+                            value={currentStep.icon}
+                            type={currentStep.type}
+                            svgClassName="w-5 h-5 text-white"
+                            emojiClassName="text-xl leading-none"
+                            imgClassName="w-6 h-6 object-contain"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-emerald-700">Icone enviado</p>
+                          <p className="text-[11px] text-emerald-600">PNG, JPG, WebP ou SVG.</p>
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => updateCurrentStep({ icon: undefined })}
+                      className="px-4 py-3 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+                    >
+                      Usar padrao
+                    </button>
+                  </div>
+
+                  {hasLegacyCustomIcon && (
+                    <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+                      Este icone foi salvo no formato antigo. Escolha um da lista, envie uma imagem ou volte para o padrao.
+                    </p>
+                  )}
+
+                  <div className="hidden">
                     <div>
                       <label className={labelClass}>Ícone personalizado</label>
                       <input

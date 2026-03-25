@@ -16,6 +16,7 @@ function NewFormContent() {
   return (
     <FormEditor
       mode="create"
+      templateId={selectedTemplateId}
       templateData={template?.data}
     />
   );

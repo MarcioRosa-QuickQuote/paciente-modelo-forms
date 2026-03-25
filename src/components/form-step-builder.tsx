@@ -89,6 +89,7 @@ interface FormStepBuilderProps {
   onChange: (steps: FormStep[]) => void;
   currentIndex: number;
   onCurrentIndexChange: (index: number) => void;
+  createStep?: (type: FormStepType) => FormStep;
   formName?: string;
   hasCelebration?: boolean;
   onConfigOpen?: () => void;
@@ -278,6 +279,7 @@ export default function FormStepBuilder({
   onChange,
   currentIndex,
   onCurrentIndexChange,
+  createStep,
   formName,
   hasCelebration = false,
   onConfigOpen,
@@ -298,7 +300,7 @@ export default function FormStepBuilder({
   const currentStep = !isCelebration ? (steps[currentIndex] ?? steps[0]) : null;
 
   function addStep(type: FormStepType) {
-    const newStep: FormStep = {
+    const newStep: FormStep = createStep ? createStep(type) : {
       id: crypto.randomUUID(),
       type,
       yesText: '',
