@@ -21,6 +21,17 @@ export default function LeadFormScreen({ formId, formFields, theme, onTrackEvent
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  // Capture UTM params once from current URL
+  const utms = useRef<{ utmSource?: string; utmMedium?: string; utmCampaign?: string }>({});
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    utms.current = {
+      utmSource: p.get('utm_source') || undefined,
+      utmMedium: p.get('utm_medium') || undefined,
+      utmCampaign: p.get('utm_campaign') || undefined,
+    };
+  }, []);
   const hasLaunched = useRef(false);
 
   const launchConfetti = useCallback(() => {
@@ -55,7 +66,7 @@ export default function LeadFormScreen({ formId, formFields, theme, onTrackEvent
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formId, name, whatsapp: whatsapp.replace(/\D/g, ''), email }),
+        body: JSON.stringify({ formId, name, whatsapp: whatsapp.replace(/\D/g, ''), email, ...utms.current }),
       });
 
       if (res.ok) {

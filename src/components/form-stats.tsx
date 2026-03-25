@@ -13,7 +13,20 @@ interface Stats {
   [key: string]: StepStats;
 }
 
+interface Lead {
+  id: number;
+  form_id: string;
+  name: string;
+  whatsapp: string;
+  email: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  created_at: string;
+}
+
 type Preset = 'hoje' | 'ontem' | 'semana' | 'mes' | 'periodo';
+type ViewMode = 'stats' | 'leads' | 'chart';
 
 const STEP_LABELS: Record<number, string> = {
   1: 'Interesse',
@@ -104,6 +117,112 @@ function StepPhonePreview({ step, formData }: { step: number; formData: FormData
 
 // ── FormStats ──────────────────────────────────────────────────────────────────
 
+// ── Pie Chart ─────────────────────────────────────────────────────────────────
+
+const PIE_COLORS = ['#6B1C3A', '#9B2D5E', '#e879a0', '#f4a0c0', '#fce4ec', '#b45309', '#f59e0b', '#10b981'];
+
+function PieChart({ leads }: { leads: Lead[] }) {
+  const counts: Record<string, number> = {};
+  for (const l of leads) {
+    const key = l.utm_source || 'Direto';
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const total = leads.length;
+  if (total === 0) return <p className="text-center text-gray-400 text-sm py-8">Nenhum lead com dados UTM</p>;
+
+  let cumAngle = -Math.PI / 2;
+  const R = 80;
+  const CX = 100;
+  const CY = 100;
+
+  function slice(value: number, i: number) {
+    const angle = (value / total) * 2 * Math.PI;
+    const x1 = CX + R * Math.cos(cumAngle);
+    const y1 = CY + R * Math.sin(cumAngle);
+    cumAngle += angle;
+    const x2 = CX + R * Math.cos(cumAngle);
+    const y2 = CY + R * Math.sin(cumAngle);
+    const large = angle > Math.PI ? 1 : 0;
+    return `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} Z`;
+  }
+
+  return (
+    <div className="p-6">
+      <h4 className="text-sm font-bold text-gray-700 mb-4">Origem dos leads (utm_source)</h4>
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          {entries.map(([, v], i) => (
+            <path key={i} d={slice(v, i)} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="white" strokeWidth="2" />
+          ))}
+        </svg>
+        <div className="space-y-2 flex-1">
+          {entries.map(([label, count], i) => (
+            <div key={label} className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
+              <span className="text-sm text-gray-700 flex-1">{label}</span>
+              <span className="text-sm font-bold text-gray-900">{count}</span>
+              <span className="text-xs text-gray-400">({Math.round((count / total) * 100)}%)</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Leads List ─────────────────────────────────────────────────────────────────
+
+function LeadsList({ leads, loading }: { leads: Lead[]; loading: boolean }) {
+  if (loading) return (
+    <div className="flex items-center justify-center py-10">
+      <div className="w-8 h-8 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
+    </div>
+  );
+  if (leads.length === 0) return <p className="text-center text-gray-400 text-sm py-8">Nenhum lead cadastrado ainda</p>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-gray-100">
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Nome</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">WhatsApp</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Origem</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Mídia</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Campanha</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leads.map(l => (
+            <tr key={l.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+              <td className="py-3 px-4 font-medium text-gray-900">{l.name || '—'}</td>
+              <td className="py-3 px-4 text-gray-600">{l.whatsapp || '—'}</td>
+              <td className="py-3 px-4">
+                {l.utm_source
+                  ? <span className="px-2 py-0.5 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-full text-xs font-semibold">{l.utm_source}</span>
+                  : <span className="text-gray-300 text-xs">—</span>}
+              </td>
+              <td className="py-3 px-4">
+                {l.utm_medium
+                  ? <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold">{l.utm_medium}</span>
+                  : <span className="text-gray-300 text-xs">—</span>}
+              </td>
+              <td className="py-3 px-4 text-gray-500 text-xs">{l.utm_campaign || '—'}</td>
+              <td className="py-3 px-4 text-gray-400 text-xs whitespace-nowrap">
+                {new Date(l.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── FormStats ──────────────────────────────────────────────────────────────────
+
 export default function FormStats({ formId, formData }: { formId: string; formData: FormData }) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,6 +233,9 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const [hoveredStep, setHoveredStep] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('stats');
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
 
   function handleBarMouseEnter(step: number, e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -162,6 +284,22 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     fetchStats(`${customFrom}T00:00:00`, `${customTo}T23:59:59`);
   }
 
+  function fetchLeads() {
+    setLeadsLoading(true);
+    fetch(`/api/leads?formId=${formId}`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setLeads(data); })
+      .catch(() => {})
+      .finally(() => setLeadsLoading(false));
+  }
+
+  function switchView(mode: ViewMode) {
+    setViewMode(mode);
+    if ((mode === 'leads' || mode === 'chart') && leads.length === 0) {
+      fetchLeads();
+    }
+  }
+
   async function handleClear() {
     if (!confirm('Tem certeza que deseja zerar todas as respostas deste formulário?')) return;
     setClearing(true);
@@ -204,14 +342,14 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
         </button>
       </div>
 
-      {/* Date filters */}
+      {/* Date filters + view toggles */}
       <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center gap-2">
         {PRESETS.map(p => (
           <button
             key={p.key}
-            onClick={() => applyPreset(p.key)}
+            onClick={() => { switchView('stats'); applyPreset(p.key); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              preset === p.key
+              viewMode === 'stats' && preset === p.key
                 ? 'bg-[#6B1C3A] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
@@ -219,6 +357,40 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
             {p.label}
           </button>
         ))}
+
+        {/* Separator */}
+        <span className="w-px h-5 bg-gray-200 mx-1" />
+
+        {/* Ver por pessoa (leads) */}
+        <button
+          onClick={() => switchView('leads')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+            viewMode === 'leads'
+              ? 'bg-[#6B1C3A] text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Ver por pessoa
+        </button>
+
+        {/* Gráfico pizza */}
+        <button
+          onClick={() => switchView('chart')}
+          className={`p-1.5 rounded-lg text-xs font-semibold transition-all ${
+            viewMode === 'chart'
+              ? 'bg-[#6B1C3A] text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+          title="Gráfico de origens (UTM)"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+          </svg>
+        </button>
 
         {preset === 'periodo' && (
           <div className="flex items-center gap-2 mt-2 w-full sm:w-auto sm:mt-0">
@@ -246,7 +418,20 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
         )}
       </div>
 
-      {loading ? (
+      {/* Leads view */}
+      {viewMode === 'leads' && (
+        <LeadsList leads={leads} loading={leadsLoading} />
+      )}
+
+      {/* Chart view */}
+      {viewMode === 'chart' && (
+        leadsLoading
+          ? <div className="flex items-center justify-center py-10"><div className="w-8 h-8 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" /></div>
+          : <PieChart leads={leads} />
+      )}
+
+      {/* Stats view */}
+      {viewMode === 'stats' && (loading ? (
         <div className="flex items-center justify-center py-10">
           <div className="w-8 h-8 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
         </div>
@@ -370,7 +555,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
             })}
           </div>
         </>
-      )}
+      ))}
 
       {/* Floating phone preview tooltip */}
       {hoveredStep !== null && tooltipPos && (

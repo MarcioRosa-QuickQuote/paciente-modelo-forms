@@ -211,13 +211,24 @@ export async function getFormStats(formId: string, from?: string, to?: string) {
 }
 
 // Leads
-export async function saveLead(formId: string, name: string, whatsapp: string, email: string) {
+export async function saveLead(
+  formId: string,
+  name: string,
+  whatsapp: string,
+  email: string,
+  utmSource?: string,
+  utmMedium?: string,
+  utmCampaign?: string,
+) {
   const supabase = getSupabase();
   const { error } = await supabase.from('leads').insert({
     form_id: formId,
     name,
     whatsapp,
     email,
+    ...(utmSource ? { utm_source: utmSource } : {}),
+    ...(utmMedium ? { utm_medium: utmMedium } : {}),
+    ...(utmCampaign ? { utm_campaign: utmCampaign } : {}),
   });
   if (error) throw error;
 }

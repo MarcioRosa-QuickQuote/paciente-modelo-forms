@@ -16,13 +16,13 @@ async function getUserIdFromRequest(request: NextRequest): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { formId, name, whatsapp, email } = await request.json();
+    const { formId, name, whatsapp, email, utmSource, utmMedium, utmCampaign } = await request.json();
 
     if (!formId) {
       return NextResponse.json({ error: 'formId is required' }, { status: 400 });
     }
 
-    await saveLead(formId, name || '', whatsapp || '', email || '');
+    await saveLead(formId, name || '', whatsapp || '', email || '', utmSource, utmMedium, utmCampaign);
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     console.error('Error saving lead:', error);
