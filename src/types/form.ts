@@ -5,7 +5,7 @@ export type FormStepType = 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'perg
 export type CanvasElementType =
   | 'heading' | 'text' | 'image' | 'buttons' | 'spacer' | 'divider'
   | 'input-text' | 'input-phone' | 'input-email' | 'input-number' | 'input-date' | 'input-select'
-  | 'checklist' | 'video' | 'highlight' | 'location';
+  | 'checklist' | 'video' | 'highlight' | 'location' | 'location-map';
 
 export interface CanvasElement {
   id: string;
@@ -25,6 +25,7 @@ export interface CanvasElement {
   mapsUrl?: string;
   wazeUrl?: string;
   details?: string;
+  showAddress?: boolean;
 }
 
 export interface FormStep {

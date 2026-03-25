@@ -58,6 +58,11 @@ function getPreviewWazeHref(address?: string, wazeUrl?: string): string {
   return `https://waze.com/ul?q=${encodeURIComponent(address.trim())}`;
 }
 
+function getPreviewEmbeddedMapUrl(address?: string): string {
+  if (!address?.trim()) return '';
+  return `https://maps.google.com/maps?q=${encodeURIComponent(address.trim())}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+}
+
 function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme: Theme; desktop: boolean }) {
   const elements = step?.elements || [];
   const inputClass = `w-full border border-gray-200 rounded-xl px-3 py-2 ${desktop ? 'text-sm' : 'text-xs'} bg-gray-50 text-gray-400`;
@@ -231,6 +236,35 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
                 <div className="flex gap-2 w-full">
                   {mapsHref && <Btn gradient={theme.yesBtn} text="Google Maps" />}
                   {wazeHref && <Btn text="Waze" outlined />}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        if (el.type === 'location-map') {
+          const mapUrl = getPreviewEmbeddedMapUrl(el.address);
+
+          return (
+            <div key={el.id} className="space-y-3">
+              {mapUrl ? (
+                <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-100" style={{ paddingBottom: '56.25%' }}>
+                  <iframe
+                    src={mapUrl}
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-gray-400 text-xs">
+                  Informe o endereço para exibir o mapa.
+                </div>
+              )}
+
+              {el.showAddress && el.address && (
+                <div className={`rounded-xl bg-gray-50 px-4 py-3 text-gray-600 whitespace-pre-line ${desktop ? 'text-sm' : 'text-xs'}`}>
+                  {el.address}
                 </div>
               )}
             </div>

@@ -183,6 +183,20 @@ const PALETTE: PaletteItem[] = [
       wazeUrl: '',
     },
   },
+  {
+    section: 'Ação',
+    type: 'location-map',
+    label: 'Mapa da Localização',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m-6 3l6-3" />
+      </svg>
+    ),
+    defaults: {
+      address: '',
+      showAddress: false,
+    },
+  },
   // LAYOUT
   {
     section: 'Layout',
@@ -508,6 +522,39 @@ function CanvasItem({ el, onChange, onRemove, onImageUpload }: {
             />
             <p className="text-[10px] text-gray-400">
               Se os links do Maps ou Waze ficarem vazios, o formulário tenta usar o endereço acima para abrir a rota.
+            </p>
+          </div>
+        )}
+
+        {el.type === 'location-map' && (
+          <div className="space-y-3">
+            <textarea
+              value={el.address || ''}
+              onChange={e => onChange({ ...el, address: e.target.value })}
+              placeholder="Endereço completo para exibir no mapa..."
+              rows={3}
+              className={`${fieldClass} resize-none`}
+            />
+
+            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+              <div className="pr-3">
+                <p className="text-xs font-semibold text-gray-700">Exibir endereço abaixo do mapa</p>
+                <p className="text-[10px] text-gray-400">Desligado: mostra só o mapa dentro do formulário.</p>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={el.showAddress || false}
+                onClick={() => onChange({ ...el, showAddress: !el.showAddress })}
+                className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${(el.showAddress || false) ? 'bg-violet-600' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${(el.showAddress || false) ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+
+            <p className="text-[10px] text-gray-400">
+              Use um endereço completo. O mapa será carregado dentro da tela, sem abrir Google Maps ou Waze.
             </p>
           </div>
         )}

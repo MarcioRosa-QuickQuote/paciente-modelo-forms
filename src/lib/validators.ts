@@ -55,7 +55,7 @@ export const formInputSchema = z.object({
       id: z.string(),
       type: z.enum(['heading', 'text', 'image', 'buttons', 'spacer', 'divider',
         'input-text', 'input-phone', 'input-email', 'input-number', 'input-date', 'input-select',
-        'checklist', 'video', 'highlight', 'location']),
+        'checklist', 'video', 'highlight', 'location', 'location-map']),
       content: z.string().optional(),
       imageUrl: z.string().optional(),
       yesText: z.string().optional(),
@@ -71,6 +71,7 @@ export const formInputSchema = z.object({
       mapsUrl: z.string().optional(),
       wazeUrl: z.string().optional(),
       details: z.string().optional(),
+      showAddress: z.boolean().optional(),
     })).optional(),
   })).default([]),
 });

@@ -36,6 +36,11 @@ function getWazeHref(address?: string, wazeUrl?: string): string {
   return `https://waze.com/ul?q=${encodeURIComponent(address.trim())}`;
 }
 
+function getEmbeddedMapUrl(address?: string): string {
+  if (!address?.trim()) return '';
+  return `https://maps.google.com/maps?q=${encodeURIComponent(address.trim())}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+}
+
 export function stepHasCustomButtons(elements?: CanvasElement[]): boolean {
   return (elements || []).some(el => el.type === 'buttons');
 }
@@ -241,6 +246,34 @@ export default function StepCanvasElements({
                     Abrir no Waze
                   </a>
                 )}
+              </div>
+            )}
+          </div>
+        );
+      }
+      case 'location-map': {
+        const mapUrl = getEmbeddedMapUrl(el.address);
+
+        return (
+          <div key={el.id} className="space-y-3">
+            {mapUrl ? (
+              <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200 bg-gray-100" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  src={mapUrl}
+                  className="absolute inset-0 w-full h-full"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
+                Informe o endereço para exibir o mapa.
+              </div>
+            )}
+
+            {el.showAddress && el.address && (
+              <div className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600 whitespace-pre-line">
+                {el.address}
               </div>
             )}
           </div>
