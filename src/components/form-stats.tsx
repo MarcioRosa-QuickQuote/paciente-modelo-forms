@@ -260,6 +260,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     const viewportHeight = window.innerHeight;
     const previewWidth = tooltipRef.current?.offsetWidth || (PHONE_W + 24);
     const previewHeight = tooltipRef.current?.offsetHeight || (PHONE_H + 24);
+    const centeredLeft = Math.max(bounds, (viewportWidth - previewWidth) / 2);
 
     let fixedTop = targetRect.top + (targetRect.height / 2) - (previewHeight / 2);
     fixedTop = Math.max(bounds, Math.min(fixedTop, viewportHeight - previewHeight - bounds));
@@ -273,6 +274,12 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     }
 
     fixedLeft = Math.max(bounds, Math.min(fixedLeft, viewportWidth - previewWidth - bounds));
+
+    if (viewportWidth < 1400) {
+      fixedLeft = centeredLeft;
+    } else {
+      fixedLeft = Math.round((fixedLeft + centeredLeft) / 2);
+    }
 
     setTooltipPos({
       top: fixedTop - containerRect.top,
