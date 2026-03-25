@@ -37,12 +37,12 @@ export default function SocialProofToasts({ demo }: Props) {
     // Schedule: [delay_ms, type]
     // Alternates name → vacancy → name → vacancy → name → vacancy
     const schedule = [
-      { delay: 12000 + Math.random() * 8000,  type: 'name'    },
-      { delay: 30000 + Math.random() * 10000, type: 'vacancy' },
-      { delay: 55000 + Math.random() * 15000, type: 'name'    },
-      { delay: 85000 + Math.random() * 15000, type: 'vacancy' },
-      { delay: 120000 + Math.random() * 20000, type: 'name'   },
-      { delay: 160000 + Math.random() * 20000, type: 'vacancy'},
+      { delay: 4000  + Math.random() * 3000,  type: 'name'    },
+      { delay: 14000 + Math.random() * 5000,  type: 'vacancy' },
+      { delay: 28000 + Math.random() * 8000,  type: 'name'    },
+      { delay: 45000 + Math.random() * 10000, type: 'vacancy' },
+      { delay: 65000 + Math.random() * 10000, type: 'name'    },
+      { delay: 85000 + Math.random() * 10000, type: 'vacancy' },
     ];
 
     const timers: ReturnType<typeof setTimeout>[] = [];
