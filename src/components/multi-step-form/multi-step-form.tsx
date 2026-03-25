@@ -218,7 +218,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
 
   return (
     <div className="min-h-[100dvh] bg-white overflow-hidden">
-      <SocialProofToasts demo={demo} />
+      <SocialProofToasts demo={demo} hasLogo={!!clinicLogo} />
       {/* Meta Pixel */}
       {pixelId && (
         <script

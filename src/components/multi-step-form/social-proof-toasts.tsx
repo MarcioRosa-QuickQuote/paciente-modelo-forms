@@ -23,9 +23,10 @@ interface Toast {
 
 interface Props {
   demo?: boolean;
+  hasLogo?: boolean;
 }
 
-export default function SocialProofToasts({ demo }: Props) {
+export default function SocialProofToasts({ demo, hasLogo }: Props) {
   const [toast, setToast] = useState<Toast | null>(null);
   const usedNames = useRef<string[]>([]);
   const vacancyCount = useRef(3);
@@ -76,14 +77,17 @@ export default function SocialProofToasts({ demo }: Props) {
   }, [demo]);
 
   return (
-    <div className="fixed bottom-20 left-4 z-50 pointer-events-none max-w-[260px]">
+    <div
+      className="fixed left-1/2 -translate-x-1/2 sm:left-4 sm:translate-x-0 sm:bottom-20 z-50 pointer-events-none w-[260px]"
+      style={{ top: hasLogo ? 68 : 12 }}
+    >
       <AnimatePresence>
         {toast && (
           <motion.div
             key={toast.id}
-            initial={{ opacity: 0, x: -40, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -40, scale: 0.9 }}
+            initial={{ opacity: 0, y: -16, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 300, damping: 24 }}
             className="flex items-center gap-2.5 bg-white rounded-2xl shadow-xl border border-gray-100 px-3.5 py-2.5"
           >
