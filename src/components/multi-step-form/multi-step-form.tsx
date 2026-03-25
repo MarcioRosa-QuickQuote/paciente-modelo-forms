@@ -163,6 +163,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       case 'foto':
         return (
           <StepBeforeAfter
+            step={step}
             procedureName={formData.procedureName}
             photos={formData.photos}
             singlePhoto={formData.singlePhoto}
@@ -178,6 +179,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       case 'disponibilidade':
         return (
           <StepAvailability
+            step={step}
             procedureName={formData.procedureName}
             availableDays={formData.availableDays}
             procedureDuration={formData.procedureDuration}
@@ -192,6 +194,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       case 'preco':
         return (
           <StepPricing
+            step={step}
             procedureName={formData.procedureName}
             regularPrice={formData.regularPrice}
             modelPrice={formData.modelPrice}
@@ -209,6 +212,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       case 'taxa':
         return (
           <StepFee
+            step={step}
             feeAmount={formData.feeAmount}
             onYes={handleYes}
             onNo={handleNo}
@@ -221,6 +225,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       case 'pergunta':
         return (
           <StepCustom
+            step={step}
             question={step.question || 'Você está de acordo?'}
             yesText={step.yesText}
             noText={step.noText}

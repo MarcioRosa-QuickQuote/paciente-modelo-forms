@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
-import { PhotoPair } from '@/types/form';
+import { FormStep, PhotoPair } from '@/types/form';
+import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
 interface Props {
   procedureName: string;
@@ -17,9 +18,10 @@ interface Props {
   theme: Theme;
   yesText?: string;
   noText?: string;
+  step?: FormStep;
 }
 
-export default function StepBeforeAfter({ procedureName, photos, singlePhoto, headline, supportText, onYes, onNo, theme, yesText, noText }: Props) {
+export default function StepBeforeAfter({ procedureName, photos, singlePhoto, headline, supportText, onYes, onNo, theme, yesText, noText, step }: Props) {
   const validPhotos = photos.filter(p => p.before || p.after);
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -33,6 +35,7 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
 
   const currentPhoto = validPhotos[photoIndex] || { before: '', after: '' };
   const resolvedYesText = yesText || (headline ? 'Quero corrigir!' : 'Sim, quero!');
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
   const resolvedNoText = noText || 'Não';
 
   return (
@@ -123,15 +126,31 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
         />
       )}
 
+      {!!step?.elements?.length && (
+        <div className="w-full max-w-sm mb-6">
+          <StepCanvasElements
+            elements={step.elements || []}
+            onYes={onYes}
+            onNo={onNo}
+            theme={theme}
+            fallbackYesText={resolvedYesText}
+            fallbackNoText={resolvedNoText}
+            className="w-full space-y-4"
+          />
+        </div>
+      )}
+
       {/* 4. BOTÕES */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="w-full"
-      >
-        <YesNoButtons onYes={onYes} onNo={onNo} yesText={resolvedYesText} noText={resolvedNoText} theme={theme} />
-      </motion.div>
+      {!hasCustomButtons && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="w-full"
+        >
+          <YesNoButtons onYes={onYes} onNo={onNo} yesText={resolvedYesText} noText={resolvedNoText} theme={theme} />
+        </motion.div>
+      )}
     </div>
   );
 }

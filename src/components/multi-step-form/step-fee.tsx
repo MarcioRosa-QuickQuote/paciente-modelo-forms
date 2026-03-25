@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
-import { CustomTexts } from '@/types/form';
+import { CustomTexts, FormStep } from '@/types/form';
+import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
 interface Props {
   feeAmount: number;
@@ -14,12 +15,14 @@ interface Props {
   yesText?: string;
   noText?: string;
   customTexts?: CustomTexts;
+  step?: FormStep;
 }
 
-export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
+export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText, customTexts, step }: Props) {
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
-      {/* Icon */}
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
@@ -32,7 +35,6 @@ export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText
         </svg>
       </motion.div>
 
-      {/* Question */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -48,12 +50,12 @@ export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText
             {formatCurrency(feeAmount)}
           </span>.
         </h1>
-        <p className="text-lg text-gray-600 leading-relaxed"
+        <p
+          className="text-lg text-gray-600 leading-relaxed"
           dangerouslySetInnerHTML={{ __html: customTexts?.feeBenefitText || 'Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento.' }}
         />
       </motion.div>
 
-      {/* Trust badges */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -74,15 +76,30 @@ export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText
         </div>
       </motion.div>
 
-      {/* Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-        className="w-full"
-      >
-        <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText || 'Sim, concordo!'} noText={noText || 'Não'} theme={theme} />
-      </motion.div>
+      {!!step?.elements?.length && (
+        <div className="w-full max-w-sm mb-8">
+          <StepCanvasElements
+            elements={step.elements || []}
+            onYes={onYes}
+            onNo={onNo}
+            theme={theme}
+            fallbackYesText={yesText || 'Sim, concordo!'}
+            fallbackNoText={noText || 'Não'}
+            className="w-full space-y-4"
+          />
+        </div>
+      )}
+
+      {!hasCustomButtons && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="w-full"
+        >
+          <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText || 'Sim, concordo!'} noText={noText || 'Não'} theme={theme} />
+        </motion.div>
+      )}
     </div>
   );
 }

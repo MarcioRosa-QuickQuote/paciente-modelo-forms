@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
-import { CustomTexts } from '@/types/form';
+import { CustomTexts, FormStep } from '@/types/form';
+import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
 interface Props {
   procedureName: string;
@@ -20,6 +21,7 @@ interface Props {
   yesText?: string;
   noText?: string;
   customTexts?: CustomTexts;
+  step?: FormStep;
 }
 
 function resolveTokens(text: string, procedureName: string, regularPrice: number): string {
@@ -28,11 +30,24 @@ function resolveTokens(text: string, procedureName: string, regularPrice: number
     .replace(/\{preco\}/g, formatCurrency(regularPrice));
 }
 
-export default function StepPricing({ procedureName, regularPrice, modelPrice, installmentCount, installmentAmount, showOnlyInstallment, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
+export default function StepPricing({
+  procedureName,
+  regularPrice,
+  modelPrice,
+  installmentCount,
+  installmentAmount,
+  showOnlyInstallment,
+  onYes,
+  onNo,
+  theme,
+  yesText,
+  noText,
+  customTexts,
+  step,
+}: Props) {
   const discount = Math.round(((regularPrice - modelPrice) / regularPrice) * 100);
   const hasInstallment = installmentCount > 0 && installmentAmount > 0;
-
-  // Parcelado aparece primeiro (true = mostrando parcelado)
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
   const [showInstallment, setShowInstallment] = useState(hasInstallment);
 
   useEffect(() => {
@@ -46,7 +61,6 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-4 sm:px-6 py-5 sm:py-8">
-      {/* Icon */}
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
@@ -59,7 +73,6 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         </svg>
       </motion.div>
 
-      {/* Question */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -67,28 +80,32 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         className="text-center mb-3 sm:mb-6"
       >
         {customTexts?.pricingContext ? (
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2"
-            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingContext, procedureName, regularPrice) }} />
+          <h1
+            className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2"
+            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingContext, procedureName, regularPrice) }}
+          />
         ) : (
           <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight mb-2">
             Sabendo que a{' '}
-            <span className="font-extrabold"
-              style={{ color: theme.gradientFrom }}
-              dangerouslySetInnerHTML={{ __html: procedureName }}
-            />{' '}
+            <span className="font-extrabold" style={{ color: theme.gradientFrom }} dangerouslySetInnerHTML={{ __html: procedureName }} />{' '}
             custa em média{' '}
             <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>,
             como{' '}
-            <span className="font-extrabold uppercase bg-clip-text text-transparent"
-              style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
+            <span
+              className="font-extrabold uppercase bg-clip-text text-transparent"
+              style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+            >
               paciente modelo
             </span>{' '}
             você teria condição especial.
           </h1>
         )}
+
         {customTexts?.pricingQuestion ? (
-          <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-3"
-            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingQuestion, procedureName, regularPrice) }} />
+          <p
+            className="text-base sm:text-lg text-gray-700 leading-relaxed mt-3"
+            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingQuestion, procedureName, regularPrice) }}
+          />
         ) : (
           <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-3">
             Teria disponibilidade para investir o valor abaixo?
@@ -96,7 +113,6 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         )}
       </motion.div>
 
-      {/* Price Card — altura fixa para evitar pulo de layout */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -106,11 +122,11 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
       >
         <p className="text-white/80 text-xs sm:text-sm font-medium mb-2" dangerouslySetInnerHTML={{ __html: customTexts?.pricingLabel || 'Valor especial paciente modelo' }} />
 
-        {/* Área de preço */}
         <div className="flex flex-col items-center justify-center min-h-[56px] sm:min-h-[72px]">
           <AnimatePresence mode="wait">
             {hasInstallment && (showOnlyInstallment || showInstallment) ? (
-              <motion.div key="installment"
+              <motion.div
+                key="installment"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
@@ -123,7 +139,8 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
                 <p className="text-white/70 text-xs sm:text-sm mt-1">no cartão</p>
               </motion.div>
             ) : (
-              <motion.div key="cash"
+              <motion.div
+                key="cash"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
@@ -144,15 +161,30 @@ export default function StepPricing({ procedureName, regularPrice, modelPrice, i
         </div>
       </motion.div>
 
-      {/* Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
-        className="w-full"
-      >
-        <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText || 'Sim!'} noText={noText || 'Não'} theme={theme} />
-      </motion.div>
+      {!!step?.elements?.length && (
+        <div className="w-full max-w-sm mb-6">
+          <StepCanvasElements
+            elements={step.elements || []}
+            onYes={onYes}
+            onNo={onNo}
+            theme={theme}
+            fallbackYesText={yesText || 'Sim!'}
+            fallbackNoText={noText || 'Não'}
+            className="w-full space-y-4"
+          />
+        </div>
+      )}
+
+      {!hasCustomButtons && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="w-full"
+        >
+          <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText || 'Sim!'} noText={noText || 'Não'} theme={theme} />
+        </motion.div>
+      )}
     </div>
   );
 }

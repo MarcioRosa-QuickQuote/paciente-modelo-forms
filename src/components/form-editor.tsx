@@ -65,6 +65,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   const [showCalendar, setShowCalendar] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [stepPickerOpen, setStepPickerOpen] = useState(false);
+  const [insertPanelOpen, setInsertPanelOpen] = useState(false);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Parse initial dates from string
@@ -211,6 +212,14 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     }
   }
 
+  async function uploadCanvasImage(file: File): Promise<string> {
+    const fd = new globalThis.FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    return data.url || '';
+  }
+
   function updateCurrentStep(updates: Partial<FormStep>) {
     setSteps(steps.map((s, i) => i === currentStepIndex ? { ...s, ...updates } : s));
   }
@@ -294,11 +303,16 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, photos, steps, customTexts]);
 
+  useEffect(() => {
+    setInsertPanelOpen(false);
+  }, [currentStepIndex, stepPickerOpen, configModalOpen]);
+
   const inputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
   const stepInputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
   const labelClass = "block text-sm font-medium text-gray-700 mb-2";
 
   const currentStep = steps[currentStepIndex];
+  const showElementsBuilder = !!currentStep && (currentStep.type === 'livre' || insertPanelOpen);
 
   return (
     <div className="w-full">
@@ -318,6 +332,9 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             hasCelebration
             onConfigOpen={() => setConfigModalOpen(true)}
             onPickerChange={setStepPickerOpen}
+            onInsertButtonClick={() => setInsertPanelOpen(prev => !prev)}
+            insertButtonActive={insertPanelOpen}
+            showInsertButton={currentStepIndex < steps.length && currentStep?.type !== 'livre'}
           />
 
           {/* Divider */}
@@ -836,18 +853,25 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               )}
 
               {/* ── LIVRE ── */}
-              {currentStep.type === 'livre' && (
-                <CanvasBuilder
-                  elements={currentStep.elements || []}
-                  onChange={elements => updateCurrentStep({ elements })}
-                  onImageUpload={async (file) => {
-                    const fd = new globalThis.FormData();
-                    fd.append('file', file);
-                    const res = await fetch('/api/upload', { method: 'POST', body: fd });
-                    const data = await res.json();
-                    return data.url || '';
-                  }}
-                />
+              {showElementsBuilder && (
+                <div className="border-t border-gray-100 pt-5">
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {currentStep.type === 'livre' ? 'Conteudo da tela' : 'Blocos extras desta tela'}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {currentStep.type === 'livre'
+                        ? 'Arraste os elementos para montar a tela do zero.'
+                        : 'Adicione titulo, texto, imagem, video e outros blocos abaixo do conteudo padrao desta etapa.'}
+                    </p>
+                  </div>
+
+                  <CanvasBuilder
+                    elements={currentStep.elements || []}
+                    onChange={elements => updateCurrentStep({ elements })}
+                    onImageUpload={uploadCanvasImage}
+                  />
+                </div>
               )}
 
             </div>

@@ -90,6 +90,9 @@ interface FormStepBuilderProps {
   hasCelebration?: boolean;
   onConfigOpen?: () => void;
   onPickerChange?: (open: boolean) => void;
+  onInsertButtonClick?: () => void;
+  insertButtonActive?: boolean;
+  showInsertButton?: boolean;
 }
 
 // ─── Sortable Dot ─────────────────────────────────────────────────────────────
@@ -205,6 +208,9 @@ export default function FormStepBuilder({
   hasCelebration = false,
   onConfigOpen,
   onPickerChange,
+  onInsertButtonClick,
+  insertButtonActive = false,
+  showInsertButton = false,
 }: FormStepBuilderProps) {
   const [showPicker, setShowPicker] = useState(false);
 
@@ -305,6 +311,20 @@ export default function FormStepBuilder({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
             )}
+          </button>
+        )}
+        {showInsertButton && onInsertButtonClick && (
+          <button
+            type="button"
+            onClick={onInsertButtonClick}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex-shrink-0 ${
+              insertButtonActive
+                ? 'bg-[#6B1C3A] text-white shadow-sm'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Inserir blocos nesta tela"
+          >
+            Inserir Botão
           </button>
         )}
         {steps.length > 1 && !isCelebration && (

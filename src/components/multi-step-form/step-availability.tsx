@@ -3,7 +3,8 @@
 import { motion } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
-import { CustomTexts } from '@/types/form';
+import { CustomTexts, FormStep } from '@/types/form';
+import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
 interface Props {
   procedureName: string;
@@ -15,12 +16,26 @@ interface Props {
   yesText?: string;
   noText?: string;
   customTexts?: CustomTexts;
+  step?: FormStep;
 }
 
-export default function StepAvailability({ procedureName, availableDays, procedureDuration, onYes, onNo, theme, yesText, noText, customTexts }: Props) {
+export default function StepAvailability({
+  procedureName,
+  availableDays,
+  procedureDuration,
+  onYes,
+  onNo,
+  theme,
+  yesText,
+  noText,
+  customTexts,
+  step,
+}: Props) {
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
+  void procedureName;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
-      {/* Icon */}
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
@@ -33,17 +48,19 @@ export default function StepAvailability({ procedureName, availableDays, procedu
         </svg>
       </motion.div>
 
-      {/* Question */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-10"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6" dangerouslySetInnerHTML={{ __html: customTexts?.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?' }} />
+        <h1
+          className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6"
+          dangerouslySetInnerHTML={{ __html: customTexts?.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?' }}
+        />
 
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {availableDays.split(', ').map((day, i) => (
+          {availableDays.split(', ').filter(Boolean).map((day, i) => (
             <span
               key={i}
               className="rounded-2xl px-5 py-3 text-base font-semibold"
@@ -55,21 +72,37 @@ export default function StepAvailability({ procedureName, availableDays, procedu
         </div>
 
         {procedureDuration && (
-          <p className="text-gray-500 text-base"
+          <p
+            className="text-gray-500 text-base"
             dangerouslySetInnerHTML={{ __html: customTexts?.durationNote || `O procedimento dura cerca de ${procedureDuration}.` }}
           />
         )}
       </motion.div>
 
-      {/* Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        className="w-full"
-      >
-        <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText || 'Sim, tenho!'} noText={noText || 'Não'} theme={theme} />
-      </motion.div>
+      {!!step?.elements?.length && (
+        <div className="w-full max-w-sm mb-8">
+          <StepCanvasElements
+            elements={step.elements || []}
+            onYes={onYes}
+            onNo={onNo}
+            theme={theme}
+            fallbackYesText={yesText || 'Sim, tenho!'}
+            fallbackNoText={noText || 'Não'}
+            className="w-full space-y-4"
+          />
+        </div>
+      )}
+
+      {!hasCustomButtons && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="w-full"
+        >
+          <YesNoButtons onYes={onYes} onNo={onNo} yesText={yesText || 'Sim, tenho!'} noText={noText || 'Não'} theme={theme} />
+        </motion.div>
+      )}
     </div>
   );
 }

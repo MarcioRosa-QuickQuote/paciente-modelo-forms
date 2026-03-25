@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FormInput, FormStep, PhotoPair } from '@/types/form';
 import { getTheme, Theme } from '@/lib/themes';
 import { formatCurrency } from '@/lib/utils';
+import { stepHasCustomButtons } from './multi-step-form/step-canvas-elements';
 
 interface Props {
   form: FormInput;
@@ -36,6 +37,158 @@ function StepIcon({ iconBg, children }: { iconBg: string; children: React.ReactN
   );
 }
 
+function getPreviewEmbedUrl(url: string): string {
+  if (!url) return '';
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0`;
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  return url;
+}
+
+function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme: Theme; desktop: boolean }) {
+  const elements = step?.elements || [];
+  const inputClass = `w-full border border-gray-200 rounded-xl px-3 py-2 ${desktop ? 'text-sm' : 'text-xs'} bg-gray-50 text-gray-400`;
+
+  if (elements.length === 0) return null;
+
+  return (
+    <div className="w-full space-y-3">
+      {elements.map(el => {
+        if (el.type === 'heading') {
+          return (
+            <h2
+              key={el.id}
+              className={`font-bold text-gray-900 leading-tight ${desktop ? 'text-xl' : 'text-base'}`}
+              dangerouslySetInnerHTML={{ __html: el.content || 'Titulo' }}
+            />
+          );
+        }
+
+        if (el.type === 'text') {
+          return (
+            <p
+              key={el.id}
+              className={`text-gray-600 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`}
+              dangerouslySetInnerHTML={{ __html: el.content || 'Texto...' }}
+            />
+          );
+        }
+
+        if (el.type === 'image') {
+          return el.imageUrl
+            ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={el.id} src={el.imageUrl} alt="" className="w-full rounded-xl object-cover max-h-48" />
+            )
+            : (
+              <div key={el.id} className="w-full h-20 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-xs">
+                Imagem
+              </div>
+            );
+        }
+
+        if (el.type === 'video') {
+          return el.videoUrl
+            ? (
+              <div key={el.id} className="relative w-full rounded-xl overflow-hidden bg-gray-100" style={{ paddingBottom: '56.25%' }}>
+                <iframe src={getPreviewEmbedUrl(el.videoUrl)} className="absolute inset-0 w-full h-full" allowFullScreen />
+              </div>
+            )
+            : (
+              <div key={el.id} className="w-full h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-xs">
+                Video
+              </div>
+            );
+        }
+
+        if (el.type === 'checklist') {
+          return (
+            <ul key={el.id} className="space-y-1.5">
+              {(el.content || '').split('\n').filter(Boolean).map((item, i) => (
+                <li key={i} className={`flex items-center gap-2 text-gray-700 ${desktop ? 'text-sm' : 'text-xs'}`}>
+                  <span className="text-green-500 font-bold flex-shrink-0">✓</span> {item}
+                </li>
+              ))}
+            </ul>
+          );
+        }
+
+        if (el.type === 'highlight') {
+          return (
+            <div key={el.id} className="rounded-xl px-4 py-3" style={{ background: el.color || '#f3f0ff' }}>
+              <p
+                className={`text-gray-800 leading-snug ${desktop ? 'text-sm' : 'text-xs'}`}
+                dangerouslySetInnerHTML={{ __html: el.content || 'Destaque...' }}
+              />
+            </div>
+          );
+        }
+
+        if (el.type === 'input-text' || el.type === 'input-phone' || el.type === 'input-email' || el.type === 'input-number') {
+          return (
+            <div key={el.id} className="space-y-1">
+              {el.label && (
+                <label className={`${desktop ? 'text-xs' : 'text-[10px]'} font-semibold text-gray-600`}>
+                  {el.label}
+                  {el.required && ' *'}
+                </label>
+              )}
+              <input type="text" placeholder={el.placeholder || ''} disabled className={inputClass} />
+            </div>
+          );
+        }
+
+        if (el.type === 'input-date') {
+          return (
+            <div key={el.id} className="space-y-1">
+              {el.label && (
+                <label className={`${desktop ? 'text-xs' : 'text-[10px]'} font-semibold text-gray-600`}>
+                  {el.label}
+                  {el.required && ' *'}
+                </label>
+              )}
+              <input type="date" disabled className={inputClass} />
+            </div>
+          );
+        }
+
+        if (el.type === 'input-select') {
+          return (
+            <div key={el.id} className="space-y-1">
+              {el.label && (
+                <label className={`${desktop ? 'text-xs' : 'text-[10px]'} font-semibold text-gray-600`}>
+                  {el.label}
+                  {el.required && ' *'}
+                </label>
+              )}
+              <select disabled className={inputClass}>
+                <option>Selecione...</option>
+                {(el.options || '').split('\n').filter(Boolean).map((opt, i) => (
+                  <option key={i}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          );
+        }
+
+        if (el.type === 'buttons') {
+          return (
+            <div key={el.id} className="flex gap-2 w-full">
+              <Btn gradient={theme.yesBtn} text={el.yesText || 'Sim'} />
+              <Btn text={el.noText || 'Nao'} outlined />
+            </div>
+          );
+        }
+
+        if (el.type === 'spacer') return <div key={el.id} className="h-4" />;
+        if (el.type === 'divider') return <hr key={el.id} className="border-gray-200" />;
+        return null;
+      })}
+    </div>
+  );
+}
+
 // ── Step previews ─────────────────────────────────────────────────────────────
 
 function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; photos: PhotoPair[]; theme: Theme; desktop: boolean; step?: FormStep }) {
@@ -44,6 +197,7 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
   const photo = validPhotos[0] || { before: '', after: '' };
   const headline = form.headline || `Deseja ser <span style="background: linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span>?`;
   const supportText = form.supportText || 'Procedimento realizado por profissional especializado.';
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
   void ct;
 
   return (
@@ -104,10 +258,14 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
         dangerouslySetInnerHTML={{ __html: supportText }}
       />
 
-      <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, quero!'} />
-        <Btn text={step?.noText || 'Não'} outlined />
-      </div>
+      {!!step?.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
+
+      {!hasCustomButtons && (
+        <div className="flex gap-2 w-full">
+          <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, quero!'} />
+          <Btn text={step?.noText || 'Não'} outlined />
+        </div>
+      )}
     </div>
   );
 }
@@ -116,6 +274,7 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
   const ct = form.customTexts || {};
   const question = ct.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?';
   const durationNote = ct.durationNote || (form.procedureDuration ? `O procedimento dura cerca de ${form.procedureDuration}.` : 'O procedimento dura cerca de 2h.');
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
@@ -145,10 +304,14 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
         dangerouslySetInnerHTML={{ __html: durationNote }}
       />
 
-      <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, tenho!'} />
-        <Btn text={step?.noText || 'Não'} outlined />
-      </div>
+      {!!step?.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
+
+      {!hasCustomButtons && (
+        <div className="flex gap-2 w-full">
+          <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, tenho!'} />
+          <Btn text={step?.noText || 'Não'} outlined />
+        </div>
+      )}
     </div>
   );
 }
@@ -164,6 +327,7 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
   const hasInstallment = form.installmentCount > 0 && form.installmentAmount > 0;
   const discount = form.regularPrice > 0 ? Math.round(((form.regularPrice - form.modelPrice) / form.regularPrice) * 100) : 0;
   const procedureName = form.procedureName || 'Procedimento';
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
   const pricingContext = ct.pricingContext
     ? resolveTokens(ct.pricingContext, procedureName, form.regularPrice)
     : `Sabendo que um paciente de <strong>${procedureName}</strong> pagaria em média <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
@@ -200,10 +364,14 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
         )}
       </div>
 
-      <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim!'} />
-        <Btn text={step?.noText || 'Não'} outlined />
-      </div>
+      {!!step?.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
+
+      {!hasCustomButtons && (
+        <div className="flex gap-2 w-full">
+          <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim!'} />
+          <Btn text={step?.noText || 'Não'} outlined />
+        </div>
+      )}
     </div>
   );
 }
@@ -214,6 +382,7 @@ function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: T
   const feeBenefit = ct.feeBenefitText || 'Esse valor será abatido do procedimento.';
   const feeDeducted = ct.feeDeductedLabel || 'Valor abatido';
   const feeSafe = ct.feeSafeLabel || 'Seguro';
+  const hasCustomButtons = stepHasCustomButtons(step?.elements);
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
@@ -237,15 +406,21 @@ function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: T
         <span className="text-xs px-2 py-1 rounded-full font-semibold bg-green-100 text-green-700" dangerouslySetInnerHTML={{ __html: feeSafe }} />
       </div>
 
-      <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={step?.yesText || 'Aceito o valor'} />
-        <Btn text={step?.noText || 'Não'} outlined />
-      </div>
+      {!!step?.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
+
+      {!hasCustomButtons && (
+        <div className="flex gap-2 w-full">
+          <Btn gradient={theme.yesBtn} text={step?.yesText || 'Aceito o valor'} />
+          <Btn text={step?.noText || 'Não'} outlined />
+        </div>
+      )}
     </div>
   );
 }
 
 function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Theme; desktop: boolean }) {
+  const hasCustomButtons = stepHasCustomButtons(step.elements);
+
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
       <StepIcon iconBg={theme.iconBg}>
@@ -258,18 +433,21 @@ function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Them
         dangerouslySetInnerHTML={{ __html: step.question || 'Pergunta personalizada...' }}
       />
 
-      <div className="flex gap-2 w-full">
-        <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} />
-        <Btn text={step.noText || 'Não'} outlined />
-      </div>
+      {!!step.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
+
+      {!hasCustomButtons && (
+        <div className="flex gap-2 w-full">
+          <Btn gradient={theme.yesBtn} text={step.yesText || 'Sim'} />
+          <Btn text={step.noText || 'Não'} outlined />
+        </div>
+      )}
     </div>
   );
 }
 
-function PreviewLivre({ step, desktop }: { step: FormStep; desktop: boolean }) {
+function PreviewLivre({ step, theme, desktop }: { step: FormStep; theme: Theme; desktop: boolean }) {
   const elements = step.elements || [];
   const px = desktop ? 'px-6' : 'px-4';
-  const inputClass = `w-full border border-gray-200 rounded-xl px-3 py-2 ${desktop ? 'text-sm' : 'text-xs'} bg-gray-50 text-gray-400`;
 
   if (elements.length === 0) {
     return (
@@ -284,68 +462,7 @@ function PreviewLivre({ step, desktop }: { step: FormStep; desktop: boolean }) {
 
   return (
     <div className={`flex flex-col gap-3 ${px} py-6`}>
-      {elements.map(el => {
-        if (el.type === 'heading') return (
-          <h2 key={el.id} className={`font-bold text-gray-900 ${desktop ? 'text-xl' : 'text-base'}`} dangerouslySetInnerHTML={{ __html: el.content || 'Título' }} />
-        );
-        if (el.type === 'text') return (
-          <p key={el.id} className={`text-gray-600 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: el.content || 'Texto...' }} />
-        );
-        if (el.type === 'image') return el.imageUrl
-          // eslint-disable-next-line @next/next/no-img-element
-          ? <img key={el.id} src={el.imageUrl} alt="" className="w-full rounded-xl object-cover max-h-48" />
-          : <div key={el.id} className="w-full h-20 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-xs">Imagem</div>;
-        if (el.type === 'video') return el.videoUrl
-          ? (
-            <div key={el.id} className="relative w-full rounded-xl overflow-hidden bg-gray-100" style={{ paddingBottom: '56.25%' }}>
-              <iframe src={el.videoUrl} className="absolute inset-0 w-full h-full" allowFullScreen />
-            </div>
-          ) : <div key={el.id} className="w-full h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-xs">Vídeo</div>;
-        if (el.type === 'checklist') return (
-          <ul key={el.id} className="space-y-1.5">
-            {(el.content || '').split('\n').filter(Boolean).map((item, i) => (
-              <li key={i} className={`flex items-center gap-2 text-gray-700 ${desktop ? 'text-sm' : 'text-xs'}`}>
-                <span className="text-green-500 font-bold flex-shrink-0">✓</span> {item}
-              </li>
-            ))}
-          </ul>
-        );
-        if (el.type === 'highlight') return (
-          <div key={el.id} className="rounded-xl px-4 py-3" style={{ background: el.color || '#f3f0ff' }}>
-            <p className={`text-gray-800 leading-snug ${desktop ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: el.content || 'Destaque...' }} />
-          </div>
-        );
-        if (el.type === 'input-text' || el.type === 'input-phone' || el.type === 'input-email' || el.type === 'input-number') return (
-          <div key={el.id} className="space-y-1">
-            {el.label && <label className={`${desktop ? 'text-xs' : 'text-[10px]'} font-semibold text-gray-600`}>{el.label}{el.required && ' *'}</label>}
-            <input type="text" placeholder={el.placeholder || ''} disabled className={inputClass} />
-          </div>
-        );
-        if (el.type === 'input-date') return (
-          <div key={el.id} className="space-y-1">
-            {el.label && <label className={`${desktop ? 'text-xs' : 'text-[10px]'} font-semibold text-gray-600`}>{el.label}{el.required && ' *'}</label>}
-            <input type="date" disabled className={inputClass} />
-          </div>
-        );
-        if (el.type === 'input-select') return (
-          <div key={el.id} className="space-y-1">
-            {el.label && <label className={`${desktop ? 'text-xs' : 'text-[10px]'} font-semibold text-gray-600`}>{el.label}{el.required && ' *'}</label>}
-            <select disabled className={inputClass}>
-              <option>Selecione...</option>
-              {(el.options || '').split('\n').filter(Boolean).map((opt, i) => <option key={i}>{opt}</option>)}
-            </select>
-          </div>
-        );
-        if (el.type === 'buttons') return (
-          <div key={el.id} className="flex gap-2">
-            <div className="flex-1 py-2.5 text-center font-bold rounded-xl text-sm text-white bg-gradient-to-r from-violet-500 to-purple-600">{el.yesText || 'Sim'}</div>
-            <div className="flex-1 py-2.5 text-center font-bold rounded-xl text-sm bg-gray-100 text-gray-600">{el.noText || 'Não'}</div>
-          </div>
-        );
-        if (el.type === 'spacer') return <div key={el.id} className="h-4" />;
-        if (el.type === 'divider') return <hr key={el.id} className="border-gray-200" />;
-        return null;
-      })}
+      <PreviewExtraElements step={step} theme={theme} desktop={desktop} />
     </div>
   );
 }
@@ -403,7 +520,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
       case 'preco': return <PreviewPreco form={form} theme={theme} desktop={desktop} step={step} />;
       case 'taxa': return <PreviewTaxa form={form} theme={theme} desktop={desktop} step={step} />;
       case 'pergunta': return <PreviewPergunta step={step} theme={theme} desktop={desktop} />;
-      case 'livre': return <PreviewLivre step={step} desktop={desktop} />;
+      case 'livre': return <PreviewLivre step={step} theme={theme} desktop={desktop} />;
     }
   }
 
@@ -547,7 +664,7 @@ export function StepPreviewContent({ form, photos, steps, stepIndex }: {
     case 'preco': return <PreviewPreco form={form} theme={theme} desktop={false} step={step} />;
     case 'taxa': return <PreviewTaxa form={form} theme={theme} desktop={false} step={step} />;
     case 'pergunta': return <PreviewPergunta step={step} theme={theme} desktop={false} />;
-    case 'livre': return <PreviewLivre step={step} desktop={false} />;
+    case 'livre': return <PreviewLivre step={step} theme={theme} desktop={false} />;
     default: return null;
   }
 }
