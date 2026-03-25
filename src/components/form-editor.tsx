@@ -11,7 +11,7 @@ import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import 'react-day-picker/style.css';
-import FormStepBuilder from './form-step-builder';
+import FormStepBuilder, { StepDotsBar } from './form-step-builder';
 import FormPreviewPanel from './form-preview-panel';
 import RichTextField from './rich-text-field';
 import CanvasBuilder from './canvas-builder';
@@ -329,6 +329,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             onChange={setSteps}
             currentIndex={currentStepIndex}
             onCurrentIndexChange={setCurrentStepIndex}
+            formName={form.name}
             hasCelebration
             onConfigOpen={() => setConfigModalOpen(true)}
             onPickerChange={setStepPickerOpen}
@@ -918,23 +919,37 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
         </div>
 
         {/* ── Navegação entre telas ── */}
-        <div className="flex items-center justify-between px-2">
-          <button
-            type="button"
-            onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
-            disabled={currentStepIndex === 0}
-            className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-          >
-            ← Anterior
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentStepIndex(i => Math.min(steps.length, i + 1))}
-            disabled={currentStepIndex === steps.length}
-            className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-          >
-            Próximo →
-          </button>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-2">
+          <div className="justify-self-start">
+            <button
+              type="button"
+              onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
+              disabled={currentStepIndex === 0}
+              className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              ← Anterior
+            </button>
+          </div>
+
+          <StepDotsBar
+            steps={steps}
+            onChange={setSteps}
+            currentIndex={currentStepIndex}
+            onCurrentIndexChange={setCurrentStepIndex}
+            hasCelebration
+            className="justify-self-center"
+          />
+
+          <div className="justify-self-end">
+            <button
+              type="button"
+              onClick={() => setCurrentStepIndex(i => Math.min(steps.length, i + 1))}
+              disabled={currentStepIndex === steps.length}
+              className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              Próximo →
+            </button>
+          </div>
         </div>
 
         {/* ── Config Modal ── */}
@@ -1155,7 +1170,7 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
     {/* Live preview — only on large screens */}
     <div className="hidden xl:block">
-      <FormPreviewPanel form={{ ...form, customTexts }} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
+      <FormPreviewPanel form={{ ...form, customTexts, slug }} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
     </div>
     </div>
     </div>

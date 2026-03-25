@@ -87,12 +87,22 @@ interface FormStepBuilderProps {
   onChange: (steps: FormStep[]) => void;
   currentIndex: number;
   onCurrentIndexChange: (index: number) => void;
+  formName?: string;
   hasCelebration?: boolean;
   onConfigOpen?: () => void;
   onPickerChange?: (open: boolean) => void;
   onInsertButtonClick?: () => void;
   insertButtonActive?: boolean;
   showInsertButton?: boolean;
+}
+
+interface StepDotsBarProps {
+  steps: FormStep[];
+  onChange: (steps: FormStep[]) => void;
+  currentIndex: number;
+  onCurrentIndexChange: (index: number) => void;
+  hasCelebration?: boolean;
+  className?: string;
 }
 
 // ─── Sortable Dot ─────────────────────────────────────────────────────────────
@@ -200,11 +210,73 @@ function AddStepPicker({ onAdd, onClose }: AddStepPickerProps) {
 
 // ─── Main Builder ─────────────────────────────────────────────────────────────
 
+export function StepDotsBar({
+  steps,
+  onChange,
+  currentIndex,
+  onCurrentIndexChange,
+  hasCelebration = false,
+  className = '',
+}: StepDotsBarProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const isCelebration = hasCelebration && currentIndex === steps.length;
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = steps.findIndex(s => s.id === active.id);
+    const newIndex = steps.findIndex(s => s.id === over.id);
+    const reordered = arrayMove(steps, oldIndex, newIndex);
+    onChange(reordered);
+    const movedStepId = steps[currentIndex]?.id;
+    if (movedStepId) {
+      const newCurrentIndex = reordered.findIndex(s => s.id === movedStepId);
+      if (newCurrentIndex !== -1) onCurrentIndexChange(newCurrentIndex);
+    }
+  }
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={steps.map(s => s.id)} strategy={horizontalListSortingStrategy}>
+        <div className={`flex items-center justify-center gap-1.5 ${className}`}>
+          {steps.map((step, index) => (
+            <div key={step.id} className="relative">
+              {step.hidden && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full z-10" title="Oculta" />
+              )}
+              <SortableDot
+                id={step.id}
+                isActive={index === currentIndex}
+                onClick={() => onCurrentIndexChange(index)}
+              />
+            </div>
+          ))}
+          {hasCelebration && (
+            <button
+              type="button"
+              onClick={() => onCurrentIndexChange(steps.length)}
+              className={isCelebration
+                ? 'w-5 h-2 rounded-full bg-[#6B1C3A] cursor-pointer transition-all'
+                : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-all'}
+              aria-label="Tela de celebração"
+            />
+          )}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
 export default function FormStepBuilder({
   steps,
   onChange,
   currentIndex,
   onCurrentIndexChange,
+  formName,
   hasCelebration = false,
   onConfigOpen,
   onPickerChange,
@@ -219,29 +291,9 @@ export default function FormStepBuilder({
     onPickerChange?.(open);
   }
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
   const isCelebration = hasCelebration && currentIndex === steps.length;
   const totalSteps = hasCelebration ? steps.length + 1 : steps.length;
   const currentStep = !isCelebration ? (steps[currentIndex] ?? steps[0]) : null;
-
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIndex = steps.findIndex(s => s.id === active.id);
-    const newIndex = steps.findIndex(s => s.id === over.id);
-    const reordered = arrayMove(steps, oldIndex, newIndex);
-    onChange(reordered);
-    // keep the current step focused after reorder
-    const movedStepId = steps[currentIndex]?.id;
-    if (movedStepId) {
-      const newCurrentIndex = reordered.findIndex(s => s.id === movedStepId);
-      if (newCurrentIndex !== -1) onCurrentIndexChange(newCurrentIndex);
-    }
-  }
 
   function addStep(type: FormStepType) {
     const newStep: FormStep = {
@@ -276,6 +328,13 @@ export default function FormStepBuilder({
 
   return (
     <>
+      {!!formName && (
+        <div className="px-4 pt-4 pb-2 border-b border-gray-100 bg-gray-50/40">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">Formulário em edição</p>
+          <p className="text-sm font-semibold text-gray-900 truncate mt-1">{formName}</p>
+        </div>
+      )}
+
       {/* ── Navigation bar ── */}
       <div className="flex items-center gap-2 px-4 py-3">
         {/* Step name + counter */}
@@ -364,36 +423,6 @@ export default function FormStepBuilder({
           </button>
         )}
       </div>
-
-      {/* ── Dots ── */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={steps.map(s => s.id)} strategy={horizontalListSortingStrategy}>
-          <div className="px-4 py-2 flex items-center justify-center gap-1.5 border-t border-gray-100">
-            {steps.map((step, index) => (
-              <div key={step.id} className="relative">
-                {step.hidden && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full z-10" title="Oculta" />
-                )}
-                <SortableDot
-                  id={step.id}
-                  isActive={index === currentIndex}
-                  onClick={() => onCurrentIndexChange(index)}
-                />
-              </div>
-            ))}
-            {hasCelebration && (
-              <button
-                type="button"
-                onClick={() => onCurrentIndexChange(steps.length)}
-                className={isCelebration
-                  ? 'w-5 h-2 rounded-full bg-[#6B1C3A] cursor-pointer transition-all'
-                  : 'w-2 h-2 rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer transition-all'}
-                aria-label="Tela de celebração"
-              />
-            )}
-          </div>
-        </SortableContext>
-      </DndContext>
 
       {/* ── Add Step Picker ── */}
       {showPicker && (
