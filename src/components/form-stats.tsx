@@ -78,13 +78,16 @@ function StepPhonePreview({ step, formData }: { step: number; formData: FormData
           <div className="bg-gray-900 flex justify-center pt-1 pb-1">
             <div className="w-10 h-[4px] bg-gray-700 rounded-full" />
           </div>
-          {/* Scaled content */}
-          <div style={{
-            width: INNER_W,
-            transform: `scale(${SCALE})`,
-            transformOrigin: 'top left',
-            pointerEvents: 'none',
-          }}>
+          {/* Scaled content — centered via negative left offset + top-center origin */}
+          <div style={{ position: 'relative', overflow: 'hidden', height: PHONE_H - 20 }}>
+            <div style={{
+              position: 'absolute',
+              width: INNER_W,
+              left: (PHONE_W - INNER_W) / 2,
+              transform: `scale(${SCALE})`,
+              transformOrigin: 'top center',
+              pointerEvents: 'none',
+            }}>
             <StepPreviewContent
               form={formInput}
               photos={photos}
@@ -95,6 +98,7 @@ function StepPhonePreview({ step, formData }: { step: number; formData: FormData
         </div>
       </div>
     </div>
+  </div>
   );
 }
 
