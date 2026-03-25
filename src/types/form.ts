@@ -31,6 +31,7 @@ export interface CanvasElement {
 export interface FormStep {
   id: string;
   type: FormStepType;
+  label?: string;    // nome personalizado (usado em telas 'livre')
   question?: string;
   yesText?: string;
   noText?: string;
@@ -106,6 +107,7 @@ export interface FormData {
 
 export interface FormInput {
   name: string;
+  slug?: string;
   procedureName: string;
   availableDays: string;
   regularPrice: number;
