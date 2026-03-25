@@ -5,7 +5,13 @@ import crypto from 'crypto';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { formId, eventName = 'Lead', eventSourceUrl, clientIp, clientUserAgent, eventId, contentName } = body;
+    const { formId, eventName = 'Lead', eventSourceUrl, clientUserAgent, eventId, contentName, fbp, fbc } = body;
+
+    // Get real client IP from request headers (Vercel/reverse proxy)
+    const clientIp =
+      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+      request.headers.get('x-real-ip') ||
+      '';
 
     if (!formId) return NextResponse.json({ error: 'formId obrigatório' }, { status: 400 });
 
@@ -34,6 +40,8 @@ export async function POST(request: NextRequest) {
           user_data: {
             client_ip_address: clientIp || '',
             client_user_agent: clientUserAgent || '',
+            ...(fbp ? { fbp } : {}),
+            ...(fbc ? { fbc } : {}),
           },
           custom_data: {
             content_name: contentName || '',

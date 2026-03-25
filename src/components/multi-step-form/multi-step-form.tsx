@@ -86,6 +86,21 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
 
   const fireCapiEvent = useCallback((eventName: string, eventId: string) => {
     if (!capiToken) return;
+
+    // Read Meta cookies for attribution
+    function getCookie(name: string): string {
+      if (typeof document === 'undefined') return '';
+      const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return match ? decodeURIComponent(match[1]) : '';
+    }
+    const fbp = getCookie('_fbp');
+    // fbc: prefer cookie, fall back to fbclid in URL
+    let fbc = getCookie('_fbc');
+    if (!fbc && typeof window !== 'undefined') {
+      const fbclid = new URLSearchParams(window.location.search).get('fbclid');
+      if (fbclid) fbc = `fb.1.${Date.now()}.${fbclid}`;
+    }
+
     const body = JSON.stringify({
       formId: formData.id,
       eventName,
@@ -93,6 +108,8 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       contentName: formData.procedureName,
       eventSourceUrl: typeof window !== 'undefined' ? window.location.href : '',
       clientUserAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
+      fbp,
+      fbc,
     });
     // sendBeacon garante envio mesmo quando o browser navega/suspende a aba (ex: abrir WhatsApp)
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
