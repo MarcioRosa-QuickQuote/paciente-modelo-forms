@@ -50,6 +50,7 @@ export const formInputSchema = z.object({
     question: z.string().optional(),
     yesText: z.string().optional(),
     noText: z.string().optional(),
+    hidden: z.boolean().optional(),
     elements: z.array(z.object({
       id: z.string(),
       type: z.enum(['heading', 'text', 'image', 'buttons', 'spacer', 'divider',
