@@ -9,6 +9,9 @@ interface Lead {
   name: string;
   whatsapp: string;
   email: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
   created_at: string;
   forms: { name: string } | null;
 }
@@ -16,6 +19,12 @@ interface Lead {
 function formatPhone(digits: string): string {
   if (!digits || digits.length < 10) return digits;
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)} ${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+}
+
+function getLeadDisplayName(lead: Lead): string {
+  if (lead.name?.trim()) return lead.name.trim();
+  if (lead.whatsapp || lead.email) return 'Lead sem nome';
+  return 'Contato via WhatsApp';
 }
 
 export default function LeadsPage() {
@@ -45,10 +54,9 @@ export default function LeadsPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Leads</h1>
-        <p className="text-gray-500 mt-1">Pacientes que preencheram o formulário de dados</p>
+        <p className="text-gray-500 mt-1">Cliques no WhatsApp e envios do formulario final</p>
       </div>
 
-      {/* Counter */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-6 w-fit">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total de Leads</p>
         <p className="text-3xl font-bold text-[#6B1C3A]">{leads.length}</p>
@@ -60,7 +68,7 @@ export default function LeadsPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           <h3 className="text-lg font-bold text-gray-900 mb-1">Nenhum lead ainda</h3>
-          <p className="text-gray-400 text-sm">Quando pacientes preencherem seus dados, eles aparecerão aqui</p>
+          <p className="text-gray-400 text-sm">Quando pacientes responderem seus formularios, eles aparecerao aqui</p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -71,7 +79,8 @@ export default function LeadsPage() {
                   <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nome</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">WhatsApp</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">E-mail</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Formulário</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Origem</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Formulario</th>
                   <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Data</th>
                 </tr>
               </thead>
@@ -79,7 +88,7 @@ export default function LeadsPage() {
                 {leads.map((lead) => (
                   <tr key={lead.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-gray-900">{lead.name || '—'}</span>
+                      <span className="text-sm font-semibold text-gray-900">{getLeadDisplayName(lead)}</span>
                     </td>
                     <td className="px-6 py-4">
                       {lead.whatsapp ? (
@@ -95,15 +104,33 @@ export default function LeadsPage() {
                           {formatPhone(lead.whatsapp)}
                         </a>
                       ) : (
-                        <span className="text-sm text-gray-400">—</span>
+                        <span className="text-sm text-gray-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">{lead.email || '—'}</span>
+                      <span className="text-sm text-gray-600">{lead.email || '-'}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {lead.utm_source || lead.utm_medium || lead.utm_campaign ? (
+                        <div className="flex flex-col gap-0.5">
+                          {lead.utm_source && (
+                            <span className="px-2 py-0.5 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-full text-xs font-semibold w-fit">
+                              {lead.utm_source}
+                            </span>
+                          )}
+                          {lead.utm_medium && (
+                            <span className="text-xs text-gray-400">
+                              {lead.utm_medium}{lead.utm_campaign ? ` · ${lead.utm_campaign}` : ''}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">Direto</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs bg-[#6B1C3A]/10 text-[#6B1C3A] px-2.5 py-1 rounded-lg font-medium">
-                        {lead.forms?.name || '—'}
+                        {lead.forms?.name || '-'}
                       </span>
                     </td>
                     <td className="px-6 py-4">

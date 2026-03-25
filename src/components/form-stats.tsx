@@ -25,6 +25,12 @@ interface Lead {
   created_at: string;
 }
 
+function getLeadDisplayName(lead: Lead): string {
+  if (lead.name?.trim()) return lead.name.trim();
+  if (lead.whatsapp || lead.email) return 'Lead sem nome';
+  return 'Contato via WhatsApp';
+}
+
 type Preset = 'hoje' | 'ontem' | 'semana' | 'mes' | 'periodo';
 type ViewMode = 'stats' | 'leads' | 'chart';
 
@@ -129,7 +135,7 @@ function PieChart({ leads }: { leads: Lead[] }) {
   }
   const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const total = leads.length;
-  if (total === 0) return <p className="text-center text-gray-400 text-sm py-8">Nenhum lead com dados UTM</p>;
+  if (total === 0) return <p className="text-center text-gray-400 text-sm py-8">Nenhum lead cadastrado ainda</p>;
 
   let cumAngle = -Math.PI / 2;
   const R = 80;
@@ -149,7 +155,7 @@ function PieChart({ leads }: { leads: Lead[] }) {
 
   return (
     <div className="p-6">
-      <h4 className="text-sm font-bold text-gray-700 mb-4">Origem dos leads (utm_source)</h4>
+      <h4 className="text-sm font-bold text-gray-700 mb-4">Origem dos leads</h4>
       <div className="flex flex-col sm:flex-row items-center gap-6">
         <svg width="200" height="200" viewBox="0 0 200 200">
           {entries.map(([, v], i) => (
@@ -195,7 +201,7 @@ function LeadsList({ leads, loading }: { leads: Lead[]; loading: boolean }) {
           {leads.map(l => (
             <tr key={l.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
               <td className="py-3 px-4">
-                <p className="font-semibold text-gray-900">{l.name || 'Lead'}</p>
+                <p className="font-semibold text-gray-900">{getLeadDisplayName(l)}</p>
                 {l.whatsapp && <p className="text-xs text-gray-400 mt-0.5">{l.whatsapp}</p>}
               </td>
               <td className="py-3 px-4 text-gray-500 text-xs whitespace-nowrap">

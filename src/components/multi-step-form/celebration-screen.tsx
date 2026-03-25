@@ -22,6 +22,8 @@ const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D39
 
 export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage, theme, onTrackEvent, customTexts, demo }: Props) {
   const hasLaunched = useRef(false);
+  const utms = useRef<{ utmSource?: string; utmMedium?: string; utmCampaign?: string }>({});
+  const leadTrackedRef = useRef(false);
   const [showDemoModal, setShowDemoModal] = useState(false);
 
   const launchConfetti = useCallback(() => {
@@ -44,6 +46,15 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
     }
   }, [launchConfetti]);
 
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    utms.current = {
+      utmSource: p.get('utm_source') || undefined,
+      utmMedium: p.get('utm_medium') || undefined,
+      utmCampaign: p.get('utm_campaign') || undefined,
+    };
+  }, []);
+
   const plainProcedureName = procedureName.replace(/<[^>]*>/g, '');
   const defaultMessage = `Olá! Tenho interesse em ser paciente modelo para ${plainProcedureName}!`;
   const rawPhone = whatsappNumber.replace(/\D/g, '');
@@ -52,12 +63,41 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
     whatsappMessage || defaultMessage
   )}`;
 
+  function saveWhatsAppLead() {
+    if (leadTrackedRef.current) return;
+
+    const body = JSON.stringify({
+      formId,
+      name: '',
+      whatsapp: '',
+      email: '',
+      ...utms.current,
+    });
+
+    leadTrackedRef.current = true;
+
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      const queued = navigator.sendBeacon('/api/leads', new Blob([body], { type: 'application/json' }));
+      if (queued) return;
+    }
+
+    fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true,
+    }).catch(() => {
+      leadTrackedRef.current = false;
+    });
+  }
+
   function handleWhatsAppClick(e: React.MouseEvent) {
     e.preventDefault();
     if (demo) {
       setShowDemoModal(true);
       return;
     }
+    saveWhatsAppLead();
     const body = JSON.stringify({ formId, step: 5, answer: 'sim' });
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       navigator.sendBeacon('/api/responses', new Blob([body], { type: 'application/json' }));
