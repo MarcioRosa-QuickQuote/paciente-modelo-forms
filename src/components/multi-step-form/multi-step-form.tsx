@@ -49,7 +49,7 @@ interface Props {
 }
 
 export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken, demo }: Props) {
-  const steps = formData.steps?.length > 0 ? formData.steps : DEFAULT_STEPS;
+  const steps = (formData.steps?.length > 0 ? formData.steps : DEFAULT_STEPS).filter(s => !s.hidden);
   const [state, setState] = useState<ScreenState>({ type: 'step', index: 0 });
   const theme = getTheme(formData.theme);
 

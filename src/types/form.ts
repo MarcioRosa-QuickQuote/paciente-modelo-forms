@@ -29,6 +29,7 @@ export interface FormStep {
   yesText?: string;
   noText?: string;
   elements?: CanvasElement[]; // only for 'livre' type
+  hidden?: boolean; // se true, a tela não aparece no formulário gerado
 }
 
 export interface CustomTexts {
