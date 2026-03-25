@@ -3,7 +3,7 @@ import { saveResponse } from '@/db';
 
 export async function POST(request: NextRequest) {
   try {
-    const { formId, step, answer } = await request.json();
+    const { formId, step, answer, stepId } = await request.json();
 
     if (!formId || !step || !answer) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid answer' }, { status: 400 });
     }
 
-    await saveResponse(formId, step, answer);
+    await saveResponse(formId, step, answer, typeof stepId === 'string' ? stepId : undefined);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error saving response:', error);

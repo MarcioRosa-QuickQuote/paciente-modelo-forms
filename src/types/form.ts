@@ -32,6 +32,7 @@ export interface FormStep {
   id: string;
   type: FormStepType;
   label?: string;    // nome personalizado (usado em telas 'livre')
+  icon?: string;
   question?: string;
   yesText?: string;
   noText?: string;

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { StepIconGlyph } from '@/lib/step-icons';
 import { CustomTexts, FormStep } from '@/types/form';
 import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
@@ -43,9 +44,7 @@ export default function StepAvailability({
         style={{ background: theme.iconBg }}
         className="w-20 h-20 rounded-full flex items-center justify-center mb-8 shadow-lg"
       >
-        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+        <StepIconGlyph value={step?.icon} type="disponibilidade" svgClassName="w-10 h-10 text-white" emojiClassName="text-4xl leading-none" />
       </motion.div>
 
       <motion.div

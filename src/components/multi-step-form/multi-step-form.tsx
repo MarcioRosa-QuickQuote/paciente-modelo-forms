@@ -66,12 +66,13 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
   }, [screenKey]);
 
   const trackResponse = useCallback((stepIndex: number, answer: 'sim' | 'nao') => {
+    const step = steps[stepIndex];
     fetch('/api/responses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ formId: formData.id, step: stepIndex + 1, answer }),
+      body: JSON.stringify({ formId: formData.id, step: stepIndex + 1, stepId: step?.id, answer }),
     }).catch(() => {});
-  }, [formData.id]);
+  }, [formData.id, steps]);
 
   const firePixelEvent = useCallback((eventName: string, eventId: string) => {
     if (!pixelId) return;
@@ -312,12 +313,14 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
               <LeadFormScreen
                 formId={formData.id}
                 formFields={formData.formFields}
+                finalStepNumber={steps.length + 1}
                 theme={theme}
                 onTrackEvent={trackEvent}
               />
             ) : state.type === 'special' && state.screen === 'celebration' && (
               <CelebrationScreen
                 formId={formData.id}
+                finalStepNumber={steps.length + 1}
                 whatsappNumber={formData.whatsappNumber}
                 procedureName={formData.procedureName}
                 whatsappMessage={formData.whatsappMessage}

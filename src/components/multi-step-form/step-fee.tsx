@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { StepIconGlyph } from '@/lib/step-icons';
 import { CustomTexts, FormStep } from '@/types/form';
 import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
@@ -30,9 +31,7 @@ export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText
         style={{ background: theme.iconBg }}
         className="w-20 h-20 rounded-full flex items-center justify-center mb-8 shadow-lg"
       >
-        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
+        <StepIconGlyph value={step?.icon} type="taxa" svgClassName="w-10 h-10 text-white" emojiClassName="text-4xl leading-none" />
       </motion.div>
 
       <motion.div

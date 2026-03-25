@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { FormData, FormInput } from '@/types/form';
+import { FormData, FormInput, FormStep } from '@/types/form';
 import { StepPreviewContent } from './form-preview-panel';
 import { getStepInfo } from './form-step-builder';
 
@@ -10,8 +10,9 @@ interface StepStats {
   nao: number;
 }
 
-interface Stats {
-  [key: string]: StepStats;
+interface StatsResponse {
+  byPosition: Record<string, StepStats>;
+  byStepId: Record<string, StepStats>;
 }
 
 interface Lead {
@@ -224,7 +225,7 @@ function LeadsList({ leads, loading }: { leads: Lead[]; loading: boolean }) {
 // ── FormStats ──────────────────────────────────────────────────────────────────
 
 export default function FormStats({ formId, formData }: { formId: string; formData: FormData }) {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [clearing, setClearing] = useState(false);
   const [preset, setPreset] = useState<Preset>('mes');
@@ -236,6 +237,15 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
+  const visibleSteps = (formData.steps || []).filter(s => !s.hidden);
+
+  function getPositionStats(position: number): StepStats {
+    return stats?.byPosition?.[String(position)] || { sim: 0, nao: 0 };
+  }
+
+  function getStepStats(step: FormStep, position: number): StepStats {
+    return stats?.byStepId?.[step.id] || getPositionStats(position);
+  }
 
   function handleBarMouseEnter(step: number) {
     setHoveredStep(step);
@@ -300,7 +310,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     setClearing(true);
     try {
       await fetch(`/api/stats/${formId}`, { method: 'DELETE' });
-      setStats({});
+      setStats({ byPosition: {}, byStepId: {} });
     } catch {
       alert('Erro ao zerar respostas');
     } finally {
@@ -316,9 +326,10 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     { key: 'periodo', label: 'Período' },
   ];
 
-  const visibleStepCount = (formData.steps || []).filter(s => !s.hidden).length;
-  const totalResponses = (stats?.['1']?.sim || 0) + (stats?.['1']?.nao || 0);
-  const whatsappClicks = stats?.[String(visibleStepCount + 1)]?.sim || 0;
+  const visibleStepCount = visibleSteps.length;
+  const firstStepStats = visibleSteps[0] ? getStepStats(visibleSteps[0], 1) : { sim: 0, nao: 0 };
+  const totalResponses = firstStepStats.sim + firstStepStats.nao;
+  const whatsappClicks = getPositionStats(visibleStepCount + 1).sim || 0;
   const conversionRate = totalResponses > 0 ? Math.round((whatsappClicks / totalResponses) * 100) : 0;
 
   return (
@@ -457,16 +468,12 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
           {/* Chart */}
           <div className="p-6 space-y-6">
             {(() => {
-              // Build visible step list from formData
-              const visibleSteps = (formData.steps || []).filter(s => !s.hidden);
-              // Stats keys are 1-indexed positions of visible steps
               const finalStepNum = visibleSteps.length + 1; // WhatsApp click
 
               return (
                 <>
                   {visibleSteps.map((step, idx) => {
-                    const statKey = String(idx + 1);
-                    const s = stats[statKey] || { sim: 0, nao: 0 };
+                    const s = getStepStats(step, idx + 1);
                     const total = s.sim + s.nao;
                     const simPct = total > 0 ? Math.round((s.sim / total) * 100) : 0;
                     const naoPct = total > 0 ? Math.round((s.nao / total) * 100) : 0;
@@ -522,9 +529,11 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
 
                   {/* WhatsApp click bar */}
                   {(() => {
-                    const s = stats[String(finalStepNum)] || { sim: 0, nao: 0 };
+                    const s = getPositionStats(finalStepNum);
                     const clicks = s.sim;
-                    const prevSim = stats[String(visibleSteps.length)]?.sim || 0;
+                    const prevSim = visibleSteps.length > 0
+                      ? getStepStats(visibleSteps[visibleSteps.length - 1], visibleSteps.length).sim
+                      : 0;
                     const clickPct = prevSim > 0 ? Math.round((clicks / prevSim) * 100) : 0;
                     return (
                       <div

@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS responses (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE responses ADD COLUMN IF NOT EXISTS step_id TEXT;
+
 -- 7. Criar tabela de leads
 CREATE TABLE IF NOT EXISTS leads (
   id SERIAL PRIMARY KEY,

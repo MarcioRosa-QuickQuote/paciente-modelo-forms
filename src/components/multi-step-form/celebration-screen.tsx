@@ -9,6 +9,7 @@ import { CustomTexts } from '@/types/form';
 
 interface Props {
   formId: string;
+  finalStepNumber: number;
   whatsappNumber: string;
   procedureName: string;
   whatsappMessage?: string;
@@ -20,7 +21,7 @@ interface Props {
 
 const BALLOONS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA', '#FB7185', '#34D399', '#60A5FA', '#F472B6'];
 
-export default function CelebrationScreen({ formId, whatsappNumber, procedureName, whatsappMessage, theme, onTrackEvent, customTexts, demo }: Props) {
+export default function CelebrationScreen({ formId, finalStepNumber, whatsappNumber, procedureName, whatsappMessage, theme, onTrackEvent, customTexts, demo }: Props) {
   const hasLaunched = useRef(false);
   const utms = useRef<{ utmSource?: string; utmMedium?: string; utmCampaign?: string }>({});
   const leadTrackedRef = useRef(false);
@@ -98,7 +99,7 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
       return;
     }
     saveWhatsAppLead();
-    const body = JSON.stringify({ formId, step: 5, answer: 'sim' });
+    const body = JSON.stringify({ formId, step: finalStepNumber, stepId: 'celebration', answer: 'sim' });
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       navigator.sendBeacon('/api/responses', new Blob([body], { type: 'application/json' }));
     } else {

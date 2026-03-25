@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { StepIconGlyph } from '@/lib/step-icons';
 import { CustomTexts, FormStep } from '@/types/form';
 import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
@@ -68,9 +69,7 @@ export default function StepPricing({
         style={{ background: theme.iconBg }}
         className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-4 sm:mb-8 shadow-lg"
       >
-        <svg className="w-7 h-7 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+        <StepIconGlyph value={step?.icon} type="preco" svgClassName="w-7 h-7 sm:w-10 sm:h-10 text-white" emojiClassName="text-3xl sm:text-4xl leading-none" />
       </motion.div>
 
       <motion.div

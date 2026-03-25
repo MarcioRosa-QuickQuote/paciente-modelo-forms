@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { FormInput, FormStep, PhotoPair } from '@/types/form';
 import { getTheme, Theme } from '@/lib/themes';
+import { StepIconGlyph } from '@/lib/step-icons';
 import { formatCurrency } from '@/lib/utils';
 import { stepHasCustomButtons } from './multi-step-form/step-canvas-elements';
 
@@ -29,10 +30,15 @@ function Btn({ gradient, text, outlined }: { gradient?: string; text: string; ou
   );
 }
 
-function StepIcon({ iconBg, children }: { iconBg: string; children: React.ReactNode }) {
+function StepIcon({ iconBg, stepType, icon, desktop }: { iconBg: string; stepType: FormStep['type']; icon?: string; desktop: boolean }) {
   return (
     <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 shadow-md flex-shrink-0" style={{ background: iconBg }}>
-      {children}
+      <StepIconGlyph
+        value={icon}
+        type={stepType}
+        svgClassName="w-7 h-7 text-white"
+        emojiClassName={desktop ? 'text-3xl leading-none' : 'text-2xl leading-none'}
+      />
     </div>
   );
 }
@@ -368,11 +374,7 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
-      <StepIcon iconBg={theme.iconBg}>
-        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      </StepIcon>
+      <StepIcon iconBg={theme.iconBg} stepType="disponibilidade" icon={step?.icon} desktop={desktop} />
 
       <p
         className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
@@ -428,11 +430,7 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
-      <StepIcon iconBg={theme.iconBg}>
-        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </StepIcon>
+      <StepIcon iconBg={theme.iconBg} stepType="preco" icon={step?.icon} desktop={desktop} />
 
       <p
         className={`font-bold text-gray-900 text-center mb-1 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
@@ -476,11 +474,7 @@ function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: T
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
-      <StepIcon iconBg={theme.iconBg}>
-        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      </StepIcon>
+      <StepIcon iconBg={theme.iconBg} stepType="taxa" icon={step?.icon} desktop={desktop} />
 
       <p className={`font-bold text-gray-900 text-center mb-2 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
         dangerouslySetInnerHTML={{ __html: feePrefix }}
@@ -513,11 +507,7 @@ function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Them
 
   return (
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
-      <StepIcon iconBg={theme.iconBg}>
-        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </StepIcon>
+      <StepIcon iconBg={theme.iconBg} stepType="pergunta" icon={step.icon} desktop={desktop} />
 
       <p className={`font-bold text-gray-900 text-center mb-6 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}
         dangerouslySetInnerHTML={{ __html: step.question || 'Pergunta personalizada...' }}

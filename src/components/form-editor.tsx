@@ -4,14 +4,15 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FormData, FormInput, PhotoPair, FormStep, CustomTexts } from '@/types/form';
 import { generateSlug } from '@/lib/utils';
-import { THEMES } from '@/lib/themes';
+import { THEMES, getTheme } from '@/lib/themes';
+import { STEP_ICON_OPTIONS, StepIconGlyph, canCustomizeStepIcon, getDefaultStepIconId, isPresetStepIcon } from '@/lib/step-icons';
 import { supabase } from '@/lib/supabase-client';
 import Image from 'next/image';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import 'react-day-picker/style.css';
-import FormStepBuilder, { StepDotsBar, StepCardsList } from './form-step-builder';
+import FormStepBuilder, { StepCardsList } from './form-step-builder';
 import FormPreviewPanel from './form-preview-panel';
 import RichTextField from './rich-text-field';
 import CanvasBuilder from './canvas-builder';
@@ -313,6 +314,10 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
   const currentStep = steps[currentStepIndex];
   const showElementsBuilder = !!currentStep && (currentStep.type === 'livre' || insertPanelOpen);
+  const currentTheme = getTheme(form.theme);
+  const currentStepSupportsIcon = !!currentStep && canCustomizeStepIcon(currentStep.type);
+  const activeStepIcon = currentStepSupportsIcon ? (currentStep.icon?.trim() || getDefaultStepIconId(currentStep.type)) : '';
+  const customStepIcon = currentStepSupportsIcon && currentStep?.icon && !isPresetStepIcon(currentStep.icon) ? currentStep.icon : '';
 
   return (
     <div className="w-full">
@@ -371,6 +376,72 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
           )}
           {!stepPickerOpen && currentStep && (
             <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
+
+              {currentStepSupportsIcon && (
+                <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
+                      style={{ background: currentTheme.iconBg }}
+                    >
+                      <StepIconGlyph
+                        value={activeStepIcon}
+                        type={currentStep.type}
+                        svgClassName="w-6 h-6 text-white"
+                        emojiClassName="text-2xl leading-none"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Ícone da etapa</p>
+                      <p className="text-xs text-gray-400">Escolha um ícone comum ou use um emoji/símbolo personalizado.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-2">
+                    {STEP_ICON_OPTIONS.map(option => {
+                      const isActive = activeStepIcon === option.id;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => updateCurrentStep({ icon: option.id })}
+                          className={`rounded-xl border p-2 transition-all cursor-pointer ${
+                            isActive
+                              ? 'border-[#6B1C3A] bg-[#6B1C3A]/8 shadow-sm'
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                          }`}
+                          title={option.label}
+                        >
+                          <div className="flex items-center justify-center text-[#6B1C3A]">
+                            {option.render('w-5 h-5')}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
+                    <div>
+                      <label className={labelClass}>Ícone personalizado</label>
+                      <input
+                        type="text"
+                        value={customStepIcon || ''}
+                        onChange={e => updateCurrentStep({ icon: e.target.value.trim() || undefined })}
+                        placeholder="Ex: 💎"
+                        className={stepInputClass}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => updateCurrentStep({ icon: undefined })}
+                      className="px-4 py-3 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+                    >
+                      Usar padrão
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* ── FOTO ── */}
               {currentStep.type === 'foto' && (

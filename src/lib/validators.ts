@@ -48,6 +48,7 @@ export const formInputSchema = z.object({
     id: z.string(),
     type: z.enum(['foto', 'disponibilidade', 'preco', 'taxa', 'pergunta', 'livre']),
     label: z.string().optional(),
+    icon: z.string().optional(),
     question: z.string().optional(),
     yesText: z.string().optional(),
     noText: z.string().optional(),

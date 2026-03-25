@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { FormStep } from '@/types/form';
 
 function getSupabase() {
   return createClient(
@@ -100,7 +101,7 @@ export interface FormRow {
   single_photo: boolean;
   show_only_installment: boolean;
   user_id: string;
-  steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
+  steps: FormStep[];
   custom_texts: Record<string, string>;
   created_at: string;
   updated_at: string;
@@ -136,7 +137,7 @@ interface CreateFormInput {
   single_photo: boolean;
   show_only_installment: boolean;
   user_id: string;
-  steps: { id: string; type: string; question?: string; yesText?: string; noText?: string }[];
+  steps: FormStep[];
   custom_texts: Record<string, string>;
 }
 
@@ -147,13 +148,25 @@ export async function clearResponses(formId: string) {
   if (error) throw error;
 }
 
-export async function saveResponse(formId: string, step: number, answer: 'sim' | 'nao') {
+export async function saveResponse(formId: string, step: number, answer: 'sim' | 'nao', stepId?: string) {
   const supabase = getSupabase();
-  const { error } = await supabase.from('responses').insert({
+  const payload = {
     form_id: formId,
     step,
     answer,
-  });
+    ...(stepId ? { step_id: stepId } : {}),
+  };
+
+  const { error } = await supabase.from('responses').insert(payload);
+  if (error && stepId) {
+    const { error: legacyError } = await supabase.from('responses').insert({
+      form_id: formId,
+      step,
+      answer,
+    });
+    if (legacyError) throw legacyError;
+    return;
+  }
   if (error) throw error;
 }
 
@@ -169,11 +182,12 @@ export async function getAllStats() {
 
   for (const row of data || []) {
     if (!result[row.form_id]) {
-      result[row.form_id] = { 1: { sim: 0, nao: 0 }, 2: { sim: 0, nao: 0 }, 3: { sim: 0, nao: 0 }, 4: { sim: 0, nao: 0 }, 5: { sim: 0, nao: 0 } };
+      result[row.form_id] = {};
     }
-    if (result[row.form_id][row.step]) {
-      result[row.form_id][row.step][row.answer as 'sim' | 'nao']++;
+    if (!result[row.form_id][row.step]) {
+      result[row.form_id][row.step] = { sim: 0, nao: 0 };
     }
+    result[row.form_id][row.step][row.answer as 'sim' | 'nao']++;
   }
 
   return result;
@@ -181,29 +195,43 @@ export async function getAllStats() {
 
 export async function getFormStats(formId: string, from?: string, to?: string) {
   const supabase = getSupabase();
-  let query = supabase
-    .from('responses')
-    .select('step, answer')
-    .eq('form_id', formId);
+  function buildQuery(selectColumns: string) {
+    let query = supabase
+      .from('responses')
+      .select(selectColumns)
+      .eq('form_id', formId);
 
-  if (from) query = query.gte('created_at', from);
-  if (to) query = query.lte('created_at', to);
+    if (from) query = query.gte('created_at', from);
+    if (to) query = query.lte('created_at', to);
 
-  const { data, error } = await query;
+    return query;
+  }
+
+  let { data, error } = await buildQuery('step, step_id, answer');
+
+  if (error && /step_id/i.test(error.message || '')) {
+    ({ data, error } = await buildQuery('step, answer'));
+  }
 
   if (error) throw error;
 
-  const stats: Record<number, { sim: number; nao: number }> = {
-    1: { sim: 0, nao: 0 },
-    2: { sim: 0, nao: 0 },
-    3: { sim: 0, nao: 0 },
-    4: { sim: 0, nao: 0 },
-    5: { sim: 0, nao: 0 },
+  const stats = {
+    byPosition: {} as Record<string, { sim: number; nao: number }>,
+    byStepId: {} as Record<string, { sim: number; nao: number }>,
   };
 
-  for (const row of data || []) {
-    if (stats[row.step]) {
-      stats[row.step][row.answer as 'sim' | 'nao']++;
+  for (const row of ((data || []) as unknown as Array<{ step: number; answer: 'sim' | 'nao'; step_id?: string | null }>)) {
+    const positionKey = String(row.step);
+    if (!stats.byPosition[positionKey]) {
+      stats.byPosition[positionKey] = { sim: 0, nao: 0 };
+    }
+    stats.byPosition[positionKey][row.answer]++;
+
+    if (row.step_id) {
+      if (!stats.byStepId[row.step_id]) {
+        stats.byStepId[row.step_id] = { sim: 0, nao: 0 };
+      }
+      stats.byStepId[row.step_id][row.answer]++;
     }
   }
 
@@ -352,7 +380,7 @@ export function rowToFormData(row: FormRow) {
     singlePhoto: row.single_photo ?? false,
     showOnlyInstallment: row.show_only_installment ?? false,
     userId: row.user_id || '',
-    steps: Array.isArray(row.steps) ? (row.steps as { id: string; type: 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta'; question?: string; yesText?: string; noText?: string }[]) : [],
+    steps: Array.isArray(row.steps) ? (row.steps as FormStep[]) : [],
     customTexts: (row.custom_texts as Record<string, string>) || {},
     createdAt: row.created_at,
     updatedAt: row.updated_at,
