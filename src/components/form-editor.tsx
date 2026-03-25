@@ -11,7 +11,7 @@ import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import 'react-day-picker/style.css';
-import FormStepBuilder, { StepDotsBar } from './form-step-builder';
+import FormStepBuilder, { StepDotsBar, StepCardsList } from './form-step-builder';
 import FormPreviewPanel from './form-preview-panel';
 import RichTextField from './rich-text-field';
 import CanvasBuilder from './canvas-builder';
@@ -320,8 +320,31 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
 
+        {/* ── Form name + Anterior/Próximo ── */}
+        <div className="flex items-center justify-between px-1 mb-2">
+          <p className="text-sm font-semibold text-gray-900 truncate">{form.name || 'Novo formulário'}</p>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
+              disabled={currentStepIndex === 0}
+              className="px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              ← Anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentStepIndex(i => Math.min(steps.length, i + 1))}
+              disabled={currentStepIndex === steps.length}
+              className="px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              Próximo →
+            </button>
+          </div>
+        </div>
+
         {/* ── Step tabs card ── */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100dvh - 155px)' }}>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100dvh - 180px)' }}>
 
           {/* Navigation bar + dots (from FormStepBuilder) */}
           <FormStepBuilder
@@ -329,7 +352,6 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
             onChange={setSteps}
             currentIndex={currentStepIndex}
             onCurrentIndexChange={setCurrentStepIndex}
-            formName={form.name}
             hasCelebration
             onConfigOpen={() => setConfigModalOpen(true)}
             onPickerChange={setStepPickerOpen}
@@ -931,39 +953,14 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
 
         </div>
 
-        {/* ── Navegação entre telas ── */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-2">
-          <div className="justify-self-start">
-            <button
-              type="button"
-              onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
-              disabled={currentStepIndex === 0}
-              className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-            >
-              ← Anterior
-            </button>
-          </div>
-
-          <StepDotsBar
-            steps={steps}
-            onChange={setSteps}
-            currentIndex={currentStepIndex}
-            onCurrentIndexChange={setCurrentStepIndex}
-            hasCelebration
-            className="justify-self-center"
-          />
-
-          <div className="justify-self-end">
-            <button
-              type="button"
-              onClick={() => setCurrentStepIndex(i => Math.min(steps.length, i + 1))}
-              disabled={currentStepIndex === steps.length}
-              className="px-4 py-2 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
-            >
-              Próximo →
-            </button>
-          </div>
-        </div>
+        {/* ── Step cards list ── */}
+        <StepCardsList
+          steps={steps}
+          onChange={setSteps}
+          currentIndex={currentStepIndex}
+          onCurrentIndexChange={setCurrentStepIndex}
+          hasCelebration
+        />
 
         {/* ── Config Modal ── */}
         {configModalOpen && (

@@ -13,6 +13,7 @@ import {
 import {
   SortableContext,
   horizontalListSortingStrategy,
+  verticalListSortingStrategy,
   useSortable,
   arrayMove,
   sortableKeyboardCoordinates,
@@ -328,12 +329,6 @@ export default function FormStepBuilder({
 
   return (
     <>
-      {!!formName && (
-        <div className="px-4 pt-4 pb-2 border-b border-gray-100 bg-gray-50/40">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">Formulário em edição</p>
-          <p className="text-sm font-semibold text-gray-900 truncate mt-1">{formName}</p>
-        </div>
-      )}
 
       {/* ── Navigation bar ── */}
       <div className="flex items-center gap-2 px-4 py-3">
@@ -437,5 +432,162 @@ export default function FormStepBuilder({
         </div>
       )}
     </>
+  );
+}
+
+// ─── Step Cards List ──────────────────────────────────────────────────────────
+
+interface StepCardsListProps {
+  steps: FormStep[];
+  onChange: (steps: FormStep[]) => void;
+  currentIndex: number;
+  onCurrentIndexChange: (index: number) => void;
+  hasCelebration?: boolean;
+}
+
+interface SortableStepCardProps {
+  step: FormStep;
+  index: number;
+  isActive: boolean;
+  onClick: () => void;
+  onRename: (label: string) => void;
+}
+
+function SortableStepCard({ step, index, isActive, onClick, onRename }: SortableStepCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: step.id });
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(step.label || '');
+  const info = getStepInfo(step.type, step.label);
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all cursor-pointer select-none ${
+        isActive
+          ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5'
+          : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
+      } ${step.hidden ? 'opacity-50' : ''}`}
+      onClick={onClick}
+    >
+      {/* Drag handle */}
+      <span
+        className="text-gray-300 hover:text-gray-400 cursor-grab flex-shrink-0"
+        {...attributes}
+        {...listeners}
+        onClick={e => e.stopPropagation()}
+      >
+        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+          <circle cx="7" cy="5" r="1.5" /><circle cx="13" cy="5" r="1.5" />
+          <circle cx="7" cy="10" r="1.5" /><circle cx="13" cy="10" r="1.5" />
+          <circle cx="7" cy="15" r="1.5" /><circle cx="13" cy="15" r="1.5" />
+        </svg>
+      </span>
+
+      {/* Step number */}
+      <span className="text-xs font-bold text-gray-400 w-4 text-center flex-shrink-0">{index + 1}</span>
+
+      {/* Name — editable on double-click for 'livre' steps */}
+      {editing ? (
+        <input
+          autoFocus
+          className="flex-1 text-sm font-medium bg-transparent outline-none border-b border-[#6B1C3A] min-w-0"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onBlur={() => { onRename(value); setEditing(false); }}
+          onKeyDown={e => { if (e.key === 'Enter') { onRename(value); setEditing(false); } if (e.key === 'Escape') setEditing(false); }}
+          onClick={e => e.stopPropagation()}
+        />
+      ) : (
+        <span
+          className={`flex-1 text-sm font-medium truncate min-w-0 ${isActive ? 'text-[#6B1C3A]' : 'text-gray-700'}`}
+          onDoubleClick={step.type === 'livre' ? (e) => { e.stopPropagation(); setValue(step.label || ''); setEditing(true); } : undefined}
+          title={step.type === 'livre' ? 'Clique duplo para renomear' : undefined}
+        >
+          {info.label}
+        </span>
+      )}
+
+      {step.hidden && (
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Oculta" />
+      )}
+    </div>
+  );
+}
+
+export function StepCardsList({
+  steps,
+  onChange,
+  currentIndex,
+  onCurrentIndexChange,
+  hasCelebration = false,
+}: StepCardsListProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  const isCelebration = hasCelebration && currentIndex === steps.length;
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = steps.findIndex(s => s.id === active.id);
+    const newIndex = steps.findIndex(s => s.id === over.id);
+    const reordered = arrayMove(steps, oldIndex, newIndex);
+    onChange(reordered);
+    const movedId = steps[currentIndex]?.id;
+    if (movedId) {
+      const next = reordered.findIndex(s => s.id === movedId);
+      if (next !== -1) onCurrentIndexChange(next);
+    }
+  }
+
+  function handleRename(stepId: string, label: string) {
+    onChange(steps.map(s => s.id === stepId ? { ...s, label: label.trim() || undefined } : s));
+  }
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={steps.map(s => s.id)} strategy={verticalListSortingStrategy}>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2 space-y-1">
+          {steps.map((step, index) => (
+            <SortableStepCard
+              key={step.id}
+              step={step}
+              index={index}
+              isActive={!isCelebration && index === currentIndex}
+              onClick={() => onCurrentIndexChange(index)}
+              onRename={label => handleRename(step.id, label)}
+            />
+          ))}
+          {hasCelebration && (
+            <div
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all cursor-pointer ${
+                isCelebration ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
+              }`}
+              onClick={() => onCurrentIndexChange(steps.length)}
+            >
+              <span className="text-gray-200 flex-shrink-0">
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <circle cx="7" cy="5" r="1.5" /><circle cx="13" cy="5" r="1.5" />
+                  <circle cx="7" cy="10" r="1.5" /><circle cx="13" cy="10" r="1.5" />
+                  <circle cx="7" cy="15" r="1.5" /><circle cx="13" cy="15" r="1.5" />
+                </svg>
+              </span>
+              <span className="text-xs font-bold text-gray-400 w-4 text-center flex-shrink-0">{steps.length + 1}</span>
+              <span className={`flex-1 text-sm font-medium ${isCelebration ? 'text-[#6B1C3A]' : 'text-gray-700'}`}>
+                Celebração ✨
+              </span>
+            </div>
+          )}
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 }
