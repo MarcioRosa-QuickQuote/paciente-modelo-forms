@@ -327,7 +327,8 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const conversionRate = totalResponses > 0 ? Math.round((whatsappClicks / totalResponses) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="relative">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-gray-100 flex items-start justify-between gap-4">
         <div>
@@ -559,10 +560,12 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
       ))}
 
       {/* Floating phone preview — centered on screen */}
+      </div>
+
       {hoveredStep !== null && (
         <div
           ref={tooltipRef}
-          className="fixed inset-0 z-[300] pointer-events-none flex items-center justify-center"
+          className="absolute inset-0 z-[300] pointer-events-none flex items-center justify-center"
         >
           <StepPhonePreview step={hoveredStep} formData={formData} />
         </div>
