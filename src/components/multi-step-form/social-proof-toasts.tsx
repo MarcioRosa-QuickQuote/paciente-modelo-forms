@@ -78,7 +78,7 @@ export default function SocialProofToasts({ demo, hasLogo }: Props) {
 
   return (
     <div
-      className="fixed left-1/2 -translate-x-1/2 sm:left-4 sm:translate-x-0 sm:bottom-20 z-50 pointer-events-none w-[260px]"
+      className="fixed left-4 sm:bottom-20 z-50 pointer-events-none w-[260px]"
       style={{ top: hasLogo ? 68 : 12 }}
     >
       <AnimatePresence>
