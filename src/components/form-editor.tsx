@@ -77,6 +77,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [stepPickerOpen, setStepPickerOpen] = useState(false);
   const [insertPanelOpen, setInsertPanelOpen] = useState(false);
+  const [stepIconPickerOpen, setStepIconPickerOpen] = useState(false);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
   const initialProcedureName = initialData?.procedureName || templateData?.procedureName || '';
@@ -349,6 +350,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
   useEffect(() => {
     setInsertPanelOpen(false);
+    setStepIconPickerOpen(false);
   }, [currentStepIndex, stepPickerOpen, configModalOpen]);
 
   const inputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
@@ -360,7 +362,6 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const currentTheme = getTheme(form.theme);
   const currentStepSupportsIcon = !!currentStep && canCustomizeStepIcon(currentStep.type);
   const activeStepIcon = currentStepSupportsIcon ? (currentStep.icon?.trim() || getDefaultStepIconId(currentStep.type)) : '';
-  const customStepIcon = currentStepSupportsIcon && currentStep?.icon && !isPresetStepIcon(currentStep.icon) ? currentStep.icon : '';
   const hasUploadedStepIcon = currentStepSupportsIcon && isUploadedStepIcon(currentStep?.icon);
   const hasLegacyCustomIcon = currentStepSupportsIcon && !!currentStep?.icon && !isPresetStepIcon(currentStep.icon) && !hasUploadedStepIcon;
 
@@ -442,106 +443,110 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                       <p className="text-sm font-semibold text-gray-900">Icone da etapa</p>
                       <p className="text-xs text-gray-400">Escolha um icone comum ou envie um icone proprio em imagem.</p>
                     </div>
-                    <div className="hidden">
-                      <p className="text-sm font-semibold text-gray-900">Ícone da etapa</p>
-                      <p className="text-xs text-gray-400">Escolha um ícone comum ou use um emoji/símbolo personalizado.</p>
-                    </div>
                   </div>
 
-                  <div className="grid grid-cols-5 gap-2">
-                    {STEP_ICON_OPTIONS.map(option => {
-                      const isActive = activeStepIcon === option.id;
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => updateCurrentStep({ icon: option.id })}
-                          className={`rounded-xl border p-2 transition-all cursor-pointer ${
-                            isActive
-                              ? 'border-[#6B1C3A] bg-[#6B1C3A]/8 shadow-sm'
-                              : 'border-gray-200 bg-white hover:border-gray-300'
-                          }`}
-                          title={option.label}
-                        >
-                          <div className="flex items-center justify-center text-[#6B1C3A]">
-                            {option.render('w-5 h-5')}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => stepIconInputRef.current?.click()}
-                      className="px-4 py-3 text-xs font-semibold text-[#6B1C3A] bg-white border border-[#6B1C3A]/20 rounded-xl hover:bg-[#6B1C3A]/5 transition-all cursor-pointer"
-                    >
-                      {uploadingStepIcon ? 'Enviando icone...' : hasUploadedStepIcon ? 'Trocar icone' : 'Enviar icone'}
-                    </button>
-                    <input
-                      ref={stepIconInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                      className="hidden"
-                      onChange={e => {
-                        const file = e.target.files?.[0];
-                        if (file) uploadStepIcon(file);
-                        e.currentTarget.value = '';
-                      }}
-                    />
-                    {hasUploadedStepIcon && (
-                      <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 flex items-center justify-center">
-                          <StepIconGlyph
-                            value={currentStep.icon}
-                            type={currentStep.type}
-                            svgClassName="w-5 h-5 text-white"
-                            emojiClassName="text-xl leading-none"
-                            imgClassName="w-6 h-6 object-contain"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-emerald-700">Icone enviado</p>
-                          <p className="text-[11px] text-emerald-600">PNG, JPG, WebP ou SVG.</p>
-                        </div>
+                  <button
+                    type="button"
+                    onClick={() => setStepIconPickerOpen(prev => !prev)}
+                    className="w-full flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left hover:border-gray-300 transition-all cursor-pointer"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center text-[#6B1C3A]">
+                        <StepIconGlyph
+                          value={activeStepIcon}
+                          type={currentStep.type}
+                          svgClassName="w-5 h-5 text-[#6B1C3A]"
+                          emojiClassName="text-xl leading-none"
+                          imgClassName="w-6 h-6 object-contain"
+                        />
                       </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => updateCurrentStep({ icon: undefined })}
-                      className="px-4 py-3 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900">Escolher icone</p>
+                        <p className="text-xs text-gray-400">
+                          {hasUploadedStepIcon ? 'Imagem personalizada selecionada.' : 'Clique para ver os icones disponiveis.'}
+                        </p>
+                      </div>
+                    </div>
+                    <svg
+                      className={`w-4 h-4 text-gray-400 transition-transform ${stepIconPickerOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      Usar padrao
-                    </button>
-                  </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19 9-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {stepIconPickerOpen && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-5 gap-2">
+                        {STEP_ICON_OPTIONS.map(option => {
+                          const isActive = activeStepIcon === option.id;
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => updateCurrentStep({ icon: option.id })}
+                              className={`rounded-xl border p-2 transition-all cursor-pointer ${
+                                isActive
+                                  ? 'border-[#6B1C3A] bg-[#6B1C3A]/8 shadow-sm'
+                                  : 'border-gray-200 bg-white hover:border-gray-300'
+                              }`}
+                              title={option.label}
+                            >
+                              <div className="flex items-center justify-center text-[#6B1C3A]">
+                                {option.render('w-5 h-5')}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => stepIconInputRef.current?.click()}
+                          className="px-4 py-3 text-xs font-semibold text-[#6B1C3A] bg-white border border-[#6B1C3A]/20 rounded-xl hover:bg-[#6B1C3A]/5 transition-all cursor-pointer"
+                        >
+                          {uploadingStepIcon ? 'Enviando icone...' : hasUploadedStepIcon ? 'Trocar icone' : 'Enviar icone'}
+                        </button>
+                        <input
+                          ref={stepIconInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                          className="hidden"
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) uploadStepIcon(file);
+                            e.currentTarget.value = '';
+                          }}
+                        />
+                        {hasUploadedStepIcon && (
+                          <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+                            <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 flex items-center justify-center">
+                              <StepIconGlyph
+                                value={currentStep.icon}
+                                type={currentStep.type}
+                                svgClassName="w-5 h-5 text-white"
+                                emojiClassName="text-xl leading-none"
+                                imgClassName="w-6 h-6 object-contain"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-emerald-700">Icone enviado</p>
+                              <p className="text-[11px] text-emerald-600">PNG, JPG, WebP ou SVG.</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {hasLegacyCustomIcon && (
                     <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
-                      Este icone foi salvo no formato antigo. Escolha um da lista, envie uma imagem ou volte para o padrao.
+                      Este icone foi salvo no formato antigo. Escolha um da lista ou envie uma imagem para substituir.
                     </p>
                   )}
-
-                  <div className="hidden">
-                    <div>
-                      <label className={labelClass}>Ícone personalizado</label>
-                      <input
-                        type="text"
-                        value={customStepIcon || ''}
-                        onChange={e => updateCurrentStep({ icon: e.target.value.trim() || undefined })}
-                        placeholder="Ex: 💎"
-                        className={stepInputClass}
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => updateCurrentStep({ icon: undefined })}
-                      className="px-4 py-3 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all cursor-pointer"
-                    >
-                      Usar padrão
-                    </button>
-                  </div>
                 </div>
               )}
 
