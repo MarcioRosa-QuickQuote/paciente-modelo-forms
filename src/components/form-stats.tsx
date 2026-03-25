@@ -237,14 +237,9 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
 
-  function handleBarMouseEnter(step: number, e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const spaceOnRight = window.innerWidth - rect.right;
-    const left = spaceOnRight >= PHONE_W + 24
-      ? rect.right + 16
-      : rect.left - PHONE_W - 16;
+  function handleBarMouseEnter(step: number) {
     setHoveredStep(step);
-    setTooltipPos({ top: rect.top + window.scrollY + rect.height / 2, left });
+    setTooltipPos({ top: 0, left: 0 }); // unused — preview is centered via CSS
   }
 
   function handleBarMouseLeave() {
@@ -468,7 +463,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                 const clickPct = step4Sim > 0 ? Math.round((clicks / step4Sim) * 100) : 0;
                 return (
                   <div key={step}
-                    onMouseEnter={e => handleBarMouseEnter(step, e)}
+                    onMouseEnter={() => handleBarMouseEnter(step)}
                     onMouseLeave={handleBarMouseLeave}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -508,7 +503,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
 
               return (
                 <div key={step}
-                  onMouseEnter={e => handleBarMouseEnter(step, e)}
+                  onMouseEnter={() => handleBarMouseEnter(step)}
                   onMouseLeave={handleBarMouseLeave}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -557,12 +552,11 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
         </>
       ))}
 
-      {/* Floating phone preview tooltip */}
-      {hoveredStep !== null && tooltipPos && (
+      {/* Floating phone preview — centered on screen */}
+      {hoveredStep !== null && (
         <div
           ref={tooltipRef}
-          className="fixed z-[300] pointer-events-none"
-          style={{ top: tooltipPos.top, left: tooltipPos.left, transform: 'translateY(-50%)' }}
+          className="fixed inset-0 z-[300] pointer-events-none flex items-center justify-center"
         >
           <StepPhonePreview step={hoveredStep} formData={formData} />
         </div>
