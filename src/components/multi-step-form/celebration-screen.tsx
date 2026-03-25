@@ -58,11 +58,12 @@ export default function CelebrationScreen({ formId, whatsappNumber, procedureNam
       setShowDemoModal(true);
       return;
     }
-    fetch('/api/responses', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ formId, step: 5, answer: 'sim' }),
-    }).catch(() => {});
+    const body = JSON.stringify({ formId, step: 5, answer: 'sim' });
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      navigator.sendBeacon('/api/responses', new Blob([body], { type: 'application/json' }));
+    } else {
+      fetch('/api/responses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }).catch(() => {});
+    }
     onTrackEvent?.('Contact');
     window.open(whatsappUrl, '_blank');
   }
