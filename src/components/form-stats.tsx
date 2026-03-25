@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { FormData, FormInput, FormStep } from '@/types/form';
 import { StepPreviewContent } from './form-preview-panel';
 import { getStepInfo } from './form-step-builder';
@@ -235,6 +235,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const hoveredTargetRef = useRef<HTMLDivElement | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(false);
@@ -248,47 +249,71 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     return stats?.byStepId?.[step.id] || getPositionStats(position);
   }
 
-  function positionTooltip(targetRect: DOMRect) {
+  const positionTooltip = useCallback((targetRect: DOMRect) => {
     const container = containerRef.current;
     if (!container) return;
 
     const gap = 20;
     const bounds = 12;
     const containerRect = container.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     const previewWidth = tooltipRef.current?.offsetWidth || (PHONE_W + 24);
     const previewHeight = tooltipRef.current?.offsetHeight || (PHONE_H + 24);
 
-    const targetTop = targetRect.top - containerRect.top;
-    const targetCenterY = targetTop + (targetRect.height / 2);
-    let top = targetCenterY - (previewHeight / 2);
-    top = Math.max(bounds, Math.min(top, containerRect.height - previewHeight - bounds));
+    let fixedTop = targetRect.top + (targetRect.height / 2) - (previewHeight / 2);
+    fixedTop = Math.max(bounds, Math.min(fixedTop, viewportHeight - previewHeight - bounds));
 
-    const spaceRight = containerRect.right - targetRect.right;
-    const spaceLeft = targetRect.left - containerRect.left;
-    let left = targetRect.right - containerRect.left + gap;
+    const spaceRight = viewportWidth - targetRect.right;
+    const spaceLeft = targetRect.left;
+    let fixedLeft = targetRect.right + gap;
 
     if (spaceRight < previewWidth + gap && spaceLeft > spaceRight) {
-      left = targetRect.left - containerRect.left - previewWidth - gap;
+      fixedLeft = targetRect.left - previewWidth - gap;
     }
 
-    left = Math.max(bounds, Math.min(left, containerRect.width - previewWidth - bounds));
-    setTooltipPos({ top, left });
-  }
+    fixedLeft = Math.max(bounds, Math.min(fixedLeft, viewportWidth - previewWidth - bounds));
+
+    setTooltipPos({
+      top: fixedTop - containerRect.top,
+      left: fixedLeft - containerRect.left,
+    });
+  }, []);
 
   function handleBarMouseEnter(step: number, event: React.MouseEvent<HTMLDivElement>) {
     setHoveredStep(step);
+    hoveredTargetRef.current = event.currentTarget;
     positionTooltip(event.currentTarget.getBoundingClientRect());
   }
 
   function handleBarMouseMove(event: React.MouseEvent<HTMLDivElement>) {
     if (hoveredStep === null) return;
+    hoveredTargetRef.current = event.currentTarget;
     positionTooltip(event.currentTarget.getBoundingClientRect());
   }
 
   function handleBarMouseLeave() {
     setHoveredStep(null);
+    hoveredTargetRef.current = null;
     setTooltipPos(null);
   }
+
+  useEffect(() => {
+    if (hoveredStep === null) return;
+
+    const syncTooltipPosition = () => {
+      if (!hoveredTargetRef.current) return;
+      positionTooltip(hoveredTargetRef.current.getBoundingClientRect());
+    };
+
+    window.addEventListener('scroll', syncTooltipPosition, true);
+    window.addEventListener('resize', syncTooltipPosition);
+
+    return () => {
+      window.removeEventListener('scroll', syncTooltipPosition, true);
+      window.removeEventListener('resize', syncTooltipPosition);
+    };
+  }, [hoveredStep, positionTooltip]);
 
   function fetchStats(from?: string, to?: string) {
     setLoading(true);

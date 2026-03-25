@@ -67,6 +67,14 @@ export function sanitizeRichTextHtml(html = '', options: SanitizeHtmlOptions = {
     next = next.replace(/\s{2,}/g, ' ');
     next = next.trim();
     next = next.replace(/>\s+</g, '><');
+  } else {
+    next = next.replace(/<br\s*\/?>\s*<\/(div|p|h[1-6]|section|article|blockquote)>/gi, '</$1>');
+    next = next.replace(/<\/(div|p|h[1-6]|section|article|blockquote|li)>/gi, '<br>');
+    next = next.replace(/<(div|p|h[1-6]|section|article|blockquote|li)[^>]*>/gi, '');
+    next = next.replace(/\n/g, '<br>');
+    next = next.replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>');
+    next = next.replace(/^(<br\s*\/?>\s*)+/i, '');
+    next = next.replace(/(<br\s*\/?>\s*)+$/i, '');
   }
 
   next = next.replace(/<span>\s*<\/span>/gi, '');
