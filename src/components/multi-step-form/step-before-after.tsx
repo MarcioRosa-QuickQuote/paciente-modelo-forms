@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { FormStep, PhotoPair } from '@/types/form';
 import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
@@ -50,7 +51,7 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
       >
         <h1
           className="text-xl sm:text-3xl font-bold text-gray-900 leading-tight"
-          dangerouslySetInnerHTML={{ __html: headline || `Deseja ser <span style="background: linear-gradient(to right, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span> de ${procedureName}?` }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(headline || `Deseja ser <span style="background: linear-gradient(to right, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">paciente modelo</span> de ${procedureName}?`, { singleLine: true }) }}
         />
       </motion.div>
 
@@ -122,7 +123,7 @@ export default function StepBeforeAfter({ procedureName, photos, singlePhoto, he
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-center text-gray-600 text-sm mb-6"
-          dangerouslySetInnerHTML={{ __html: supportText }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(supportText, { singleLine: true }) }}
         />
       )}
 

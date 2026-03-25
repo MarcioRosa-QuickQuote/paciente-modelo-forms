@@ -5,6 +5,7 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import Link from 'next/link';
 import { Theme } from '@/lib/themes';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { CustomTexts } from '@/types/form';
 
 interface Props {
@@ -161,14 +162,14 @@ export default function CelebrationScreen({ formId, finalStepNumber, whatsappNum
           <span
             className="bg-clip-text text-transparent"
             style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-            dangerouslySetInnerHTML={{ __html: customTexts?.celebrationTitle || 'Parabéns!' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.celebrationTitle || 'Parabéns!', { singleLine: true }) }}
           />
         </h1>
         <p className="text-xl text-gray-700 font-semibold mb-2"
-          dangerouslySetInnerHTML={{ __html: customTexts?.celebrationSubtitle || 'Você foi qualificada para ser nossa paciente modelo!' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.celebrationSubtitle || 'Você foi qualificada para ser nossa paciente modelo!', { singleLine: true }) }}
         />
         <p className="text-gray-500 text-base leading-relaxed max-w-sm mx-auto"
-          dangerouslySetInnerHTML={{ __html: customTexts?.celebrationMessage || 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras 🥰' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.celebrationMessage || 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras 🥰', { singleLine: true }) }}
         />
       </motion.div>
 

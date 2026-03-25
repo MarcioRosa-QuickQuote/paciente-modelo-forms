@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
@@ -81,12 +82,12 @@ export default function StepPricing({
         {customTexts?.pricingContext ? (
           <h1
             className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-2"
-            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingContext, procedureName, regularPrice) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(resolveTokens(customTexts.pricingContext, procedureName, regularPrice), { singleLine: true }) }}
           />
         ) : (
           <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight mb-2">
             Sabendo que a{' '}
-            <span className="font-extrabold" style={{ color: theme.gradientFrom }} dangerouslySetInnerHTML={{ __html: procedureName }} />{' '}
+            <span className="font-extrabold" style={{ color: theme.gradientFrom }} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(procedureName, { singleLine: true }) }} />{' '}
             custa em média{' '}
             <span className="text-gray-400 line-through">{formatCurrency(regularPrice)}</span>,
             como{' '}
@@ -103,7 +104,7 @@ export default function StepPricing({
         {customTexts?.pricingQuestion ? (
           <p
             className="text-base sm:text-lg text-gray-700 leading-relaxed mt-3"
-            dangerouslySetInnerHTML={{ __html: resolveTokens(customTexts.pricingQuestion, procedureName, regularPrice) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(resolveTokens(customTexts.pricingQuestion, procedureName, regularPrice), { singleLine: true }) }}
           />
         ) : (
           <p className="text-base sm:text-lg text-gray-700 leading-relaxed mt-3">
@@ -119,7 +120,7 @@ export default function StepPricing({
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}
         className="rounded-3xl px-5 py-3 sm:py-5 mb-4 sm:mb-8 text-center shadow-xl w-full max-w-sm"
       >
-        <p className="text-white/80 text-xs sm:text-sm font-medium mb-2" dangerouslySetInnerHTML={{ __html: customTexts?.pricingLabel || 'Valor especial paciente modelo' }} />
+        <p className="text-white/80 text-xs sm:text-sm font-medium mb-2" dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.pricingLabel || 'Valor especial paciente modelo', { singleLine: true }) }} />
 
         <div className="flex flex-col items-center justify-center min-h-[56px] sm:min-h-[72px]">
           <AnimatePresence mode="wait">

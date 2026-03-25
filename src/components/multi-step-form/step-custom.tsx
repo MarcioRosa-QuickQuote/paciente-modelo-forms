@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { StepIconGlyph } from '@/lib/step-icons';
 import { FormStep } from '@/types/form';
 import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
@@ -38,7 +39,7 @@ export default function StepCustom({ question, yesText, noText, onYes, onNo, the
         transition={{ duration: 0.6, delay: 0.2 }}
         className="text-center mb-10"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight" dangerouslySetInnerHTML={{ __html: question }} />
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight" dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(question, { singleLine: true }) }} />
       </motion.div>
 
       {!!step?.elements?.length && (

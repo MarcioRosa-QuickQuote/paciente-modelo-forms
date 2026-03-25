@@ -1,16 +1,17 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback } from 'react';
+import { sanitizeRichTextHtml, sanitizeRichTextStyle } from '@/lib/rich-text';
 
 const SOLID_COLORS = [
-  { label: 'Roxo',    value: '#7c3aed' },
-  { label: 'Rosa',    value: '#ec4899' },
-  { label: 'Vermelho',value: '#ef4444' },
+  { label: 'Roxo', value: '#7c3aed' },
+  { label: 'Rosa', value: '#ec4899' },
+  { label: 'Vermelho', value: '#ef4444' },
   { label: 'Laranja', value: '#f97316' },
-  { label: 'Azul',    value: '#3b82f6' },
-  { label: 'Verde',   value: '#22c55e' },
+  { label: 'Azul', value: '#3b82f6' },
+  { label: 'Verde', value: '#22c55e' },
   { label: 'Dourado', value: '#d4a843' },
-  { label: 'Preto',   value: '#111827' },
+  { label: 'Preto', value: '#111827' },
 ];
 
 const GRADIENTS = [
@@ -21,7 +22,10 @@ const GRADIENTS = [
   { from: '#92400e', to: '#d4a843' },
 ];
 
-interface ToolbarPos { top: number; left: number }
+interface ToolbarPos {
+  top: number;
+  left: number;
+}
 
 interface Props {
   value: string;
@@ -31,100 +35,219 @@ interface Props {
   className?: string;
 }
 
+function unwrapElement(element: HTMLElement) {
+  const parent = element.parentNode;
+  if (!parent) return;
+
+  while (element.firstChild) {
+    parent.insertBefore(element.firstChild, element);
+  }
+
+  parent.removeChild(element);
+}
+
+function cleanupRichTextDom(root: ParentNode, stripColorOnly = false) {
+  const elements = Array.from(root.querySelectorAll('*')).reverse();
+
+  elements.forEach(node => {
+    if (!(node instanceof HTMLElement)) return;
+
+    const currentStyle = node.getAttribute('style');
+    if (currentStyle) {
+      const sanitizedStyle = sanitizeRichTextStyle(currentStyle, { stripColorOnly });
+      if (sanitizedStyle) node.setAttribute('style', sanitizedStyle);
+      else node.removeAttribute('style');
+    }
+
+    if ((node.tagName === 'SPAN' || node.tagName === 'FONT') && node.attributes.length === 0) {
+      unwrapElement(node);
+    }
+  });
+}
+
 export default function RichTextField({ value, onChange, placeholder, singleLine, className }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const lastHtml = useRef('');
+  const savedRangeRef = useRef<Range | null>(null);
   const [toolbar, setToolbar] = useState<ToolbarPos | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
-  // Sync prop → DOM only when value originates from outside (not from internal typing)
+  const syncEditorHtml = useCallback(() => {
+    if (!editorRef.current) return '';
+
+    cleanupRichTextDom(editorRef.current);
+
+    const normalizedHtml = sanitizeRichTextHtml(editorRef.current.innerHTML, { singleLine });
+    if (editorRef.current.innerHTML !== normalizedHtml) {
+      editorRef.current.innerHTML = normalizedHtml;
+    }
+
+    if (normalizedHtml !== lastHtml.current) {
+      lastHtml.current = normalizedHtml;
+      onChange(normalizedHtml);
+    }
+
+    return normalizedHtml;
+  }, [onChange, singleLine]);
+
   useEffect(() => {
     if (!editorRef.current) return;
-    if (value !== lastHtml.current) {
-      editorRef.current.innerHTML = value || '';
-      lastHtml.current = value || '';
+
+    const normalizedValue = sanitizeRichTextHtml(value || '', { singleLine });
+    if (normalizedValue !== lastHtml.current || editorRef.current.innerHTML !== normalizedValue) {
+      editorRef.current.innerHTML = normalizedValue;
+      lastHtml.current = normalizedValue;
     }
-  }, [value]);
+  }, [singleLine, value]);
 
   const handleInput = useCallback(() => {
-    if (!editorRef.current) return;
-    const html = editorRef.current.innerHTML;
-    lastHtml.current = html;
-    onChange(html);
-  }, [onChange]);
+    syncEditorHtml();
+  }, [syncEditorHtml]);
 
   const checkSelection = useCallback(() => {
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !editorRef.current?.contains(sel.anchorNode)) {
+    const editor = editorRef.current;
+
+    if (!sel || !editor || sel.isCollapsed || !editor.contains(sel.anchorNode) || !editor.contains(sel.focusNode)) {
+      savedRangeRef.current = null;
       setToolbar(null);
       return;
     }
+
     const range = sel.getRangeAt(0);
     const rect = range.getBoundingClientRect();
+    savedRangeRef.current = range.cloneRange();
     setToolbar({
       top: rect.top + window.scrollY - 56,
       left: Math.max(8, rect.left + rect.width / 2 - 140),
     });
   }, []);
 
-  // Hide toolbar when clicking outside
   useEffect(() => {
     function onDown(e: MouseEvent) {
       if (
         toolbarRef.current?.contains(e.target as Node) ||
         editorRef.current?.contains(e.target as Node)
       ) return;
+
+      savedRangeRef.current = null;
       setToolbar(null);
     }
+
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
   }, []);
 
-  function getSelectionText(): string {
+  function restoreSelection(): Range | null {
+    const editor = editorRef.current;
+    const savedRange = savedRangeRef.current;
+    if (!editor || !savedRange) return null;
+
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed) return '';
-    return sel.getRangeAt(0).toString();
+    if (!sel) return null;
+
+    const range = savedRange.cloneRange();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return range;
   }
 
-  function replaceSelectionWith(node: Node) {
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed) return;
-    const range = sel.getRangeAt(0);
+  function insertNodeAtRange(range: Range, node: Node) {
     range.deleteContents();
     range.insertNode(node);
-    // Move cursor after the inserted node
-    const newRange = document.createRange();
-    newRange.setStartAfter(node);
-    newRange.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
-    onChange(editorRef.current!.innerHTML);
-    lastHtml.current = editorRef.current!.innerHTML;
+
+    const sel = window.getSelection();
+    if (sel) {
+      const newRange = document.createRange();
+      newRange.setStartAfter(node);
+      newRange.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+    }
+
+    savedRangeRef.current = null;
     setToolbar(null);
+    syncEditorHtml();
+  }
+
+  function getCleanSelectionFragment(range: Range, stripColorOnly = false): DocumentFragment {
+    const extracted = range.extractContents();
+    const holder = document.createElement('div');
+    holder.appendChild(extracted);
+    cleanupRichTextDom(holder, stripColorOnly);
+
+    const fragment = document.createDocumentFragment();
+    while (holder.firstChild) {
+      fragment.appendChild(holder.firstChild);
+    }
+
+    return fragment;
+  }
+
+  function wrapSelection(styleText?: string) {
+    const range = restoreSelection();
+    if (!range || range.collapsed) return;
+
+    const fragment = getCleanSelectionFragment(range, true);
+    const span = document.createElement('span');
+
+    if (styleText) span.style.cssText = styleText;
+    span.appendChild(fragment);
+
+    insertNodeAtRange(range, span);
   }
 
   function applyColor(color: string) {
-    const text = getSelectionText();
-    if (!text) return;
-    const span = document.createElement('span');
-    span.style.color = color;
-    span.textContent = text;
-    replaceSelectionWith(span);
+    wrapSelection(`color:${color}`);
   }
 
   function applyGradient(from: string, to: string) {
-    const text = getSelectionText();
-    if (!text) return;
-    const span = document.createElement('span');
-    span.style.cssText = `background: linear-gradient(to right, ${from}, ${to}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;`;
-    span.textContent = text;
-    replaceSelectionWith(span);
+    wrapSelection(
+      `background-image:linear-gradient(to right, ${from}, ${to});background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent`
+    );
   }
 
   function clearFormatting() {
-    const text = getSelectionText();
-    if (!text) return;
-    replaceSelectionWith(document.createTextNode(text));
+    wrapSelection();
+  }
+
+  function insertPlainText(text: string) {
+    const sel = window.getSelection();
+    const editor = editorRef.current;
+    if (!sel || !editor || !editor.contains(sel.anchorNode)) return;
+
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+
+    const fragment = document.createDocumentFragment();
+    const normalizedText = singleLine ? text.replace(/\s+/g, ' ') : text.replace(/\r\n?/g, '\n');
+    const parts = normalizedText.split('\n');
+
+    parts.forEach((part, index) => {
+      fragment.appendChild(document.createTextNode(part));
+      if (index < parts.length - 1) {
+        if (singleLine) fragment.appendChild(document.createTextNode(' '));
+        else fragment.appendChild(document.createElement('br'));
+      }
+    });
+
+    const marker = document.createTextNode('');
+    fragment.appendChild(marker);
+    range.insertNode(fragment);
+
+    const nextRange = document.createRange();
+    nextRange.setStartBefore(marker);
+    nextRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nextRange);
+    marker.remove();
+
+    syncEditorHtml();
+  }
+
+  function handlePaste(e: React.ClipboardEvent) {
+    e.preventDefault();
+    insertPlainText(e.clipboardData.getData('text/plain'));
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -141,8 +264,9 @@ export default function RichTextField({ value, onChange, placeholder, singleLine
         onMouseUp={checkSelection}
         onKeyUp={checkSelection}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         data-placeholder={placeholder}
-        className={`${className || ''} outline-none`}
+        className={`${className || ''} outline-none leading-normal`}
       />
 
       {toolbar && (
@@ -152,7 +276,6 @@ export default function RichTextField({ value, onChange, placeholder, singleLine
           style={{ top: toolbar.top, left: toolbar.left }}
           onMouseDown={e => e.preventDefault()}
         >
-          {/* Solid colors */}
           <div className="flex items-center gap-1">
             {SOLID_COLORS.map(c => (
               <button
@@ -168,13 +291,12 @@ export default function RichTextField({ value, onChange, placeholder, singleLine
 
           <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
 
-          {/* Gradients */}
           <div className="flex items-center gap-1">
             {GRADIENTS.map((g, i) => (
               <button
                 key={i}
                 type="button"
-                title="Degradê"
+                title="Degrade"
                 onMouseDown={e => { e.preventDefault(); applyGradient(g.from, g.to); }}
                 className="w-5 h-5 rounded-full border-2 border-white shadow hover:scale-125 transition-transform"
                 style={{ background: `linear-gradient(to right, ${g.from}, ${g.to})` }}
@@ -184,7 +306,6 @@ export default function RichTextField({ value, onChange, placeholder, singleLine
 
           <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
 
-          {/* Clear */}
           <button
             type="button"
             title="Remover cor"

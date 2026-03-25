@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FormInput, FormStep, PhotoPair } from '@/types/form';
 import { getTheme, Theme } from '@/lib/themes';
 import { StepIconGlyph } from '@/lib/step-icons';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { formatCurrency } from '@/lib/utils';
 import { stepHasCustomButtons } from './multi-step-form/step-canvas-elements';
 import GoogleMapEmbed from './google-map-embed';
@@ -79,7 +80,7 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
             <h2
               key={el.id}
               className={`font-bold text-gray-900 leading-tight ${desktop ? 'text-xl' : 'text-base'}`}
-              dangerouslySetInnerHTML={{ __html: el.content || 'Titulo' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(el.content || 'Titulo') }}
             />
           );
         }
@@ -89,7 +90,7 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
             <p
               key={el.id}
               className={`text-gray-600 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`}
-              dangerouslySetInnerHTML={{ __html: el.content || 'Texto...' }}
+              dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(el.content || 'Texto...') }}
             />
           );
         }
@@ -138,7 +139,7 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
             <div key={el.id} className="rounded-xl px-4 py-3" style={{ background: el.color || '#f3f0ff' }}>
               <p
                 className={`text-gray-800 leading-snug ${desktop ? 'text-sm' : 'text-xs'}`}
-                dangerouslySetInnerHTML={{ __html: el.content || 'Destaque...' }}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(el.content || 'Destaque...') }}
               />
             </div>
           );
@@ -293,7 +294,7 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8 gap-5' : 'px-3 py-5 gap-3'}`}>
       <h3
         className={`font-bold text-gray-900 text-center leading-tight ${desktop ? 'text-xl' : 'text-sm'}`}
-        dangerouslySetInnerHTML={{ __html: headline }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(headline, { singleLine: true }) }}
       />
 
       {form.singlePhoto ? (
@@ -344,7 +345,7 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
 
       <p
         className={`text-gray-500 text-center ${desktop ? 'text-sm' : 'text-[11px]'}`}
-        dangerouslySetInnerHTML={{ __html: supportText }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(supportText, { singleLine: true }) }}
       />
 
       {!!step?.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
@@ -371,7 +372,7 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
 
       <p
         className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
-        dangerouslySetInnerHTML={{ __html: question }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(question, { singleLine: true }) }}
       />
 
       {form.availableDays && (
@@ -386,7 +387,7 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
       )}
 
       <p className={`text-gray-500 text-center mb-4 ${desktop ? 'text-sm' : 'text-[10px]'}`}
-        dangerouslySetInnerHTML={{ __html: durationNote }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(durationNote, { singleLine: true }) }}
       />
 
       {!!step?.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
@@ -427,15 +428,15 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
 
       <p
         className={`font-bold text-gray-900 text-center mb-1 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
-        dangerouslySetInnerHTML={{ __html: pricingContext }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(pricingContext, { singleLine: true }) }}
       />
       <p className={`font-bold text-gray-900 text-center mb-3 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
-        dangerouslySetInnerHTML={{ __html: pricingQuestion }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(pricingQuestion, { singleLine: true }) }}
       />
 
       <div className="rounded-2xl px-5 py-4 mb-3 text-center shadow-lg w-full"
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
-        <p className="text-white/80 text-xs mb-1" dangerouslySetInnerHTML={{ __html: pricingLabel }} />
+        <p className="text-white/80 text-xs mb-1" dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(pricingLabel, { singleLine: true }) }} />
         <p className={`text-white font-extrabold ${desktop ? 'text-3xl' : 'text-2xl'}`}>{formatCurrency(form.modelPrice)}</p>
         {hasInstallment && (
           <p className="text-white/80 text-xs mt-0.5">ou {form.installmentCount}x de {formatCurrency(form.installmentAmount)}</p>
@@ -469,18 +470,18 @@ function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: T
     <div className={`flex flex-col items-center ${desktop ? 'px-6 py-8' : 'px-3 py-5'}`}>
       <StepIcon iconBg={theme.iconBg} stepType="taxa" icon={step?.icon} desktop={desktop} />
 
-      <p className={`font-bold text-gray-900 text-center mb-2 leading-snug ${desktop ? 'text-base' : 'text-xs'}`}
-        dangerouslySetInnerHTML={{ __html: feePrefix }}
+      <p className={`font-bold text-gray-900 text-center mb-2 leading-tight ${desktop ? 'text-lg' : 'text-sm'}`}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(feePrefix, { singleLine: true }) }}
       />
-      <p className={`font-black mb-1 ${desktop ? 'text-4xl' : 'text-3xl'}`} style={{ color: theme.accent }}>
+      <p className={`font-black mb-2 leading-none ${desktop ? 'text-5xl' : 'text-4xl'}`} style={{ color: theme.accent }}>
         {formatCurrency(form.feeAmount)}
       </p>
-      <p className={`text-gray-400 text-center mb-2 ${desktop ? 'text-sm' : 'text-[10px]'}`}
-        dangerouslySetInnerHTML={{ __html: feeBenefit }}
+      <p className={`text-gray-500 text-center mb-3 leading-relaxed ${desktop ? 'text-base' : 'text-xs'}`}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(feeBenefit, { singleLine: true }) }}
       />
-      <div className="flex gap-2 mb-4">
-        <span className="text-xs px-2 py-1 rounded-full font-semibold" style={{ background: theme.accentLight, color: theme.accent }} dangerouslySetInnerHTML={{ __html: feeDeducted }} />
-        <span className="text-xs px-2 py-1 rounded-full font-semibold bg-green-100 text-green-700" dangerouslySetInnerHTML={{ __html: feeSafe }} />
+      <div className="flex flex-wrap justify-center gap-2 mb-4">
+        <span className={`${desktop ? 'text-sm' : 'text-[11px]'} px-3 py-1.5 rounded-full font-semibold`} style={{ background: theme.accentLight, color: theme.accent }} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(feeDeducted, { singleLine: true }) }} />
+        <span className={`${desktop ? 'text-sm' : 'text-[11px]'} px-3 py-1.5 rounded-full font-semibold bg-green-100 text-green-700`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(feeSafe, { singleLine: true }) }} />
       </div>
 
       {!!step?.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
@@ -503,7 +504,7 @@ function PreviewPergunta({ step, theme, desktop }: { step: FormStep; theme: Them
       <StepIcon iconBg={theme.iconBg} stepType="pergunta" icon={step.icon} desktop={desktop} />
 
       <p className={`font-bold text-gray-900 text-center mb-6 leading-snug ${desktop ? 'text-base' : 'text-sm'}`}
-        dangerouslySetInnerHTML={{ __html: step.question || 'Pergunta personalizada...' }}
+        dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(step.question || 'Pergunta personalizada...', { singleLine: true }) }}
       />
 
       {!!step.elements?.length && <PreviewExtraElements step={step} theme={theme} desktop={desktop} />}
@@ -549,9 +550,9 @@ function PreviewCelebration({ form, theme, desktop }: { form: FormInput; theme: 
   return (
     <div className={`flex flex-col items-center text-center ${desktop ? 'px-6 py-10 gap-4' : 'px-4 py-8 gap-3'}`}>
       <div className={desktop ? 'text-5xl' : 'text-4xl'}>🎉</div>
-      <h3 className={`font-black text-gray-900 ${desktop ? 'text-2xl' : 'text-lg'}`} dangerouslySetInnerHTML={{ __html: title }} />
-      <p className={`text-gray-600 leading-snug ${desktop ? 'text-base' : 'text-sm'}`} dangerouslySetInnerHTML={{ __html: subtitle }} />
-      <p className={`text-gray-400 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: message }} />
+      <h3 className={`font-black text-gray-900 ${desktop ? 'text-2xl' : 'text-lg'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(title, { singleLine: true }) }} />
+      <p className={`text-gray-600 leading-snug ${desktop ? 'text-base' : 'text-sm'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(subtitle, { singleLine: true }) }} />
+      <p className={`text-gray-400 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(message, { singleLine: true }) }} />
       <div className="w-full py-3 rounded-xl text-white font-bold text-sm"
         style={{ background: `linear-gradient(135deg, ${theme.gradientFrom}, ${theme.gradientTo})` }}>
         Falar pelo WhatsApp

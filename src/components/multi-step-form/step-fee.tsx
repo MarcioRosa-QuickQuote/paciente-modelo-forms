@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { formatCurrency } from '@/lib/utils';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
@@ -38,20 +39,21 @@ export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-center mb-6"
+        className="text-center mb-6 w-full max-w-3xl space-y-3"
       >
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight mb-4">
-          <span dangerouslySetInnerHTML={{ __html: customTexts?.feeTextPrefix || 'Para reservar seu horário na agenda, solicitamos um valor simbólico de' }} />{' '}
-          <span
-            className="bg-clip-text text-transparent font-extrabold"
-            style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
-          >
-            {formatCurrency(feeAmount)}
-          </span>.
-        </h1>
         <p
-          className="text-lg text-gray-600 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: customTexts?.feeBenefitText || 'Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento.' }}
+          className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight"
+          dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.feeTextPrefix || 'Para reservar seu horário na agenda, solicitamos um valor simbólico de', { singleLine: true }) }}
+        />
+        <p
+          className="bg-clip-text text-transparent font-black text-5xl sm:text-6xl leading-none"
+          style={{ backgroundImage: `linear-gradient(to right, ${theme.gradientFrom}, ${theme.gradientTo})` }}
+        >
+          {formatCurrency(feeAmount)}
+        </p>
+        <p
+          className="text-base sm:text-lg text-gray-600 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.feeBenefitText || 'Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento.', { singleLine: true }) }}
         />
       </motion.div>
 
@@ -59,19 +61,19 @@ export default function StepFee({ feeAmount, onYes, onNo, theme, yesText, noText
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="flex items-center gap-4 mb-10"
+        className="flex flex-wrap items-center justify-center gap-3 mb-10"
       >
         <div className="flex items-center gap-2 rounded-full px-4 py-2" style={{ background: theme.accentLight }}>
           <svg className="w-4 h-4" style={{ color: theme.accent }} fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
-          <span className="text-xs font-medium" style={{ color: theme.accent }} dangerouslySetInnerHTML={{ __html: customTexts?.feeDeductedLabel || 'Valor abatido' }} />
+          <span className="text-sm font-semibold" style={{ color: theme.accent }} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.feeDeductedLabel || 'Valor abatido', { singleLine: true }) }} />
         </div>
         <div className="flex items-center gap-2 rounded-full px-4 py-2" style={{ background: theme.accentLight }}>
           <svg className="w-4 h-4" style={{ color: theme.accent }} fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
-          <span className="text-xs font-medium" style={{ color: theme.accent }} dangerouslySetInnerHTML={{ __html: customTexts?.feeSafeLabel || 'Seguro' }} />
+          <span className="text-sm font-semibold" style={{ color: theme.accent }} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.feeSafeLabel || 'Seguro', { singleLine: true }) }} />
         </div>
       </motion.div>
 

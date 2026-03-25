@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { StepIconGlyph } from '@/lib/step-icons';
 import { CustomTexts, FormStep } from '@/types/form';
 import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
@@ -55,7 +56,7 @@ export default function StepAvailability({
       >
         <h1
           className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight mb-6"
-          dangerouslySetInnerHTML={{ __html: customTexts?.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?', { singleLine: true }) }}
         />
 
         <div className="flex flex-wrap justify-center gap-2 mb-6">
@@ -73,7 +74,7 @@ export default function StepAvailability({
         {procedureDuration && (
           <p
             className="text-gray-500 text-base"
-            dangerouslySetInnerHTML={{ __html: customTexts?.durationNote || `O procedimento dura cerca de ${procedureDuration}.` }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(customTexts?.durationNote || `O procedimento dura cerca de ${procedureDuration}.`, { singleLine: true }) }}
           />
         )}
       </motion.div>

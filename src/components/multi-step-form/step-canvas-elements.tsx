@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CanvasElement } from '@/types/form';
 import { Theme } from '@/lib/themes';
+import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import GoogleMapEmbed from '@/components/google-map-embed';
 
 interface Props {
@@ -59,7 +60,7 @@ export default function StepCanvasElements({
           <h2
             key={el.id}
             className="text-2xl font-bold text-gray-900 leading-tight"
-            dangerouslySetInnerHTML={{ __html: el.content || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(el.content || '') }}
           />
         );
       case 'text':
@@ -67,7 +68,7 @@ export default function StepCanvasElements({
           <p
             key={el.id}
             className="text-gray-600 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: el.content || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(el.content || '') }}
           />
         );
       case 'image':
@@ -97,7 +98,7 @@ export default function StepCanvasElements({
       case 'highlight':
         return (
           <div key={el.id} className="rounded-2xl px-5 py-4" style={{ background: el.color || '#f3f0ff' }}>
-            <p className="text-gray-800 leading-snug" dangerouslySetInnerHTML={{ __html: el.content || '' }} />
+            <p className="text-gray-800 leading-snug" dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(el.content || '') }} />
           </div>
         );
       case 'input-text':
