@@ -12,6 +12,7 @@ import StepCustom from './step-custom';
 import RejectionScreen from './rejection-screen';
 import CelebrationScreen from './celebration-screen';
 import LeadFormScreen from './lead-form-screen';
+import SocialProofToasts from './social-proof-toasts';
 import Image from 'next/image';
 
 // Default steps used when no custom steps are configured (legacy behavior)
@@ -217,6 +218,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
 
   return (
     <div className="min-h-[100dvh] bg-white overflow-hidden">
+      <SocialProofToasts demo={demo} />
       {/* Meta Pixel */}
       {pixelId && (
         <script

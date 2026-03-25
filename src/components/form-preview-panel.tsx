@@ -528,3 +528,26 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
     </div>
   );
 }
+
+// ── Exported mini preview (used in stats hover tooltip) ───────────────────────
+
+export function StepPreviewContent({ form, photos, steps, stepIndex }: {
+  form: FormInput;
+  photos: PhotoPair[];
+  steps: FormStep[];
+  stepIndex: number; // 0-based; pass steps.length for celebration
+}) {
+  const theme = getTheme(form.theme);
+  if (stepIndex >= steps.length) return <PreviewCelebration form={form} theme={theme} desktop={false} />;
+  const step = steps[stepIndex];
+  if (!step) return null;
+  switch (step.type) {
+    case 'foto': return <PreviewFoto form={form} photos={photos} theme={theme} desktop={false} step={step} />;
+    case 'disponibilidade': return <PreviewDisponibilidade form={form} theme={theme} desktop={false} step={step} />;
+    case 'preco': return <PreviewPreco form={form} theme={theme} desktop={false} step={step} />;
+    case 'taxa': return <PreviewTaxa form={form} theme={theme} desktop={false} step={step} />;
+    case 'pergunta': return <PreviewPergunta step={step} theme={theme} desktop={false} />;
+    case 'livre': return <PreviewLivre step={step} desktop={false} />;
+    default: return null;
+  }
+}

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { FormData, FormStep } from '@/types/form';
-import { formatCurrency } from '@/lib/utils';
+import { FormData, FormInput } from '@/types/form';
+import { StepPreviewContent } from './form-preview-panel';
 
 interface StepStats {
   sim: number;
@@ -55,177 +55,46 @@ function getPresetRange(preset: Preset): { from?: string; to?: string } {
 
 // ── Phone mockup preview ──────────────────────────────────────────────────────
 
+const PHONE_W = 175; // px — outer phone width
+const INNER_W = 390; // px — render width (iPhone size)
+const SCALE = PHONE_W / INNER_W; // ~0.449
+const PHONE_H = 340; // px — outer phone height
+
 function StepPhonePreview({ step, formData }: { step: number; formData: FormData }) {
-  const formStep: FormStep | undefined = formData.steps?.[step - 1];
-  const type = formStep?.type;
-
-  const Phone = ({ children }: { children: React.ReactNode }) => (
-    <div className="bg-gray-900 rounded-[28px] p-[8px] shadow-2xl w-[160px] flex-shrink-0">
-      <div className="bg-white rounded-[22px] overflow-hidden flex flex-col" style={{ minHeight: 280 }}>
-        <div className="bg-gray-900 flex justify-center pt-1.5 pb-1 flex-shrink-0">
-          <div className="w-10 h-[5px] bg-gray-700 rounded-full" />
-        </div>
-        <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-1.5">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-
-  const MiniBtn = ({ label, green }: { label: string; green?: boolean }) => (
-    <div className={`text-center py-1 rounded-lg text-[7px] font-bold text-white ${green ? 'bg-emerald-500' : 'bg-gray-300 text-gray-600'}`}>
-      {label}
-    </div>
-  );
-
-  // Step 5 — WhatsApp
-  if (step === 5) return (
-    <Phone>
-      <div className="flex flex-col items-center pt-2 gap-1.5">
-        <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <p className="text-[8px] font-black text-center text-gray-800">Parabéns! 🎉</p>
-        <p className="text-[7px] text-center text-gray-500 leading-tight">Você foi qualificada para ser nossa paciente modelo!</p>
-        <div className="w-full py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center gap-1 mt-1">
-          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          <span className="text-[7px] font-bold text-white">Falar pelo WhatsApp</span>
-        </div>
-      </div>
-    </Phone>
-  );
-
-  if (!formStep) return (
-    <Phone>
-      <p className="text-[8px] text-gray-400 text-center pt-4">Etapa {step}</p>
-    </Phone>
-  );
-
-  if (type === 'foto') {
-    const photo = formData.photos?.[0];
-    return (
-      <Phone>
-        <p className="text-[7px] font-bold text-center text-gray-800 leading-tight"
-          dangerouslySetInnerHTML={{ __html: formData.procedureName || 'Procedimento' }} />
-        <div className="flex gap-1">
-          {photo?.before
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={photo.before} alt="" className="flex-1 h-14 object-cover rounded-md" />
-            : <div className="flex-1 h-14 bg-gray-100 rounded-md flex items-center justify-center text-[6px] text-gray-300">Antes</div>}
-          {photo?.after
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={photo.after} alt="" className="flex-1 h-14 object-cover rounded-md" />
-            : <div className="flex-1 h-14 bg-gray-100 rounded-md flex items-center justify-center text-[6px] text-gray-300">Depois</div>}
-        </div>
-        <div className="flex gap-1">
-          <MiniBtn label={formStep.yesText || 'Sim'} green />
-          <MiniBtn label={formStep.noText || 'Não'} />
-        </div>
-      </Phone>
-    );
-  }
-
-  if (type === 'disponibilidade') {
-    const dates = formData.availableDays?.split(', ').slice(0, 3) || [];
-    return (
-      <Phone>
-        <p className="text-[7px] font-bold text-center text-gray-800 leading-tight">Você tem disponibilidade?</p>
-        <div className="bg-gray-50 rounded-lg p-1.5 space-y-0.5">
-          {dates.length > 0 ? dates.map((d, i) => (
-            <div key={i} className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-              <span className="text-[7px] text-gray-600">{d}</span>
-            </div>
-          )) : <p className="text-[7px] text-gray-400 text-center">Sem datas</p>}
-        </div>
-        <div className="flex gap-1">
-          <MiniBtn label={formStep.yesText || 'Sim'} green />
-          <MiniBtn label={formStep.noText || 'Não'} />
-        </div>
-      </Phone>
-    );
-  }
-
-  if (type === 'preco') {
-    return (
-      <Phone>
-        <p className="text-[7px] font-bold text-center text-gray-800 leading-tight">Investimento do procedimento</p>
-        <div className="bg-gray-50 rounded-lg p-1.5 space-y-0.5">
-          {formData.regularPrice > 0 && (
-            <p className="text-[7px] text-gray-400 line-through text-center">{formatCurrency(formData.regularPrice)}</p>
-          )}
-          {formData.modelPrice > 0 && (
-            <p className="text-[9px] font-black text-emerald-600 text-center">{formatCurrency(formData.modelPrice)}</p>
-          )}
-        </div>
-        <div className="flex gap-1">
-          <MiniBtn label={formStep.yesText || 'Aceito'} green />
-          <MiniBtn label={formStep.noText || 'Não'} />
-        </div>
-      </Phone>
-    );
-  }
-
-  if (type === 'taxa') {
-    return (
-      <Phone>
-        <p className="text-[7px] font-bold text-center text-gray-800 leading-tight">Taxa de agendamento</p>
-        {formData.feeAmount > 0 && (
-          <p className="text-[11px] font-black text-center text-gray-900">{formatCurrency(formData.feeAmount)}</p>
-        )}
-        <div className="flex gap-1 justify-center">
-          <span className="text-[6px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Abatido</span>
-          <span className="text-[6px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">Seguro</span>
-        </div>
-        <div className="flex gap-1">
-          <MiniBtn label={formStep.yesText || 'Aceito'} green />
-          <MiniBtn label={formStep.noText || 'Não'} />
-        </div>
-      </Phone>
-    );
-  }
-
-  if (type === 'pergunta') {
-    return (
-      <Phone>
-        <p className="text-[7px] font-bold text-center text-gray-800 leading-tight"
-          dangerouslySetInnerHTML={{ __html: formStep.question || 'Pergunta personalizada' }} />
-        <div className="flex gap-1">
-          <MiniBtn label={formStep.yesText || 'Sim'} green />
-          <MiniBtn label={formStep.noText || 'Não'} />
-        </div>
-      </Phone>
-    );
-  }
-
-  if (type === 'livre') {
-    const elements = formStep.elements || [];
-    return (
-      <Phone>
-        <p className="text-[6px] font-bold text-gray-400 uppercase tracking-wide">Tela Livre</p>
-        {elements.length === 0
-          ? <p className="text-[7px] text-gray-300 text-center">Tela em branco</p>
-          : elements.slice(0, 4).map(el => (
-              <div key={el.id} className="text-[7px] text-gray-600 bg-gray-50 rounded px-1 py-0.5 truncate">
-                {el.type === 'heading' && <span className="font-bold">{el.content || 'Título'}</span>}
-                {el.type === 'text' && <span>{el.content || 'Texto'}</span>}
-                {el.type === 'image' && <span className="text-gray-400">📷 Imagem</span>}
-                {el.type === 'buttons' && <span className="text-gray-400">[ {el.yesText} / {el.noText} ]</span>}
-                {el.type === 'input-text' && <span className="text-gray-400">[ {el.label || 'Campo'} ]</span>}
-                {el.type === 'input-date' && <span className="text-gray-400">📅 {el.label || 'Data'}</span>}
-                {(el.type === 'spacer' || el.type === 'divider') && <span className="text-gray-300">─ ─ ─</span>}
-              </div>
-            ))}
-      </Phone>
-    );
-  }
+  // Convert FormData → FormInput (superset, cast is safe)
+  const formInput = formData as unknown as FormInput;
+  const steps = formData.steps || [];
+  const photos = formData.photos || [];
+  // step is 1-based; celebration = step > steps.length
+  const stepIndex = step - 1; // 0-based; >= steps.length means celebration
 
   return (
-    <Phone>
-      <p className="text-[8px] text-gray-400 text-center pt-4">Etapa {step}</p>
-    </Phone>
+    <div className="flex-shrink-0 shadow-2xl" style={{ width: PHONE_W }}>
+      {/* Phone shell */}
+      <div className="bg-gray-900 rounded-[26px] p-[6px]">
+        {/* Screen */}
+        <div className="bg-white rounded-[22px] overflow-hidden" style={{ height: PHONE_H }}>
+          {/* Notch */}
+          <div className="bg-gray-900 flex justify-center pt-1 pb-1">
+            <div className="w-10 h-[4px] bg-gray-700 rounded-full" />
+          </div>
+          {/* Scaled content */}
+          <div style={{
+            width: INNER_W,
+            transform: `scale(${SCALE})`,
+            transformOrigin: 'top left',
+            pointerEvents: 'none',
+          }}>
+            <StepPreviewContent
+              form={formInput}
+              photos={photos}
+              steps={steps}
+              stepIndex={stepIndex}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
