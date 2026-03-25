@@ -78,7 +78,8 @@ const STEP_TYPES: { type: FormStepType; label: string; description: string; icon
 
 export function getStepInfo(type: FormStepType, label?: string) {
   if (type === 'livre') return { label: label || 'Tela Livre', icon: null };
-  return STEP_TYPES.find(s => s.type === type) || STEP_TYPES[0];
+  const found = STEP_TYPES.find(s => s.type === type) || STEP_TYPES[0];
+  return label ? { ...found, label } : found;
 }
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -469,53 +470,53 @@ function SortableStepCard({ step, index, isActive, onClick, onRename }: Sortable
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all cursor-pointer select-none ${
+      className={`flex flex-col gap-1 px-2.5 py-2 rounded-xl border transition-all cursor-pointer select-none flex-shrink-0 w-[110px] ${
         isActive
           ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5'
           : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
       } ${step.hidden ? 'opacity-50' : ''}`}
       onClick={onClick}
     >
-      {/* Drag handle */}
-      <span
-        className="text-gray-300 hover:text-gray-400 cursor-grab flex-shrink-0"
-        {...attributes}
-        {...listeners}
-        onClick={e => e.stopPropagation()}
-      >
-        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-          <circle cx="7" cy="5" r="1.5" /><circle cx="13" cy="5" r="1.5" />
-          <circle cx="7" cy="10" r="1.5" /><circle cx="13" cy="10" r="1.5" />
-          <circle cx="7" cy="15" r="1.5" /><circle cx="13" cy="15" r="1.5" />
-        </svg>
-      </span>
+      {/* Top row: drag handle + number + hidden dot */}
+      <div className="flex items-center gap-1">
+        <span
+          className="text-gray-300 hover:text-gray-400 cursor-grab flex-shrink-0"
+          {...attributes}
+          {...listeners}
+          onClick={e => e.stopPropagation()}
+        >
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <circle cx="7" cy="5" r="1.5" /><circle cx="13" cy="5" r="1.5" />
+            <circle cx="7" cy="10" r="1.5" /><circle cx="13" cy="10" r="1.5" />
+            <circle cx="7" cy="15" r="1.5" /><circle cx="13" cy="15" r="1.5" />
+          </svg>
+        </span>
+        <span className="text-[10px] font-bold text-gray-400 flex-1">{index + 1}</span>
+        {step.hidden && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Oculta" />}
+      </div>
 
-      {/* Step number */}
-      <span className="text-xs font-bold text-gray-400 w-4 text-center flex-shrink-0">{index + 1}</span>
-
-      {/* Name — editable on double-click for 'livre' steps */}
+      {/* Name row — double-click to rename */}
       {editing ? (
         <input
           autoFocus
-          className="flex-1 text-sm font-medium bg-transparent outline-none border-b border-[#6B1C3A] min-w-0"
+          className="text-xs font-semibold bg-transparent outline-none border-b border-[#6B1C3A] w-full"
           value={value}
           onChange={e => setValue(e.target.value)}
           onBlur={() => { onRename(value); setEditing(false); }}
-          onKeyDown={e => { if (e.key === 'Enter') { onRename(value); setEditing(false); } if (e.key === 'Escape') setEditing(false); }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { onRename(value); setEditing(false); }
+            if (e.key === 'Escape') setEditing(false);
+          }}
           onClick={e => e.stopPropagation()}
         />
       ) : (
         <span
-          className={`flex-1 text-sm font-medium truncate min-w-0 ${isActive ? 'text-[#6B1C3A]' : 'text-gray-700'}`}
-          onDoubleClick={step.type === 'livre' ? (e) => { e.stopPropagation(); setValue(step.label || ''); setEditing(true); } : undefined}
-          title={step.type === 'livre' ? 'Clique duplo para renomear' : undefined}
+          className={`text-xs font-semibold truncate w-full ${isActive ? 'text-[#6B1C3A]' : 'text-gray-700'}`}
+          onDoubleClick={e => { e.stopPropagation(); setValue(step.label || info.label); setEditing(true); }}
+          title="Clique duplo para renomear"
         >
           {info.label}
         </span>
-      )}
-
-      {step.hidden && (
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="Oculta" />
       )}
     </div>
   );
@@ -554,8 +555,8 @@ export function StepCardsList({
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={steps.map(s => s.id)} strategy={verticalListSortingStrategy}>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2 space-y-1">
+      <SortableContext items={steps.map(s => s.id)} strategy={horizontalListSortingStrategy}>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2 flex flex-wrap gap-1.5">
           {steps.map((step, index) => (
             <SortableStepCard
               key={step.id}
@@ -568,20 +569,13 @@ export function StepCardsList({
           ))}
           {hasCelebration && (
             <div
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all cursor-pointer ${
+              className={`flex flex-col gap-1 px-2.5 py-2 rounded-xl border transition-all cursor-pointer flex-shrink-0 w-[110px] ${
                 isCelebration ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
               }`}
               onClick={() => onCurrentIndexChange(steps.length)}
             >
-              <span className="text-gray-200 flex-shrink-0">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                  <circle cx="7" cy="5" r="1.5" /><circle cx="13" cy="5" r="1.5" />
-                  <circle cx="7" cy="10" r="1.5" /><circle cx="13" cy="10" r="1.5" />
-                  <circle cx="7" cy="15" r="1.5" /><circle cx="13" cy="15" r="1.5" />
-                </svg>
-              </span>
-              <span className="text-xs font-bold text-gray-400 w-4 text-center flex-shrink-0">{steps.length + 1}</span>
-              <span className={`flex-1 text-sm font-medium ${isCelebration ? 'text-[#6B1C3A]' : 'text-gray-700'}`}>
+              <span className="text-[10px] font-bold text-gray-400">{steps.length + 1}</span>
+              <span className={`text-xs font-semibold truncate ${isCelebration ? 'text-[#6B1C3A]' : 'text-gray-700'}`}>
                 Celebração ✨
               </span>
             </div>
