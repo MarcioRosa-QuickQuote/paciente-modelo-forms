@@ -194,6 +194,7 @@ const PALETTE: PaletteItem[] = [
     ),
     defaults: {
       address: '',
+      mapsUrl: '',
       showAddress: false,
     },
   },
@@ -534,6 +535,13 @@ function CanvasItem({ el, onChange, onRemove, onImageUpload }: {
               placeholder="Endereço completo para exibir no mapa..."
               rows={3}
               className={`${fieldClass} resize-none`}
+            />
+
+            <input
+              value={el.mapsUrl || ''}
+              onChange={e => onChange({ ...el, mapsUrl: e.target.value })}
+              placeholder="Link do Google Maps (opcional)"
+              className={fieldClass}
             />
 
             <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">

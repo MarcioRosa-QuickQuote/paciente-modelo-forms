@@ -6,6 +6,7 @@ import { getTheme, Theme } from '@/lib/themes';
 import { StepIconGlyph } from '@/lib/step-icons';
 import { formatCurrency } from '@/lib/utils';
 import { stepHasCustomButtons } from './multi-step-form/step-canvas-elements';
+import GoogleMapEmbed from './google-map-embed';
 
 interface Props {
   form: FormInput;
@@ -62,11 +63,6 @@ function getPreviewWazeHref(address?: string, wazeUrl?: string): string {
   if (wazeUrl?.trim()) return wazeUrl.trim();
   if (!address?.trim()) return '';
   return `https://waze.com/ul?q=${encodeURIComponent(address.trim())}`;
-}
-
-function getPreviewEmbeddedMapUrl(address?: string): string {
-  if (!address?.trim()) return '';
-  return `https://maps.google.com/maps?q=${encodeURIComponent(address.trim())}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 }
 
 function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme: Theme; desktop: boolean }) {
@@ -249,25 +245,22 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
         }
 
         if (el.type === 'location-map') {
-          const mapUrl = getPreviewEmbeddedMapUrl(el.address);
 
           return (
             <div key={el.id} className="space-y-3">
-              {mapUrl ? (
-                <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-100" style={{ paddingBottom: '56.25%' }}>
-                  <iframe
-                    src={mapUrl}
-                    className="absolute inset-0 w-full h-full pointer-events-none"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              ) : (
-                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-gray-400 text-xs">
+              <div className="relative w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-100" style={{ paddingBottom: '56.25%' }}>
+                <GoogleMapEmbed
+                  address={el.address}
+                  mapsUrl={el.mapsUrl}
+                  title={el.title || 'Mapa da localizacao'}
+                  iframeClassName="absolute inset-0 w-full h-full pointer-events-none"
+                  fallbackClassName="absolute inset-0 flex items-center justify-center px-4 text-center text-gray-400 text-xs bg-gray-50"
+                />
+              </div>
+              {/*
                   Informe o endereço para exibir o mapa.
-                </div>
-              )}
 
+              */}
               {el.showAddress && el.address && (
                 <div className={`rounded-xl bg-gray-50 px-4 py-3 text-gray-600 whitespace-pre-line ${desktop ? 'text-sm' : 'text-xs'}`}>
                   {el.address}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CanvasElement } from '@/types/form';
 import { Theme } from '@/lib/themes';
+import GoogleMapEmbed from '@/components/google-map-embed';
 
 interface Props {
   elements: CanvasElement[];
@@ -34,11 +35,6 @@ function getWazeHref(address?: string, wazeUrl?: string): string {
   if (wazeUrl?.trim()) return wazeUrl.trim();
   if (!address?.trim()) return '';
   return `https://waze.com/ul?q=${encodeURIComponent(address.trim())}`;
-}
-
-function getEmbeddedMapUrl(address?: string): string {
-  if (!address?.trim()) return '';
-  return `https://maps.google.com/maps?q=${encodeURIComponent(address.trim())}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 }
 
 export function stepHasCustomButtons(elements?: CanvasElement[]): boolean {
@@ -184,7 +180,7 @@ export default function StepCanvasElements({
               whileTap={{ scale: 0.95 }}
               className="flex-1 py-3.5 px-4 bg-gray-100 text-gray-600 font-bold text-base rounded-2xl hover:bg-gray-200 transition-colors"
             >
-              {el.noText || fallbackNoText || 'Não'}
+              {el.noText || fallbackNoText || 'Nao'}
             </motion.button>
           </div>
         );
@@ -251,25 +247,18 @@ export default function StepCanvasElements({
           </div>
         );
       }
-      case 'location-map': {
-        const mapUrl = getEmbeddedMapUrl(el.address);
-
+      case 'location-map':
         return (
           <div key={el.id} className="space-y-3">
-            {mapUrl ? (
-              <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200 bg-gray-100" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  src={mapUrl}
-                  className="absolute inset-0 w-full h-full"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
-                Informe o endereço para exibir o mapa.
-              </div>
-            )}
+            <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200 bg-gray-100" style={{ paddingBottom: '56.25%' }}>
+              <GoogleMapEmbed
+                address={el.address}
+                mapsUrl={el.mapsUrl}
+                title={el.title || 'Mapa da localizacao'}
+                iframeClassName="absolute inset-0 w-full h-full"
+                fallbackClassName="absolute inset-0 flex items-center justify-center px-4 text-center text-sm text-gray-400 bg-gray-50"
+              />
+            </div>
 
             {el.showAddress && el.address && (
               <div className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600 whitespace-pre-line">
@@ -278,7 +267,6 @@ export default function StepCanvasElements({
             )}
           </div>
         );
-      }
       case 'spacer':
         return <div key={el.id} className="h-4" />;
       case 'divider':
