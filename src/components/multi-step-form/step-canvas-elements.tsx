@@ -24,6 +24,18 @@ function getEmbedUrl(url: string): string {
   return url;
 }
 
+function getMapsHref(address?: string, mapsUrl?: string): string {
+  if (mapsUrl?.trim()) return mapsUrl.trim();
+  if (!address?.trim()) return '';
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}`;
+}
+
+function getWazeHref(address?: string, wazeUrl?: string): string {
+  if (wazeUrl?.trim()) return wazeUrl.trim();
+  if (!address?.trim()) return '';
+  return `https://waze.com/ul?q=${encodeURIComponent(address.trim())}`;
+}
+
 export function stepHasCustomButtons(elements?: CanvasElement[]): boolean {
   return (elements || []).some(el => el.type === 'buttons');
 }
@@ -171,6 +183,69 @@ export default function StepCanvasElements({
             </motion.button>
           </div>
         );
+      case 'location': {
+        const mapsHref = getMapsHref(el.address, el.mapsUrl);
+        const wazeHref = getWazeHref(el.address, el.wazeUrl);
+
+        return (
+          <div key={el.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+            <div className="flex items-start gap-3">
+              <div
+                className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: theme.accentLight, color: theme.accent }}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+
+              <div className="min-w-0">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {el.title || 'Como chegar'}
+                </h3>
+                {el.address && (
+                  <p className="text-sm text-gray-600 whitespace-pre-line mt-1">
+                    {el.address}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {el.details && (
+              <p className="text-sm text-gray-500 whitespace-pre-line">
+                {el.details}
+              </p>
+            )}
+
+            {(mapsHref || wazeHref) && (
+              <div className="flex flex-wrap gap-2">
+                {mapsHref && (
+                  <a
+                    href={mapsHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white"
+                    style={{ background: theme.yesBtn }}
+                  >
+                    Abrir no Maps
+                  </a>
+                )}
+                {wazeHref && (
+                  <a
+                    href={wazeHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold bg-gray-100 text-gray-700"
+                  >
+                    Abrir no Waze
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      }
       case 'spacer':
         return <div key={el.id} className="h-4" />;
       case 'divider':

@@ -5,7 +5,7 @@ export type FormStepType = 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'perg
 export type CanvasElementType =
   | 'heading' | 'text' | 'image' | 'buttons' | 'spacer' | 'divider'
   | 'input-text' | 'input-phone' | 'input-email' | 'input-number' | 'input-date' | 'input-select'
-  | 'checklist' | 'video' | 'highlight';
+  | 'checklist' | 'video' | 'highlight' | 'location';
 
 export interface CanvasElement {
   id: string;
@@ -20,6 +20,11 @@ export interface CanvasElement {
   options?: string;
   videoUrl?: string;
   color?: string;
+  title?: string;
+  address?: string;
+  mapsUrl?: string;
+  wazeUrl?: string;
+  details?: string;
 }
 
 export interface FormStep {
@@ -28,7 +33,7 @@ export interface FormStep {
   question?: string;
   yesText?: string;
   noText?: string;
-  elements?: CanvasElement[]; // only for 'livre' type
+  elements?: CanvasElement[];
   hidden?: boolean; // se true, a tela não aparece no formulário gerado
 }
 

@@ -46,6 +46,18 @@ function getPreviewEmbedUrl(url: string): string {
   return url;
 }
 
+function getPreviewMapsHref(address?: string, mapsUrl?: string): string {
+  if (mapsUrl?.trim()) return mapsUrl.trim();
+  if (!address?.trim()) return '';
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.trim())}`;
+}
+
+function getPreviewWazeHref(address?: string, wazeUrl?: string): string {
+  if (wazeUrl?.trim()) return wazeUrl.trim();
+  if (!address?.trim()) return '';
+  return `https://waze.com/ul?q=${encodeURIComponent(address.trim())}`;
+}
+
 function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme: Theme; desktop: boolean }) {
   const elements = step?.elements || [];
   const inputClass = `w-full border border-gray-200 rounded-xl px-3 py-2 ${desktop ? 'text-sm' : 'text-xs'} bg-gray-50 text-gray-400`;
@@ -177,6 +189,50 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
             <div key={el.id} className="flex gap-2 w-full">
               <Btn gradient={theme.yesBtn} text={el.yesText || 'Sim'} />
               <Btn text={el.noText || 'Nao'} outlined />
+            </div>
+          );
+        }
+
+        if (el.type === 'location') {
+          const mapsHref = getPreviewMapsHref(el.address, el.mapsUrl);
+          const wazeHref = getPreviewWazeHref(el.address, el.wazeUrl);
+
+          return (
+            <div key={el.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: theme.accentLight, color: theme.accent }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className={`font-bold text-gray-900 ${desktop ? 'text-base' : 'text-sm'}`}>
+                    {el.title || 'Como chegar'}
+                  </p>
+                  {el.address && (
+                    <p className={`text-gray-600 whitespace-pre-line ${desktop ? 'text-sm' : 'text-xs'}`}>
+                      {el.address}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {el.details && (
+                <p className={`text-gray-500 whitespace-pre-line ${desktop ? 'text-sm' : 'text-xs'}`}>
+                  {el.details}
+                </p>
+              )}
+
+              {(mapsHref || wazeHref) && (
+                <div className="flex gap-2 w-full">
+                  {mapsHref && <Btn gradient={theme.yesBtn} text="Google Maps" />}
+                  {wazeHref && <Btn text="Waze" outlined />}
+                </div>
+              )}
             </div>
           );
         }

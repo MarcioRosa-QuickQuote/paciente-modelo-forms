@@ -165,6 +165,24 @@ const PALETTE: PaletteItem[] = [
     ),
     defaults: { yesText: 'Sim', noText: 'Não' },
   },
+  {
+    section: 'Ação',
+    type: 'location',
+    label: 'Localização',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+    defaults: {
+      title: 'Como chegar',
+      address: 'Rua Exemplo, 123 - Centro',
+      details: 'Envie sua localização ao sair de casa ou use os botões abaixo para abrir a rota.',
+      mapsUrl: '',
+      wazeUrl: '',
+    },
+  },
   // LAYOUT
   {
     section: 'Layout',
@@ -451,6 +469,46 @@ function CanvasItem({ el, onChange, onRemove, onImageUpload }: {
               placeholder="Sim" className="flex-1 text-center py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-sm outline-none focus:border-emerald-400" />
             <input type="text" value={el.noText || ''} onChange={e => onChange({ ...el, noText: e.target.value })}
               placeholder="Não" className="flex-1 text-center py-2 rounded-xl bg-gray-100 border border-gray-200 text-gray-600 font-semibold text-sm outline-none focus:border-gray-400" />
+          </div>
+        )}
+
+        {el.type === 'location' && (
+          <div className="space-y-2">
+            <input
+              value={el.title || ''}
+              onChange={e => onChange({ ...el, title: e.target.value })}
+              placeholder="Título do bloco..."
+              className={labelInputClass}
+            />
+            <textarea
+              value={el.address || ''}
+              onChange={e => onChange({ ...el, address: e.target.value })}
+              placeholder="Endereço completo..."
+              rows={3}
+              className={`${fieldClass} resize-none`}
+            />
+            <input
+              value={el.mapsUrl || ''}
+              onChange={e => onChange({ ...el, mapsUrl: e.target.value })}
+              placeholder="Link do Google Maps (opcional)"
+              className={fieldClass}
+            />
+            <input
+              value={el.wazeUrl || ''}
+              onChange={e => onChange({ ...el, wazeUrl: e.target.value })}
+              placeholder="Link do Waze (opcional)"
+              className={fieldClass}
+            />
+            <textarea
+              value={el.details || ''}
+              onChange={e => onChange({ ...el, details: e.target.value })}
+              placeholder="Informações adicionais da localização..."
+              rows={3}
+              className={`${fieldClass} resize-none`}
+            />
+            <p className="text-[10px] text-gray-400">
+              Se os links do Maps ou Waze ficarem vazios, o formulário tenta usar o endereço acima para abrir a rota.
+            </p>
           </div>
         )}
 
