@@ -233,6 +233,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const [customTo, setCustomTo] = useState('');
   const [hoveredStep, setHoveredStep] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('stats');
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -247,9 +248,41 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     return stats?.byStepId?.[step.id] || getPositionStats(position);
   }
 
-  function handleBarMouseEnter(step: number) {
+  function positionTooltip(targetRect: DOMRect) {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const gap = 20;
+    const bounds = 12;
+    const containerRect = container.getBoundingClientRect();
+    const previewWidth = tooltipRef.current?.offsetWidth || (PHONE_W + 24);
+    const previewHeight = tooltipRef.current?.offsetHeight || (PHONE_H + 24);
+
+    const targetTop = targetRect.top - containerRect.top;
+    const targetCenterY = targetTop + (targetRect.height / 2);
+    let top = targetCenterY - (previewHeight / 2);
+    top = Math.max(bounds, Math.min(top, containerRect.height - previewHeight - bounds));
+
+    const spaceRight = containerRect.right - targetRect.right;
+    const spaceLeft = targetRect.left - containerRect.left;
+    let left = targetRect.right - containerRect.left + gap;
+
+    if (spaceRight < previewWidth + gap && spaceLeft > spaceRight) {
+      left = targetRect.left - containerRect.left - previewWidth - gap;
+    }
+
+    left = Math.max(bounds, Math.min(left, containerRect.width - previewWidth - bounds));
+    setTooltipPos({ top, left });
+  }
+
+  function handleBarMouseEnter(step: number, event: React.MouseEvent<HTMLDivElement>) {
     setHoveredStep(step);
-    setTooltipPos({ top: 0, left: 0 }); // unused — preview is centered via CSS
+    positionTooltip(event.currentTarget.getBoundingClientRect());
+  }
+
+  function handleBarMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    if (hoveredStep === null) return;
+    positionTooltip(event.currentTarget.getBoundingClientRect());
   }
 
   function handleBarMouseLeave() {
@@ -333,7 +366,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const conversionRate = totalResponses > 0 ? Math.round((whatsappClicks / totalResponses) * 100) : 0;
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-gray-100 flex items-start justify-between gap-4">
@@ -481,7 +514,8 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
 
                     return (
                       <div key={step.id}
-                        onMouseEnter={() => handleBarMouseEnter(idx + 1)}
+                        onMouseEnter={e => handleBarMouseEnter(idx + 1, e)}
+                        onMouseMove={handleBarMouseMove}
                         onMouseLeave={handleBarMouseLeave}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -537,7 +571,8 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                     const clickPct = prevSim > 0 ? Math.round((clicks / prevSim) * 100) : 0;
                     return (
                       <div
-                        onMouseEnter={() => handleBarMouseEnter(finalStepNum)}
+                        onMouseEnter={e => handleBarMouseEnter(finalStepNum, e)}
+                        onMouseMove={handleBarMouseMove}
                         onMouseLeave={handleBarMouseLeave}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -580,10 +615,11 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
       {/* Floating phone preview — centered on screen */}
       </div>
 
-      {hoveredStep !== null && (
+      {hoveredStep !== null && tooltipPos && (
         <div
           ref={tooltipRef}
-          className="absolute inset-0 z-[300] pointer-events-none flex items-center justify-center"
+          className="absolute z-[300] pointer-events-none"
+          style={{ top: tooltipPos.top, left: tooltipPos.left }}
         >
           <StepPhonePreview step={hoveredStep} formData={formData} />
         </div>
