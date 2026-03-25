@@ -558,30 +558,34 @@ export function StepCardsList({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={steps.map(s => s.id)} strategy={horizontalListSortingStrategy}>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2 flex flex-wrap gap-1.5">
-          {steps.map((step, index) => (
-            <SortableStepCard
-              key={step.id}
-              step={step}
-              index={index}
-              isActive={!isCelebration && index === currentIndex}
-              onClick={() => onCurrentIndexChange(index)}
-              onRename={label => handleRename(step.id, label)}
-            />
-          ))}
-          {hasCelebration && (
-            <div
-              className={`flex flex-col gap-1 px-2.5 py-2 rounded-xl border transition-all cursor-pointer flex-shrink-0 w-[110px] ${
-                isCelebration ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
-              }`}
-              onClick={() => onCurrentIndexChange(steps.length)}
-            >
-              <span className="text-[10px] font-bold text-gray-400">{steps.length + 1}</span>
-              <span className={`text-xs font-semibold truncate ${isCelebration ? 'text-[#6B1C3A]' : 'text-gray-700'}`}>
-                Celebração ✨
-              </span>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2">
+          <div className="overflow-x-auto overflow-y-hidden touch-pan-x overscroll-x-contain pb-1 [scrollbar-width:thin]">
+            <div className="flex min-w-max gap-1.5">
+              {steps.map((step, index) => (
+                <SortableStepCard
+                  key={step.id}
+                  step={step}
+                  index={index}
+                  isActive={!isCelebration && index === currentIndex}
+                  onClick={() => onCurrentIndexChange(index)}
+                  onRename={label => handleRename(step.id, label)}
+                />
+              ))}
+              {hasCelebration && (
+                <div
+                  className={`flex flex-col gap-1 px-2.5 py-2 rounded-xl border transition-all cursor-pointer flex-shrink-0 w-[110px] ${
+                    isCelebration ? 'border-[#6B1C3A]/40 bg-[#6B1C3A]/5' : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
+                  }`}
+                  onClick={() => onCurrentIndexChange(steps.length)}
+                >
+                  <span className="text-[10px] font-bold text-gray-400">{steps.length + 1}</span>
+                  <span className={`text-xs font-semibold truncate ${isCelebration ? 'text-[#6B1C3A]' : 'text-gray-700'}`}>
+                    Celebração ✨
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </SortableContext>
     </DndContext>
