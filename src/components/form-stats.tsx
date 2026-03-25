@@ -186,32 +186,32 @@ function LeadsList({ leads, loading }: { leads: Lead[]; loading: boolean }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-100">
-            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Nome</th>
-            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">WhatsApp</th>
-            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Origem</th>
-            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Mídia</th>
-            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Campanha</th>
-            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Data</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Pessoa</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">Data / Hora</th>
+            <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">De onde veio</th>
           </tr>
         </thead>
         <tbody>
           {leads.map(l => (
             <tr key={l.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-              <td className="py-3 px-4 font-medium text-gray-900">{l.name || '—'}</td>
-              <td className="py-3 px-4 text-gray-600">{l.whatsapp || '—'}</td>
               <td className="py-3 px-4">
-                {l.utm_source
-                  ? <span className="px-2 py-0.5 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-full text-xs font-semibold">{l.utm_source}</span>
-                  : <span className="text-gray-300 text-xs">—</span>}
+                <p className="font-semibold text-gray-900">{l.name || 'Lead'}</p>
+                {l.whatsapp && <p className="text-xs text-gray-400 mt-0.5">{l.whatsapp}</p>}
+              </td>
+              <td className="py-3 px-4 text-gray-500 text-xs whitespace-nowrap">
+                {new Date(l.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                <br />
+                <span className="text-gray-400">{new Date(l.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
               </td>
               <td className="py-3 px-4">
-                {l.utm_medium
-                  ? <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold">{l.utm_medium}</span>
-                  : <span className="text-gray-300 text-xs">—</span>}
-              </td>
-              <td className="py-3 px-4 text-gray-500 text-xs">{l.utm_campaign || '—'}</td>
-              <td className="py-3 px-4 text-gray-400 text-xs whitespace-nowrap">
-                {new Date(l.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                {l.utm_source || l.utm_medium || l.utm_campaign ? (
+                  <div className="flex flex-col gap-0.5">
+                    {l.utm_source && <span className="px-2 py-0.5 bg-[#6B1C3A]/10 text-[#6B1C3A] rounded-full text-xs font-semibold w-fit">{l.utm_source}</span>}
+                    {l.utm_medium && <span className="text-xs text-gray-400">{l.utm_medium}{l.utm_campaign ? ` · ${l.utm_campaign}` : ''}</span>}
+                  </div>
+                ) : (
+                  <span className="text-xs text-gray-300">Direto</span>
+                )}
               </td>
             </tr>
           ))}
