@@ -55,10 +55,12 @@ function getPresetRange(preset: Preset): { from?: string; to?: string } {
 
 // ── Phone mockup preview ──────────────────────────────────────────────────────
 
-const PHONE_W = 260; // px — outer phone width
-const INNER_W = 390; // px — render width (iPhone size)
-const SCALE = PHONE_W / INNER_W; // ~0.667
-const PHONE_H = 480; // px — outer phone height
+const PHONE_W = 260;   // px — outer phone width
+const SHELL_PAD = 6;   // p-[6px] on the phone shell
+const SCREEN_W = PHONE_W - SHELL_PAD * 2; // 248px — actual screen width
+const INNER_W = 390;   // px — render width (iPhone size)
+const SCALE = SCREEN_W / INNER_W; // 248/390 ≈ 0.636 — fills screen exactly
+const PHONE_H = 480;   // px — outer phone height
 
 function StepPhonePreview({ step, formData }: { step: number; formData: FormData }) {
   // Convert FormData → FormInput (superset, cast is safe)
