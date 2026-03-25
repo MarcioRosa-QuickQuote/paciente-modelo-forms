@@ -574,7 +574,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
       {hoveredStep !== null && (
         <div
           ref={tooltipRef}
-          className="absolute inset-0 z-[300] pointer-events-none flex items-center justify-center"
+          className="fixed inset-0 z-[300] pointer-events-none flex items-center justify-center"
         >
           <StepPhonePreview step={hoveredStep} formData={formData} />
         </div>
