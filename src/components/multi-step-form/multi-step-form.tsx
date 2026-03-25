@@ -9,6 +9,7 @@ import StepAvailability from './step-availability';
 import StepPricing from './step-pricing';
 import StepFee from './step-fee';
 import StepCustom from './step-custom';
+import StepLivre from './step-livre';
 import RejectionScreen from './rejection-screen';
 import CelebrationScreen from './celebration-screen';
 import LeadFormScreen from './lead-form-screen';
@@ -206,6 +207,15 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             question={step.question || 'Você está de acordo?'}
             yesText={step.yesText}
             noText={step.noText}
+            onYes={handleYes}
+            onNo={handleNo}
+            theme={theme}
+          />
+        );
+      case 'livre':
+        return (
+          <StepLivre
+            step={step}
             onYes={handleYes}
             onNo={handleNo}
             theme={theme}
