@@ -260,7 +260,7 @@ export default function AdminDashboard() {
               {/* Stats panel - expands below the card */}
               {expandedStats === form.id && (
                 <div className="mt-2">
-                  <FormStats formId={form.id} />
+                  <FormStats formId={form.id} formData={form} />
                 </div>
               )}
             </div>
