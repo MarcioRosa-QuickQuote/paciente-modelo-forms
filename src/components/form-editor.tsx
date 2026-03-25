@@ -854,6 +854,19 @@ export default function FormEditor({ initialData, mode, templateData }: FormEdit
               )}
 
               {/* ── LIVRE ── */}
+              {currentStep.type === 'livre' && (
+                <div>
+                  <label className={labelClass}>Nome da tela</label>
+                  <input
+                    type="text"
+                    value={currentStep.label || ''}
+                    onChange={e => updateCurrentStep({ label: e.target.value })}
+                    placeholder="Tela Livre"
+                    className={stepInputClass}
+                  />
+                </div>
+              )}
+
               {showElementsBuilder && (
                 <div className="border-t border-gray-100 pt-5">
                   <div className="mb-4">

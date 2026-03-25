@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { FormData, FormInput } from '@/types/form';
 import { StepPreviewContent } from './form-preview-panel';
+import { getStepInfo } from './form-step-builder';
 
 interface StepStats {
   sim: number;
@@ -34,13 +35,6 @@ function getLeadDisplayName(lead: Lead): string {
 type Preset = 'hoje' | 'ontem' | 'semana' | 'mes' | 'periodo';
 type ViewMode = 'stats' | 'leads' | 'chart';
 
-const STEP_LABELS: Record<number, string> = {
-  1: 'Interesse',
-  2: 'Disponibilidade',
-  3: 'Valor',
-  4: 'Taxa de Agendamento',
-  5: 'Clicou no Botão do Zap',
-};
 
 function toLocalISO(date: Date, endOfDay = false): string {
   const y = date.getFullYear();
@@ -306,7 +300,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     setClearing(true);
     try {
       await fetch(`/api/stats/${formId}`, { method: 'DELETE' });
-      setStats({ '1': { sim: 0, nao: 0 }, '2': { sim: 0, nao: 0 }, '3': { sim: 0, nao: 0 }, '4': { sim: 0, nao: 0 }, '5': { sim: 0, nao: 0 } });
+      setStats({});
     } catch {
       alert('Erro ao zerar respostas');
     } finally {
@@ -322,8 +316,9 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     { key: 'periodo', label: 'Período' },
   ];
 
+  const visibleStepCount = (formData.steps || []).filter(s => !s.hidden).length;
   const totalResponses = (stats?.['1']?.sim || 0) + (stats?.['1']?.nao || 0);
-  const whatsappClicks = stats?.['5']?.sim || 0;
+  const whatsappClicks = stats?.[String(visibleStepCount + 1)]?.sim || 0;
   const conversionRate = totalResponses > 0 ? Math.round((whatsappClicks / totalResponses) * 100) : 0;
 
   return (
@@ -461,100 +456,114 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
 
           {/* Chart */}
           <div className="p-6 space-y-6">
-            {[1, 2, 3, 4, 5].map(step => {
-              const s = stats[String(step)] || { sim: 0, nao: 0 };
-
-              if (step === 5) {
-                const clicks = s.sim;
-                const step4Sim = stats['4']?.sim || 0;
-                const clickPct = step4Sim > 0 ? Math.round((clicks / step4Sim) * 100) : 0;
-                return (
-                  <div key={step}
-                    onMouseEnter={() => handleBarMouseEnter(step)}
-                    onMouseLeave={handleBarMouseLeave}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
-                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                          </svg>
-                        </span>
-                        <span className="text-sm font-semibold text-gray-700">{STEP_LABELS[step]}</span>
-                      </div>
-                      <span className="text-xs text-gray-400">{clicks} cliques</span>
-                    </div>
-                    {clicks > 0 ? (
-                      <div className="flex gap-1 h-10 rounded-xl overflow-hidden">
-                        <div
-                          className="bg-green-500 flex items-center justify-center transition-all duration-500 rounded-xl"
-                          style={{ width: `${Math.max(clickPct, 10)}%` }}
-                        >
-                          <span className="text-white text-xs font-bold">
-                            {clicks} cliques ({clickPct}% dos que aceitaram a taxa)
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="h-10 bg-gray-50 rounded-xl flex items-center justify-center">
-                        <span className="text-xs text-gray-400">Nenhum clique ainda</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              const total = s.sim + s.nao;
-              const simPct = total > 0 ? Math.round((s.sim / total) * 100) : 0;
-              const naoPct = total > 0 ? Math.round((s.nao / total) * 100) : 0;
+            {(() => {
+              // Build visible step list from formData
+              const visibleSteps = (formData.steps || []).filter(s => !s.hidden);
+              // Stats keys are 1-indexed positions of visible steps
+              const finalStepNum = visibleSteps.length + 1; // WhatsApp click
 
               return (
-                <div key={step}
-                  onMouseEnter={() => handleBarMouseEnter(step)}
-                  onMouseLeave={handleBarMouseLeave}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-500">
-                        {step}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-700">{STEP_LABELS[step]}</span>
-                    </div>
-                    <span className="text-xs text-gray-400">{total} respostas</span>
-                  </div>
-                  {total > 0 ? (
-                    <>
-                      <div className="flex gap-1 h-10 rounded-xl overflow-hidden">
-                        {simPct > 0 && (
-                          <div
-                            className="bg-emerald-500 flex items-center justify-center transition-all duration-500 rounded-l-xl"
-                            style={{ width: `${simPct}%` }}
-                          >
-                            <span className="text-white text-xs font-bold">Sim {simPct}%</span>
+                <>
+                  {visibleSteps.map((step, idx) => {
+                    const statKey = String(idx + 1);
+                    const s = stats[statKey] || { sim: 0, nao: 0 };
+                    const total = s.sim + s.nao;
+                    const simPct = total > 0 ? Math.round((s.sim / total) * 100) : 0;
+                    const naoPct = total > 0 ? Math.round((s.nao / total) * 100) : 0;
+                    const stepLabel = getStepInfo(step.type, step.label).label;
+
+                    return (
+                      <div key={step.id}
+                        onMouseEnter={() => handleBarMouseEnter(idx + 1)}
+                        onMouseLeave={handleBarMouseLeave}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-500">
+                              {idx + 1}
+                            </span>
+                            <span className="text-sm font-semibold text-gray-700">{stepLabel}</span>
                           </div>
-                        )}
-                        {naoPct > 0 && (
-                          <div
-                            className="bg-red-400 flex items-center justify-center transition-all duration-500 rounded-r-xl"
-                            style={{ width: `${naoPct}%` }}
-                          >
-                            <span className="text-white text-xs font-bold">Não {naoPct}%</span>
+                          <span className="text-xs text-gray-400">{total} respostas</span>
+                        </div>
+                        {total > 0 ? (
+                          <>
+                            <div className="flex gap-1 h-10 rounded-xl overflow-hidden">
+                              {simPct > 0 && (
+                                <div
+                                  className="bg-emerald-500 flex items-center justify-center transition-all duration-500 rounded-l-xl"
+                                  style={{ width: `${simPct}%` }}
+                                >
+                                  <span className="text-white text-xs font-bold">Sim {simPct}%</span>
+                                </div>
+                              )}
+                              {naoPct > 0 && (
+                                <div
+                                  className="bg-red-400 flex items-center justify-center transition-all duration-500 rounded-r-xl"
+                                  style={{ width: `${naoPct}%` }}
+                                >
+                                  <span className="text-white text-xs font-bold">Não {naoPct}%</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-xs text-emerald-600 font-medium">{s.sim} sim</span>
+                              <span className="text-xs text-red-400 font-medium">{s.nao} não</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="h-10 bg-gray-50 rounded-xl flex items-center justify-center">
+                            <span className="text-xs text-gray-400">Sem respostas</span>
                           </div>
                         )}
                       </div>
-                      <div className="flex justify-between mt-1">
-                        <span className="text-xs text-emerald-600 font-medium">{s.sim} sim</span>
-                        <span className="text-xs text-red-400 font-medium">{s.nao} não</span>
+                    );
+                  })}
+
+                  {/* WhatsApp click bar */}
+                  {(() => {
+                    const s = stats[String(finalStepNum)] || { sim: 0, nao: 0 };
+                    const clicks = s.sim;
+                    const prevSim = stats[String(visibleSteps.length)]?.sim || 0;
+                    const clickPct = prevSim > 0 ? Math.round((clicks / prevSim) * 100) : 0;
+                    return (
+                      <div
+                        onMouseEnter={() => handleBarMouseEnter(finalStepNum)}
+                        onMouseLeave={handleBarMouseLeave}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
+                              <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                              </svg>
+                            </span>
+                            <span className="text-sm font-semibold text-gray-700">Clicou no Botão do Zap</span>
+                          </div>
+                          <span className="text-xs text-gray-400">{clicks} cliques</span>
+                        </div>
+                        {clicks > 0 ? (
+                          <div className="flex gap-1 h-10 rounded-xl overflow-hidden">
+                            <div
+                              className="bg-green-500 flex items-center justify-center transition-all duration-500 rounded-xl"
+                              style={{ width: `${Math.max(clickPct, 10)}%` }}
+                            >
+                              <span className="text-white text-xs font-bold">
+                                {clicks} cliques ({clickPct}% dos que aceitaram)
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-10 bg-gray-50 rounded-xl flex items-center justify-center">
+                            <span className="text-xs text-gray-400">Nenhum clique ainda</span>
+                          </div>
+                        )}
                       </div>
-                    </>
-                  ) : (
-                    <div className="h-10 bg-gray-50 rounded-xl flex items-center justify-center">
-                      <span className="text-xs text-gray-400">Sem respostas</span>
-                    </div>
-                  )}
-                </div>
+                    );
+                  })()}
+                </>
               );
-            })}
+            })()}
           </div>
         </>
       ))}

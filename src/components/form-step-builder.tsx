@@ -75,8 +75,8 @@ const STEP_TYPES: { type: FormStepType; label: string; description: string; icon
   },
 ];
 
-export function getStepInfo(type: FormStepType) {
-  if (type === 'livre') return { label: 'Tela Livre', icon: null };
+export function getStepInfo(type: FormStepType, label?: string) {
+  if (type === 'livre') return { label: label || 'Tela Livre', icon: null };
   return STEP_TYPES.find(s => s.type === type) || STEP_TYPES[0];
 }
 
@@ -324,7 +324,7 @@ export default function FormStepBuilder({
 
   if (!isCelebration && !currentStep) return null;
 
-  const info = !isCelebration ? getStepInfo(currentStep!.type) : { label: 'Celebração', icon: null };
+  const info = !isCelebration ? getStepInfo(currentStep!.type, currentStep!.label) : { label: 'Celebração', icon: null };
 
   return (
     <>
