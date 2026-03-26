@@ -18,6 +18,7 @@ export const formInputSchema = z.object({
   photos: z.array(z.object({ before: z.string(), after: z.string() })).default([]),
   headline: z.string().default(''),
   supportText: z.string().default(''),
+  isActive: z.boolean().default(true),
   whatsappMessage: z.string().default(''),
   finalScreenType: z.enum(['whatsapp', 'form']).default('whatsapp'),
   formFields: z.object({

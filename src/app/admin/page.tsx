@@ -20,6 +20,7 @@ export default function AdminDashboard() {
   const [forms, setForms] = useState<FormData[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedStats, setExpandedStats] = useState<string | null>(null);
+  const [togglingIds, setTogglingIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchForms();
@@ -100,6 +101,48 @@ export default function AdminDashboard() {
     setExpandedStats(prev => prev === id ? null : id);
   }
 
+  async function handleToggleActive(form: FormData) {
+    if (togglingIds.includes(form.id)) return;
+
+    const nextIsActive = !form.isActive;
+
+    setTogglingIds(prev => [...prev, form.id]);
+    setForms(prev => prev.map(item => (
+      item.id === form.id
+        ? { ...item, isActive: nextIsActive }
+        : item
+    )));
+
+    try {
+      const res = await authFetch(`/api/forms/${form.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextIsActive }),
+      });
+
+      if (!res.ok) {
+        throw new Error('toggle_failed');
+      }
+
+      const updatedForm = await res.json();
+      setForms(prev => prev.map(item => (
+        item.id === form.id
+          ? updatedForm
+          : item
+      )));
+    } catch (error) {
+      console.error('Error toggling form status:', error);
+      setForms(prev => prev.map(item => (
+        item.id === form.id
+          ? { ...item, isActive: form.isActive }
+          : item
+      )));
+      alert('Não foi possível atualizar o status do formulário');
+    } finally {
+      setTogglingIds(prev => prev.filter(id => id !== form.id));
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -152,14 +195,17 @@ export default function AdminDashboard() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {forms.map((form) => (
-            <div key={form.id} className="space-y-0">
+          {forms.map((form) => {
+            const isToggling = togglingIds.includes(form.id);
+
+            return (
+              <div key={form.id} className="space-y-0">
               <div
                 className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:border-gray-200 transition-all duration-300 group"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
                       <h3 className="text-lg font-bold text-gray-900 truncate">{form.name}</h3>
                       <span
                         className={`px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${
@@ -192,7 +238,41 @@ export default function AdminDashboard() {
                       <code className="text-xs text-gray-500">/formulario/{form.slug}</code>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 ml-4 opacity-60 group-hover:opacity-100 transition-opacity">
+                  <div className="flex flex-col items-stretch gap-3 xl:items-end xl:ml-4">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={form.isActive}
+                      aria-label={form.isActive ? 'Desativar formulário' : 'Ativar formulário'}
+                      disabled={isToggling}
+                      onClick={() => handleToggleActive(form)}
+                      className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
+                        form.isActive
+                          ? 'border-emerald-200 bg-emerald-50/80 text-emerald-700'
+                          : 'border-gray-200 bg-gray-50 text-gray-500'
+                      } ${isToggling ? 'cursor-wait opacity-70' : 'hover:shadow-sm'}`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+                          {isToggling ? 'Atualizando' : 'Publicação'}
+                        </p>
+                        <p className="text-sm font-semibold">
+                          {form.isActive ? 'Formulário ativo' : 'Formulário inativo'}
+                        </p>
+                      </div>
+                      <span
+                        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+                          form.isActive ? 'bg-emerald-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                            form.isActive ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </span>
+                    </button>
+                    <div className="flex flex-wrap items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
                     <button
                       onClick={() => toggleStats(form.id)}
                       className={`p-2.5 rounded-xl transition-all ${
@@ -253,6 +333,7 @@ export default function AdminDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -263,8 +344,9 @@ export default function AdminDashboard() {
                   <FormStats formId={form.id} formData={form} />
                 </div>
               )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

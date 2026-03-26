@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { saveLead, getLeads } from '@/db';
+import { getFormById, getLeads, initializeDb, saveLead } from '@/db';
 
 async function getUserIdFromRequest(request: NextRequest): Promise<string> {
   const authHeader = request.headers.get('Authorization');
@@ -16,10 +16,16 @@ async function getUserIdFromRequest(request: NextRequest): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    await initializeDb();
     const { formId, name, whatsapp, email, utmSource, utmMedium, utmCampaign } = await request.json();
 
     if (!formId) {
       return NextResponse.json({ error: 'formId is required' }, { status: 400 });
+    }
+
+    const form = await getFormById(formId);
+    if (!form || !form.is_active) {
+      return NextResponse.json({ error: 'Formulário indisponível' }, { status: 404 });
     }
 
     await saveLead(formId, name || '', whatsapp || '', email || '', utmSource, utmMedium, utmCampaign);

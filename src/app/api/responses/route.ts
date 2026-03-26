@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { saveResponse } from '@/db';
+import { getFormById, initializeDb, saveResponse } from '@/db';
 
 export async function POST(request: NextRequest) {
   try {
+    await initializeDb();
     const { formId, step, answer, stepId } = await request.json();
 
     if (!formId || !step || !answer) {
@@ -11,6 +12,11 @@ export async function POST(request: NextRequest) {
 
     if (!['sim', 'nao'].includes(answer)) {
       return NextResponse.json({ error: 'Invalid answer' }, { status: 400 });
+    }
+
+    const form = await getFormById(formId);
+    if (!form || !form.is_active) {
+      return NextResponse.json({ error: 'Formulário indisponível' }, { status: 404 });
     }
 
     await saveResponse(formId, step, answer, typeof stepId === 'string' ? stepId : undefined);

@@ -69,6 +69,7 @@ export async function PUT(
     if (data.afterImage !== undefined) updateData.after_image = data.afterImage;
     if (data.headline !== undefined) updateData.headline = data.headline;
     if (data.supportText !== undefined) updateData.support_text = data.supportText;
+    if (data.isActive !== undefined) updateData.is_active = data.isActive;
     if (data.whatsappMessage !== undefined) updateData.whatsapp_message = data.whatsappMessage;
     if (data.finalScreenType !== undefined) updateData.final_screen_type = data.finalScreenType;
     if (data.formFields !== undefined) updateData.form_fields = data.formFields;

@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       photos: data.photos || [],
       headline: data.headline || '',
       support_text: data.supportText || '',
-      is_active: true,
+      is_active: data.isActive ?? true,
       whatsapp_message: data.whatsappMessage || '',
       final_screen_type: data.finalScreenType || 'whatsapp',
       form_fields: data.formFields || { name: true, whatsapp: true, email: true },

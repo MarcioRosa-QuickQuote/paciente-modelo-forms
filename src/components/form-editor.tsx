@@ -149,6 +149,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     showOnlyInstallment: initialData?.showOnlyInstallment ?? false,
     headline: initialData?.headline || templateData?.headline || (shouldPrefillTextDefaults ? getDefaultHeadline(initialProcedureName) : ''),
     supportText: initialData?.supportText || templateData?.supportText || (shouldPrefillTextDefaults ? getDefaultSupportText() : ''),
+    isActive: initialData?.isActive ?? true,
     whatsappMessage: initialData?.whatsappMessage || (shouldPrefillTextDefaults ? getDefaultWhatsappMessage(initialProcedureName) : ''),
     finalScreenType: initialData?.finalScreenType || 'whatsapp',
     formFields: initialData?.formFields || { name: true, whatsapp: true, email: true },

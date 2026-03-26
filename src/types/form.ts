@@ -127,6 +127,7 @@ export interface FormInput {
   showOnlyInstallment: boolean;
   headline: string;
   supportText: string;
+  isActive: boolean;
   whatsappMessage: string;
   finalScreenType: FinalScreenType;
   formFields: FormFields;
