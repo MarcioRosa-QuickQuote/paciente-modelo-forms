@@ -3,6 +3,9 @@ import { getFormBySlug, rowToFormData, initializeDb, getClinicSettingsByUserId }
 import MultiStepForm from '@/components/multi-step-form/multi-step-form';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 
 interface PageProps {
   params: Promise<{ slug: string }>;

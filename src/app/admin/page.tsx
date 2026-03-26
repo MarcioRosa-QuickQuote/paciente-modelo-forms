@@ -8,8 +8,11 @@ import FormStats from '@/components/form-stats';
 import { supabase } from '@/lib/supabase-client';
 
 async function authFetch(url: string, options: RequestInit = {}) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const token = session?.access_token ?? '';
+
   return fetch(url, {
     ...options,
     headers: { ...options.headers, Authorization: `Bearer ${token}` },
@@ -44,7 +47,7 @@ export default function AdminDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: `Cópia de ${form.name}`,
+          name: `Copia de ${form.name}`,
           procedureName: form.procedureName,
           availableDays: form.availableDays,
           regularPrice: form.regularPrice,
@@ -73,19 +76,24 @@ export default function AdminDashboard() {
           customTexts: form.customTexts,
         }),
       });
-      if (res.ok) await fetchForms();
-      else alert('Erro ao duplicar formulário');
+
+      if (res.ok) {
+        await fetchForms();
+        return;
+      }
+
+      alert('Erro ao duplicar formulario');
     } catch {
-      alert('Erro ao duplicar formulário');
+      alert('Erro ao duplicar formulario');
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Tem certeza que deseja excluir este formulário?')) return;
+    if (!confirm('Tem certeza que deseja excluir este formulario?')) return;
 
     try {
       await authFetch(`/api/forms/${id}`, { method: 'DELETE' });
-      setForms(forms.filter(f => f.id !== id));
+      setForms(prev => prev.filter(form => form.id !== id));
     } catch (error) {
       console.error('Error deleting form:', error);
     }
@@ -98,7 +106,7 @@ export default function AdminDashboard() {
   }
 
   function toggleStats(id: string) {
-    setExpandedStats(prev => prev === id ? null : id);
+    setExpandedStats(prev => (prev === id ? null : id));
   }
 
   async function handleToggleActive(form: FormData) {
@@ -107,11 +115,9 @@ export default function AdminDashboard() {
     const nextIsActive = !form.isActive;
 
     setTogglingIds(prev => [...prev, form.id]);
-    setForms(prev => prev.map(item => (
-      item.id === form.id
-        ? { ...item, isActive: nextIsActive }
-        : item
-    )));
+    setForms(prev =>
+      prev.map(item => (item.id === form.id ? { ...item, isActive: nextIsActive } : item))
+    );
 
     try {
       const res = await authFetch(`/api/forms/${form.id}`, {
@@ -125,19 +131,13 @@ export default function AdminDashboard() {
       }
 
       const updatedForm = await res.json();
-      setForms(prev => prev.map(item => (
-        item.id === form.id
-          ? updatedForm
-          : item
-      )));
+      setForms(prev => prev.map(item => (item.id === form.id ? updatedForm : item)));
     } catch (error) {
       console.error('Error toggling form status:', error);
-      setForms(prev => prev.map(item => (
-        item.id === form.id
-          ? { ...item, isActive: form.isActive }
-          : item
-      )));
-      alert('Não foi possível atualizar o status do formulário');
+      setForms(prev =>
+        prev.map(item => (item.id === form.id ? { ...item, isActive: form.isActive } : item))
+      );
+      alert('Nao foi possivel atualizar o status do formulario');
     } finally {
       setTogglingIds(prev => prev.filter(id => id !== form.id));
     }
@@ -146,204 +146,216 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-10 h-10 border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A] rounded-full animate-spin" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#6B1C3A]/20 border-t-[#6B1C3A]" />
       </div>
     );
   }
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Formulários</h1>
-        <p className="text-gray-500 mt-1">Gerencie seus formulários de paciente modelo</p>
+        <h1 className="tracking-tight text-3xl font-bold text-gray-900">Formularios</h1>
+        <p className="mt-1 text-gray-500">Gerencie seus formularios de paciente modelo</p>
       </div>
 
-      {/* Stats */}
       {forms.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total</p>
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Total</p>
             <p className="text-3xl font-bold text-gray-900">{forms.length}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Ativos</p>
-            <p className="text-3xl font-bold text-emerald-600">{forms.filter(f => f.isActive).length}</p>
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Ativos</p>
+            <p className="text-3xl font-bold text-emerald-600">{forms.filter(form => form.isActive).length}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Inativos</p>
-            <p className="text-3xl font-bold text-gray-400">{forms.filter(f => !f.isActive).length}</p>
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Inativos</p>
+            <p className="text-3xl font-bold text-gray-400">{forms.filter(form => !form.isActive).length}</p>
           </div>
         </div>
       )}
 
       {forms.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
-          <div className="w-20 h-20 bg-gradient-to-br from-[#6B1C3A]/10 to-[#9B2D5E]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-[#6B1C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="rounded-3xl border border-gray-100 bg-white py-20 text-center shadow-sm">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6B1C3A]/10 to-[#9B2D5E]/10">
+            <svg className="h-10 w-10 text-[#6B1C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Nenhum formulário criado</h3>
-          <p className="text-gray-500 mb-8 max-w-sm mx-auto">Crie seu primeiro formulário para começar a captar pacientes modelo</p>
+          <h3 className="mb-2 text-xl font-bold text-gray-900">Nenhum formulario criado</h3>
+          <p className="mx-auto mb-8 max-w-sm text-gray-500">Crie seu primeiro formulario para comecar a captar pacientes modelo</p>
           <Link
             href="/admin/forms/new"
-            className="inline-flex px-8 py-3.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20"
+            className="inline-flex rounded-xl bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] px-8 py-3.5 font-semibold text-white shadow-lg shadow-[#6B1C3A]/20 transition-all hover:from-[#5A1731] hover:to-[#8A2653]"
           >
-            Criar Primeiro Formulário
+            Criar Primeiro Formulario
           </Link>
         </div>
       ) : (
         <div className="grid gap-4">
-          {forms.map((form) => {
+          {forms.map(form => {
             const isToggling = togglingIds.includes(form.id);
+            const isLinkDisabled = !form.isActive || isToggling;
 
             return (
               <div key={form.id} className="space-y-0">
-              <div
-                className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:border-gray-200 transition-all duration-300 group"
-              >
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-3 mb-3">
-                      <h3 className="text-lg font-bold text-gray-900 truncate">{form.name}</h3>
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${
-                          form.isActive
-                            ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
-                            : 'bg-gray-50 text-gray-500 ring-1 ring-gray-200'
-                        }`}
-                      >
-                        {form.isActive ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-                      <p className="text-sm text-gray-500">
-                        <span className="text-gray-400">Procedimento:</span>{' '}
-                        <span className="font-semibold text-gray-700">{form.procedureName?.replace(/<[^>]*>/g, '')}</span>
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        <span className="text-gray-400">Profissional:</span>{' '}
-                        <span className="font-semibold text-gray-700">{form.professionalName}</span>
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        <span className="text-gray-400">Valor modelo:</span>{' '}
-                        <span className="font-semibold text-[#6B1C3A]">{formatCurrency(form.modelPrice)}</span>
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5 w-fit">
-                      <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                      <code className="text-xs text-gray-500">/formulario/{form.slug}</code>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-stretch gap-3 xl:items-end xl:ml-4">
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={form.isActive}
-                      aria-label={form.isActive ? 'Desativar formulário' : 'Ativar formulário'}
-                      disabled={isToggling}
-                      onClick={() => handleToggleActive(form)}
-                      className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
-                        form.isActive
-                          ? 'border-emerald-200 bg-emerald-50/80 text-emerald-700'
-                          : 'border-gray-200 bg-gray-50 text-gray-500'
-                      } ${isToggling ? 'cursor-wait opacity-70' : 'hover:shadow-sm'}`}
-                    >
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-                          {isToggling ? 'Atualizando' : 'Publicação'}
+                <div className="group rounded-2xl border border-gray-100 bg-white p-6 transition-all duration-300 hover:border-gray-200 hover:shadow-lg">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-3 flex flex-wrap items-center gap-3">
+                        <h3 className="truncate text-lg font-bold text-gray-900">{form.name}</h3>
+                        <span
+                          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            form.isActive
+                              ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                              : 'bg-gray-50 text-gray-500 ring-1 ring-gray-200'
+                          }`}
+                        >
+                          {form.isActive ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+
+                      <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                        <p className="text-sm text-gray-500">
+                          <span className="text-gray-400">Procedimento:</span>{' '}
+                          <span className="font-semibold text-gray-700">{form.procedureName?.replace(/<[^>]*>/g, '')}</span>
                         </p>
-                        <p className="text-sm font-semibold">
-                          {form.isActive ? 'Formulário ativo' : 'Formulário inativo'}
+                        <p className="text-sm text-gray-500">
+                          <span className="text-gray-400">Profissional:</span>{' '}
+                          <span className="font-semibold text-gray-700">{form.professionalName}</span>
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          <span className="text-gray-400">Valor modelo:</span>{' '}
+                          <span className="font-semibold text-[#6B1C3A]">{formatCurrency(form.modelPrice)}</span>
                         </p>
                       </div>
-                      <span
-                        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+
+                      <div className={`flex w-fit items-center gap-2 rounded-lg px-3 py-1.5 ${form.isActive ? 'bg-gray-50' : 'bg-gray-50/70 opacity-70'}`}>
+                        <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        <code className="text-xs text-gray-500">/formulario/{form.slug}</code>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-stretch gap-3 xl:ml-4 xl:items-end">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={form.isActive}
+                        aria-label={form.isActive ? 'Desativar formulario' : 'Ativar formulario'}
+                        disabled={isToggling}
+                        onClick={() => handleToggleActive(form)}
+                        className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors ${
                           form.isActive ? 'bg-emerald-500' : 'bg-gray-300'
-                        }`}
+                        } ${isToggling ? 'cursor-wait opacity-70' : 'hover:shadow-sm'}`}
+                        title={form.isActive ? 'Desativar formulario' : 'Ativar formulario'}
                       >
+                        <span className="sr-only">
+                          {form.isActive ? 'Desativar formulario' : 'Ativar formulario'}
+                        </span>
                         <span
                           className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
                             form.isActive ? 'translate-x-6' : 'translate-x-1'
                           }`}
                         />
-                      </span>
-                    </button>
-                    <div className="flex flex-wrap items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
-                    <button
-                      onClick={() => toggleStats(form.id)}
-                      className={`p-2.5 rounded-xl transition-all ${
-                        expandedStats === form.id
-                          ? 'text-[#6B1C3A] bg-[#6B1C3A]/10'
-                          : 'text-gray-400 hover:text-[#6B1C3A] hover:bg-[#6B1C3A]/5'
-                      }`}
-                      title="Estatísticas"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => copyLink(form.slug)}
-                      className="p-2.5 text-gray-400 hover:text-[#6B1C3A] hover:bg-[#6B1C3A]/5 rounded-xl transition-all"
-                      title="Copiar link"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                      </svg>
-                    </button>
-                    <Link
-                      href={`/formulario/${form.slug}`}
-                      target="_blank"
-                      className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                      title="Visualizar"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    </Link>
-                    <button
-                      onClick={() => handleDuplicate(form)}
-                      className="p-2.5 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-all"
-                      title="Duplicar"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    </button>
-                    <Link
-                      href={`/admin/forms/${form.id}`}
-                      className="p-2.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all"
-                      title="Editar"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(form.id)}
-                      className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                      title="Excluir"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                      </button>
+
+                      <div className="flex flex-wrap items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
+                        <button
+                          onClick={() => toggleStats(form.id)}
+                          className={`rounded-xl p-2.5 transition-all ${
+                            expandedStats === form.id
+                              ? 'bg-[#6B1C3A]/10 text-[#6B1C3A]'
+                              : 'text-gray-400 hover:bg-[#6B1C3A]/5 hover:text-[#6B1C3A]'
+                          }`}
+                          title="Estatisticas"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                        </button>
+
+                        <button
+                          onClick={() => copyLink(form.slug)}
+                          disabled={isLinkDisabled}
+                          className={`rounded-xl p-2.5 transition-all ${
+                            isLinkDisabled
+                              ? 'cursor-not-allowed text-gray-300'
+                              : 'text-gray-400 hover:bg-[#6B1C3A]/5 hover:text-[#6B1C3A]'
+                          }`}
+                          title={form.isActive ? 'Copiar link' : 'Link desativado'}
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                          </svg>
+                        </button>
+
+                        {form.isActive ? (
+                          <Link
+                            href={`/formulario/${form.slug}`}
+                            target="_blank"
+                            className="rounded-xl p-2.5 text-gray-400 transition-all hover:bg-blue-50 hover:text-blue-600"
+                            title="Visualizar"
+                          >
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </Link>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            className="cursor-not-allowed rounded-xl p-2.5 text-gray-300"
+                            title="Link desativado"
+                          >
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => handleDuplicate(form)}
+                          className="rounded-xl p-2.5 text-gray-400 transition-all hover:bg-violet-50 hover:text-violet-600"
+                          title="Duplicar"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+
+                        <Link
+                          href={`/admin/forms/${form.id}`}
+                          className="rounded-xl p-2.5 text-gray-400 transition-all hover:bg-amber-50 hover:text-amber-600"
+                          title="Editar"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </Link>
+
+                        <button
+                          onClick={() => handleDelete(form.id)}
+                          className="rounded-xl p-2.5 text-gray-400 transition-all hover:bg-red-50 hover:text-red-600"
+                          title="Excluir"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Stats panel - expands below the card */}
-              {expandedStats === form.id && (
-                <div className="mt-2">
-                  <FormStats formId={form.id} formData={form} />
-                </div>
-              )}
+                {expandedStats === form.id && (
+                  <div className="mt-2">
+                    <FormStats formId={form.id} formData={form} />
+                  </div>
+                )}
               </div>
             );
           })}
