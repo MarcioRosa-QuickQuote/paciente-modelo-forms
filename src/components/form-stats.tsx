@@ -76,13 +76,12 @@ const INNER_W = 390;   // px — render width (iPhone size)
 const SCALE = SCREEN_W / INNER_W; // 248/390 ≈ 0.636 — fills screen exactly
 const PHONE_H = 480;   // px — outer phone height
 
-function StepPhonePreview({ step, formData }: { step: number; formData: FormData }) {
+function StepPhonePreview({ stepIndex, formData, previewSteps }: { stepIndex: number; formData: FormData; previewSteps: FormStep[] }) {
   // Convert FormData → FormInput (superset, cast is safe)
   const formInput = formData as unknown as FormInput;
-  const steps = formData.steps || [];
+  const steps = previewSteps;
   const photos = formData.photos || [];
   // step is 1-based; celebration = step > steps.length
-  const stepIndex = step - 1; // 0-based; >= steps.length means celebration
 
   return (
     <div className="flex-shrink-0 shadow-2xl" style={{ width: PHONE_W }}>
@@ -231,7 +230,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const [preset, setPreset] = useState<Preset>('mes');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
-  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
+  const [hoveredPreviewIndex, setHoveredPreviewIndex] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -287,26 +286,26 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     });
   }, []);
 
-  function handleBarMouseEnter(step: number, event: React.MouseEvent<HTMLDivElement>) {
-    setHoveredStep(step);
+  function handleBarMouseEnter(previewIndex: number, event: React.MouseEvent<HTMLDivElement>) {
+    setHoveredPreviewIndex(previewIndex);
     hoveredTargetRef.current = event.currentTarget;
     positionTooltip(event.currentTarget.getBoundingClientRect());
   }
 
   function handleBarMouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (hoveredStep === null) return;
+    if (hoveredPreviewIndex === null) return;
     hoveredTargetRef.current = event.currentTarget;
     positionTooltip(event.currentTarget.getBoundingClientRect());
   }
 
   function handleBarMouseLeave() {
-    setHoveredStep(null);
+    setHoveredPreviewIndex(null);
     hoveredTargetRef.current = null;
     setTooltipPos(null);
   }
 
   useEffect(() => {
-    if (hoveredStep === null) return;
+    if (hoveredPreviewIndex === null) return;
 
     const syncTooltipPosition = () => {
       if (!hoveredTargetRef.current) return;
@@ -320,7 +319,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
       window.removeEventListener('scroll', syncTooltipPosition, true);
       window.removeEventListener('resize', syncTooltipPosition);
     };
-  }, [hoveredStep, positionTooltip]);
+  }, [hoveredPreviewIndex, positionTooltip]);
 
   function fetchStats(from?: string, to?: string) {
     setLoading(true);
@@ -546,7 +545,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
 
                     return (
                       <div key={step.id}
-                        onMouseEnter={e => handleBarMouseEnter(idx + 1, e)}
+                        onMouseEnter={e => handleBarMouseEnter(idx, e)}
                         onMouseMove={handleBarMouseMove}
                         onMouseLeave={handleBarMouseLeave}
                       >
@@ -603,7 +602,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                     const clickPct = prevSim > 0 ? Math.round((clicks / prevSim) * 100) : 0;
                     return (
                       <div
-                        onMouseEnter={e => handleBarMouseEnter(finalStepNum, e)}
+                        onMouseEnter={e => handleBarMouseEnter(visibleSteps.length, e)}
                         onMouseMove={handleBarMouseMove}
                         onMouseLeave={handleBarMouseLeave}
                       >
@@ -647,13 +646,13 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
       {/* Floating phone preview — centered on screen */}
       </div>
 
-      {hoveredStep !== null && tooltipPos && (
+      {hoveredPreviewIndex !== null && tooltipPos && (
         <div
           ref={tooltipRef}
           className="absolute z-[300] pointer-events-none"
           style={{ top: tooltipPos.top, left: tooltipPos.left }}
         >
-          <StepPhonePreview step={hoveredStep} formData={formData} />
+          <StepPhonePreview stepIndex={hoveredPreviewIndex} formData={formData} previewSteps={visibleSteps} />
         </div>
       )}
     </div>
