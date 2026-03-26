@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation';
+import { unstable_noStore as noStore } from 'next/cache';
 import { getFormBySlug, rowToFormData, initializeDb, getClinicSettingsByUserId } from '@/db';
 import MultiStepForm from '@/components/multi-step-form/multi-step-form';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 
 interface PageProps {
@@ -13,6 +15,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  noStore();
   await initializeDb();
   const { slug } = await params;
   const row = await getFormBySlug(slug);
@@ -35,6 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function FormularioPage({ params, searchParams }: PageProps) {
+  noStore();
   await initializeDb();
   const { slug } = await params;
   const { demo } = await searchParams;
