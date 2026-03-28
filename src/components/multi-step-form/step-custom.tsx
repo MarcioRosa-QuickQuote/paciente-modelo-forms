@@ -1,11 +1,13 @@
-'use client';
+﻿'use client';
 
 import { motion } from 'framer-motion';
 import YesNoButtons from './yes-no-buttons';
 import { Theme } from '@/lib/themes';
 import { sanitizeRichTextHtml } from '@/lib/rich-text';
 import { StepIconGlyph } from '@/lib/step-icons';
-import { FormStep } from '@/types/form';
+import { FormStep, WorkflowOption } from '@/types/form';
+import { isDecisionStep } from '@/lib/workflow';
+import WorkflowOptionGrid from '@/components/workflow-option-grid';
 import StepCanvasElements, { stepHasCustomButtons } from './step-canvas-elements';
 
 interface Props {
@@ -14,38 +16,43 @@ interface Props {
   noText?: string;
   onYes: () => void;
   onNo: () => void;
+  onSelectOption?: (option: WorkflowOption) => void;
   theme: Theme;
   step?: FormStep;
 }
 
-export default function StepCustom({ question, yesText, noText, onYes, onNo, theme, step }: Props) {
-  const hasCustomButtons = stepHasCustomButtons(step?.elements);
+export default function StepCustom({ question, yesText, noText, onYes, onNo, onSelectOption, theme, step }: Props) {
+  const decisionMode = isDecisionStep(step);
+  const elements = decisionMode
+    ? (step?.elements || []).filter(element => element.type !== 'buttons')
+    : (step?.elements || []);
+  const hasCustomButtons = !decisionMode && stepHasCustomButtons(step?.elements);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100dvh] px-6 py-8">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6 py-8">
       <motion.div
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         style={{ background: theme.iconBg }}
-        className="w-20 h-20 rounded-full flex items-center justify-center mb-8 shadow-lg"
+        className="mb-8 flex h-20 w-20 items-center justify-center rounded-full shadow-lg"
       >
-        <StepIconGlyph value={step?.icon} type="pergunta" svgClassName="w-10 h-10 text-white" emojiClassName="text-4xl leading-none" />
+        <StepIconGlyph value={step?.icon} type="pergunta" svgClassName="h-10 w-10 text-white" emojiClassName="text-4xl leading-none" />
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="text-center mb-10"
+        className="mb-10 text-center"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight" dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(question, { singleLine: true }) }} />
+        <h1 className="text-2xl font-bold leading-tight text-gray-900 sm:text-3xl" dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(question, { singleLine: true }) }} />
       </motion.div>
 
-      {!!step?.elements?.length && (
-        <div className="w-full max-w-sm mb-8">
+      {!!elements.length && (
+        <div className="mb-8 w-full max-w-sm">
           <StepCanvasElements
-            elements={step.elements || []}
+            elements={elements}
             onYes={onYes}
             onNo={onNo}
             theme={theme}
@@ -56,7 +63,20 @@ export default function StepCustom({ question, yesText, noText, onYes, onNo, the
         </div>
       )}
 
-      {!hasCustomButtons && (
+      {decisionMode ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="w-full max-w-sm"
+        >
+          <WorkflowOptionGrid
+            options={step?.workflowOptions || []}
+            theme={theme}
+            onSelect={option => onSelectOption?.(option)}
+          />
+        </motion.div>
+      ) : !hasCustomButtons && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

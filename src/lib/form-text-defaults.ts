@@ -1,4 +1,4 @@
-import { CustomTexts, FormData, FormInput, FormStep, FormStepType } from '@/types/form';
+﻿import { CustomTexts, FormData, FormInput, FormStep, FormStepType } from '@/types/form';
 
 function stripHtml(value: string): string {
   return value.replace(/<[^>]*>/g, '');
@@ -88,7 +88,7 @@ export function mergeCustomTextsWithDefaults(customTexts: CustomTexts | undefine
 
 export function getNewStepDefaults(type: FormStepType, enabled: boolean): Partial<FormStep> {
   if (!enabled) {
-    if (type === 'pergunta') return { question: '', yesText: '', noText: '' };
+    if (type === 'pergunta') return { question: '', yesText: '', noText: '', workflowOptions: [] };
     if (type === 'livre') return { label: '' };
     return { yesText: '', noText: '' };
   }
@@ -103,7 +103,7 @@ export function getNewStepDefaults(type: FormStepType, enabled: boolean): Partia
     case 'taxa':
       return { yesText: 'Sim, concordo', noText: 'Não' };
     case 'pergunta':
-      return { question: 'Você está de acordo?', yesText: 'Sim', noText: 'Não' };
+      return { question: 'Você está de acordo?', yesText: 'Sim', noText: 'Não', workflowOptions: [] };
     case 'livre':
       return { label: 'Tela Livre' };
     default:

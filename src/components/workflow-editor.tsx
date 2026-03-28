@@ -1,0 +1,412 @@
+﻿'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { FormStep, FormStepType, WorkflowOption } from '@/types/form';
+import {
+  WORKFLOW_CANVAS_MIN_HEIGHT,
+  WORKFLOW_CANVAS_MIN_WIDTH,
+  WORKFLOW_SPECIAL_NODE_IDS,
+  buildWorkflowConnections,
+  ensureWorkflowLayout,
+  getSpecialWorkflowPosition,
+  getStepWorkflowPosition,
+  isDecisionStep,
+} from '@/lib/workflow';
+
+interface Props {
+  steps: FormStep[];
+  onChange: (steps: FormStep[]) => void;
+  currentStepIndex: number;
+  onCurrentStepIndexChange: (index: number) => void;
+  createStep: (type: FormStepType) => FormStep;
+}
+
+const NODE_WIDTH = 224;
+const NODE_HEIGHT = 132;
+const SPECIAL_NODE_WIDTH = 220;
+const SPECIAL_NODE_HEIGHT = 104;
+
+const STEP_TYPE_LABELS: Record<FormStepType, string> = {
+  foto: 'Fotos Antes/Depois',
+  disponibilidade: 'Disponibilidade',
+  preco: 'Preço',
+  taxa: 'Taxa',
+  pergunta: 'Pergunta',
+  livre: 'Tela Livre',
+};
+
+function stripHtml(value?: string): string {
+  return (value || '').replace(/<[^>]*>/g, '').trim();
+}
+
+function summarizeStep(step: FormStep): string {
+  if (step.type === 'pergunta') {
+    return stripHtml(step.question) || 'Etapa de decisão do workflow';
+  }
+
+  if (step.type === 'livre') {
+    return stripHtml(step.label) || 'Tela livre para criativos específicos';
+  }
+
+  return 'Segue o fluxo principal do formulário.';
+}
+
+export default function WorkflowEditor({
+  steps,
+  onChange,
+  currentStepIndex,
+  onCurrentStepIndexChange,
+  createStep,
+}: Props) {
+  const [dragging, setDragging] = useState<{
+    stepId: string;
+    startX: number;
+    startY: number;
+    pointerX: number;
+    pointerY: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!steps.some(step => !step.workflowPosition)) return;
+    onChange(ensureWorkflowLayout(steps));
+  }, [steps, onChange]);
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    const activeDrag = dragging;
+
+    function handleMouseMove(event: MouseEvent) {
+      const deltaX = event.clientX - activeDrag.pointerX;
+      const deltaY = event.clientY - activeDrag.pointerY;
+
+      onChange(steps.map(step => {
+        if (step.id !== activeDrag.stepId) return step;
+        return {
+          ...step,
+          workflowPosition: {
+            x: Math.max(32, activeDrag.startX + deltaX),
+            y: Math.max(32, activeDrag.startY + deltaY),
+          },
+        };
+      }));
+    }
+
+    function handleMouseUp() {
+      setDragging(null);
+    }
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragging, onChange, steps]);
+
+  const stepsWithLayout = useMemo(() => ensureWorkflowLayout(steps), [steps]);
+  const selectedStep = stepsWithLayout[currentStepIndex] ?? null;
+  const connections = useMemo(() => buildWorkflowConnections(stepsWithLayout), [stepsWithLayout]);
+  const celebrationPosition = useMemo(() => getSpecialWorkflowPosition(stepsWithLayout, 'celebration'), [stepsWithLayout]);
+  const rejectedPosition = useMemo(() => getSpecialWorkflowPosition(stepsWithLayout, 'rejected'), [stepsWithLayout]);
+
+  const canvasWidth = useMemo(() => {
+    const stepXs = stepsWithLayout.map((step, index) => getStepWorkflowPosition(step, index).x + NODE_WIDTH);
+    return Math.max(WORKFLOW_CANVAS_MIN_WIDTH, ...stepXs, celebrationPosition.x + SPECIAL_NODE_WIDTH + 80, rejectedPosition.x + SPECIAL_NODE_WIDTH + 80);
+  }, [celebrationPosition.x, rejectedPosition.x, stepsWithLayout]);
+
+  const canvasHeight = useMemo(() => {
+    const stepYs = stepsWithLayout.map((step, index) => getStepWorkflowPosition(step, index).y + NODE_HEIGHT);
+    return Math.max(WORKFLOW_CANVAS_MIN_HEIGHT, ...stepYs, celebrationPosition.y + SPECIAL_NODE_HEIGHT + 80, rejectedPosition.y + SPECIAL_NODE_HEIGHT + 80);
+  }, [celebrationPosition.y, rejectedPosition.y, stepsWithLayout]);
+
+  const nodeFrames = useMemo(() => {
+    const frames = new Map<string, { x: number; y: number; width: number; height: number }>();
+
+    stepsWithLayout.forEach((step, index) => {
+      const position = getStepWorkflowPosition(step, index);
+      frames.set(step.id, { x: position.x, y: position.y, width: NODE_WIDTH, height: NODE_HEIGHT });
+    });
+
+    frames.set(WORKFLOW_SPECIAL_NODE_IDS.celebration, {
+      x: celebrationPosition.x,
+      y: celebrationPosition.y,
+      width: SPECIAL_NODE_WIDTH,
+      height: SPECIAL_NODE_HEIGHT,
+    });
+
+    frames.set(WORKFLOW_SPECIAL_NODE_IDS.rejected, {
+      x: rejectedPosition.x,
+      y: rejectedPosition.y,
+      width: SPECIAL_NODE_WIDTH,
+      height: SPECIAL_NODE_HEIGHT,
+    });
+
+    return frames;
+  }, [celebrationPosition, rejectedPosition, stepsWithLayout]);
+
+  function updateStep(stepId: string, updates: Partial<FormStep>) {
+    onChange(steps.map(step => step.id === stepId ? { ...step, ...updates } : step));
+  }
+
+  function updateOption(stepId: string, optionId: string, updater: (option: WorkflowOption) => WorkflowOption) {
+    onChange(steps.map(step => {
+      if (step.id !== stepId) return step;
+      return {
+        ...step,
+        workflowOptions: (step.workflowOptions || []).map(option => option.id === optionId ? updater(option) : option),
+      };
+    }));
+  }
+
+  function addWorkflowOption() {
+    if (!selectedStep || selectedStep.type !== 'pergunta') return;
+
+    const nextCount = (selectedStep.workflowOptions?.length || 0) + 1;
+    updateStep(selectedStep.id, {
+      workflowOptions: [
+        ...(selectedStep.workflowOptions || []),
+        {
+          id: crypto.randomUUID(),
+          label: `Opção ${nextCount}`,
+          description: '',
+          target: 'next',
+        },
+      ],
+    });
+  }
+
+  function removeWorkflowOption(stepId: string, optionId: string) {
+    updateStep(stepId, {
+      workflowOptions: (selectedStep?.workflowOptions || []).filter(option => option.id !== optionId),
+    });
+  }
+
+  function addWorkflowStep(type: FormStepType) {
+    const anchor = selectedStep
+      ? getStepWorkflowPosition(selectedStep, currentStepIndex)
+      : { x: 72, y: 96 };
+
+    const newStep = {
+      ...createStep(type),
+      workflowPosition: {
+        x: anchor.x + 280,
+        y: anchor.y + (type === 'pergunta' ? 40 : 0),
+      },
+    };
+
+    const nextSteps = [...steps, newStep];
+    onChange(nextSteps);
+    onCurrentStepIndexChange(nextSteps.length - 1);
+  }
+
+  function renderConnectionPath(connection: { id: string; fromKey: string; toKey: string; label?: string; accent?: string }) {
+    const from = nodeFrames.get(connection.fromKey);
+    const to = nodeFrames.get(connection.toKey);
+
+    if (!from || !to) return null;
+
+    const startX = from.x + from.width;
+    const startY = from.y + from.height / 2;
+    const endX = to.x;
+    const endY = to.y + to.height / 2;
+    const curve = Math.max(70, Math.abs(endX - startX) / 2);
+    const d = `M ${startX} ${startY} C ${startX + curve} ${startY}, ${endX - curve} ${endY}, ${endX} ${endY}`;
+
+    const stroke = connection.accent === 'danger'
+      ? '#ef4444'
+      : connection.accent === 'success'
+        ? '#10b981'
+        : connection.accent === 'branch'
+          ? '#7c3aed'
+          : '#cbd5e1';
+
+    const labelX = (startX + endX) / 2;
+    const labelY = (startY + endY) / 2 - 10;
+
+    return (
+      <g key={connection.id}>
+        <path d={d} fill="none" stroke={stroke} strokeWidth="3" strokeLinecap="round" />
+        <circle cx={endX} cy={endY} r="4" fill={stroke} />
+        {connection.label && (
+          <g>
+            <rect x={labelX - 48} y={labelY - 11} width="96" height="22" rx="11" fill="white" opacity="0.92" />
+            <text x={labelX} y={labelY + 4} textAnchor="middle" fontSize="11" fill="#6b7280" fontWeight="600">
+              {connection.label}
+            </text>
+          </g>
+        )}
+      </g>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[1fr_320px] xl:items-start">
+      <div className="rounded-3xl border border-gray-200 bg-[#fbfbfd] p-4 shadow-sm">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Workflow do Funil</p>
+            <p className="text-xs text-gray-500">
+              Arraste os nós, crie decisões e conecte caminhos que voltam para a mesma trilha depois.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => addWorkflowStep('pergunta')} className="rounded-2xl border border-[#6B1C3A]/20 bg-white px-4 py-2 text-xs font-semibold text-[#6B1C3A] transition-colors hover:bg-[#6B1C3A]/5">
+              + Pergunta de decisão
+            </button>
+            <button type="button" onClick={() => addWorkflowStep('livre')} className="rounded-2xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50">
+              + Tela livre
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-auto rounded-[28px] border border-dashed border-gray-200 bg-[radial-gradient(circle_at_top,_rgba(107,28,58,0.06),_transparent_28%),linear-gradient(180deg,#ffffff_0%,#faf8fc_100%)]">
+          <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
+            <svg className="pointer-events-none absolute inset-0 h-full w-full">
+              {connections.map(renderConnectionPath)}
+            </svg>
+
+            {stepsWithLayout.map((step, index) => {
+              const position = getStepWorkflowPosition(step, index);
+              const selected = index === currentStepIndex;
+              const decision = isDecisionStep(step);
+
+              return (
+                <div
+                  key={step.id}
+                  className={`absolute rounded-[28px] border bg-white p-4 shadow-sm transition-all ${selected ? 'border-[#6B1C3A] shadow-lg shadow-[#6B1C3A]/10' : 'border-gray-200'} ${step.hidden ? 'opacity-60' : ''}`}
+                  style={{ width: NODE_WIDTH, minHeight: NODE_HEIGHT, left: position.x, top: position.y }}
+                >
+                  <div
+                    className="mb-3 flex cursor-grab items-center justify-between rounded-2xl bg-gray-50 px-3 py-2 text-[11px] font-semibold text-gray-500"
+                    onMouseDown={event => {
+                      event.preventDefault();
+                      setDragging({ stepId: step.id, startX: position.x, startY: position.y, pointerX: event.clientX, pointerY: event.clientY });
+                      onCurrentStepIndexChange(index);
+                    }}
+                  >
+                    <span>{STEP_TYPE_LABELS[step.type]}</span>
+                    <span>{index + 1}</span>
+                  </div>
+
+                  <button type="button" onClick={() => onCurrentStepIndexChange(index)} className="w-full text-left">
+                    <p className="text-sm font-semibold text-gray-900">{step.label || STEP_TYPE_LABELS[step.type]}</p>
+                    <p className="mt-2 text-xs leading-relaxed text-gray-500">{summarizeStep(step)}</p>
+                  </button>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {decision ? (
+                      <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">{(step.workflowOptions || []).length} saídas</span>
+                    ) : (
+                      <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-500">Fluxo linear</span>
+                    )}
+                    {step.hidden && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">Oculta</span>}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="absolute rounded-[28px] border border-emerald-200 bg-emerald-50/80 p-4 shadow-sm" style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: celebrationPosition.x, top: celebrationPosition.y }}>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">Saída</p>
+              <p className="mt-2 text-lg font-semibold text-emerald-900">Celebração</p>
+              <p className="mt-2 text-xs leading-relaxed text-emerald-700">Todos os caminhos podem convergir para a tela final do funil.</p>
+            </div>
+
+            <div className="absolute rounded-[28px] border border-rose-200 bg-rose-50/80 p-4 shadow-sm" style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: rejectedPosition.x, top: rejectedPosition.y }}>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">Saída</p>
+              <p className="mt-2 text-lg font-semibold text-rose-900">Reprovação</p>
+              <p className="mt-2 text-xs leading-relaxed text-rose-700">Use quando a opção deve encerrar o funil fora da qualificação.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+        {!selectedStep ? (
+          <div className="space-y-2 text-sm text-gray-500">
+            <p className="font-semibold text-gray-800">Selecione uma etapa</p>
+            <p>Escolha um nó no canvas para editar as saídas e o comportamento dele no workflow.</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Etapa selecionada</p>
+              <h3 className="mt-2 text-lg font-semibold text-gray-900">{selectedStep.label || STEP_TYPE_LABELS[selectedStep.type]}</h3>
+              <p className="mt-1 text-sm text-gray-500">{summarizeStep(selectedStep)}</p>
+            </div>
+
+            {selectedStep.type === 'pergunta' ? (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
+                  <p className="text-sm font-semibold text-violet-900">Pergunta com múltiplas saídas</p>
+                  <p className="mt-1 text-xs leading-relaxed text-violet-700">
+                    Quando existir pelo menos uma opção aqui, essa etapa deixa de usar Sim/Não e passa a renderizar cards de escolha no formulário.
+                  </p>
+                </div>
+
+                <button type="button" onClick={addWorkflowOption} className="w-full rounded-2xl border border-[#6B1C3A]/20 bg-white px-4 py-3 text-sm font-semibold text-[#6B1C3A] transition-colors hover:bg-[#6B1C3A]/5">
+                  + Adicionar opção
+                </button>
+
+                {(selectedStep.workflowOptions || []).length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-5 text-sm text-gray-500">
+                    Nenhuma saída configurada ainda. Adicione opções para começar a ramificar o funil.
+                  </div>
+                )}
+
+                {(selectedStep.workflowOptions || []).map(option => (
+                  <div key={option.id} className="space-y-3 rounded-2xl border border-gray-200 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold text-gray-900">Opção</p>
+                      <button type="button" onClick={() => removeWorkflowOption(selectedStep.id, option.id)} className="text-xs font-semibold text-rose-500 transition-colors hover:text-rose-600">
+                        Remover
+                      </button>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Título do card</label>
+                      <input type="text" value={option.label} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, label: event.target.value }))} className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10" placeholder="Ex: Nariz largo" />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Texto de apoio</label>
+                      <textarea value={option.description || ''} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, description: event.target.value }))} rows={2} className="w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10" placeholder="Explique rapidamente o tipo de caso para esse caminho." />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Destino</label>
+                      <select value={option.target || 'next'} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, target: event.target.value as WorkflowOption['target'], nextStepId: event.target.value === 'step' ? current.nextStepId : undefined }))} className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10">
+                        <option value="next">Próxima tela na ordem</option>
+                        <option value="step">Ir para uma tela específica</option>
+                        <option value="celebration">Ir para celebração</option>
+                        <option value="rejected">Ir para reprovação</option>
+                      </select>
+                    </div>
+
+                    {(option.target || 'next') === 'step' && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Tela de destino</label>
+                        <select value={option.nextStepId || ''} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, nextStepId: event.target.value }))} className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10">
+                          <option value="">Selecione a etapa</option>
+                          {stepsWithLayout.filter(step => step.id !== selectedStep.id).map((step, index) => (
+                            <option key={step.id} value={step.id}>{index + 1}. {step.label || STEP_TYPE_LABELS[step.type]}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-600">
+                Essa etapa segue a ordem padrão do formulário. Para abrir caminhos diferentes, crie uma etapa do tipo <strong>Pergunta</strong> e adicione as opções aqui no workflow.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

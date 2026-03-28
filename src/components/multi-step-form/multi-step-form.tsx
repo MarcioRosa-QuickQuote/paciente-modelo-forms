@@ -1,9 +1,15 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FormData, FormStep } from '@/types/form';
+import { FormData, FormStep, WorkflowOption } from '@/types/form';
 import { getTheme } from '@/lib/themes';
+import {
+  getLinearNextStepId,
+  getOrderedVisibleSteps,
+  getStepOrderIndex,
+  resolveWorkflowDestination,
+} from '@/lib/workflow';
 import StepBeforeAfter from './step-before-after';
 import StepAvailability from './step-availability';
 import StepPricing from './step-pricing';
@@ -16,7 +22,6 @@ import LeadFormScreen from './lead-form-screen';
 import SocialProofToasts from './social-proof-toasts';
 import Image from 'next/image';
 
-// Default steps used when no custom steps are configured (legacy behavior)
 const DEFAULT_STEPS: FormStep[] = [
   { id: 'foto', type: 'foto' },
   { id: 'disponibilidade', type: 'disponibilidade' },
@@ -38,7 +43,7 @@ function getRandomDirection() {
 }
 
 type SpecialScreen = 'rejected' | 'celebration';
-type ScreenState = { type: 'step'; index: number } | { type: 'special'; screen: SpecialScreen };
+type ScreenState = { type: 'step'; stepId: string } | { type: 'special'; screen: SpecialScreen };
 
 interface Props {
   formData: FormData;
@@ -49,11 +54,30 @@ interface Props {
 }
 
 export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken, demo }: Props) {
-  const steps = (formData.steps?.length > 0 ? formData.steps : DEFAULT_STEPS).filter(s => !s.hidden);
-  const [state, setState] = useState<ScreenState>({ type: 'step', index: 0 });
+  const steps = useMemo(
+    () => getOrderedVisibleSteps(formData.steps?.length > 0 ? formData.steps : DEFAULT_STEPS),
+    [formData.steps],
+  );
   const theme = getTheme(formData.theme);
+  const [state, setState] = useState<ScreenState>(() => (
+    steps[0] ? { type: 'step', stepId: steps[0].id } : { type: 'special', screen: 'celebration' }
+  ));
 
-  const screenKey = state.type === 'step' ? `step-${state.index}` : state.screen;
+  useEffect(() => {
+    if (state.type !== 'step') return;
+    if (steps.some(step => step.id === state.stepId)) return;
+
+    if (steps[0]) {
+      setState({ type: 'step', stepId: steps[0].id });
+      return;
+    }
+
+    setState({ type: 'special', screen: 'celebration' });
+  }, [state, steps]);
+
+  const currentStepIndex = state.type === 'step' ? getStepOrderIndex(steps, state.stepId) : -1;
+  const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : undefined;
+  const screenKey = state.type === 'step' ? `step-${state.stepId}` : state.screen;
 
   const variants = useMemo(() => {
     const dir = getRandomDirection();
@@ -62,11 +86,12 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       center: { x: 0, y: 0, scale: 1, opacity: 1 },
       exit: { ...dir.exit },
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screenKey]);
 
-  const trackResponse = useCallback((stepIndex: number, answer: 'sim' | 'nao') => {
+  const trackResponse = useCallback((stepId: string, answer: 'sim' | 'nao') => {
+    const stepIndex = getStepOrderIndex(steps, stepId);
     const step = steps[stepIndex];
+
     fetch('/api/responses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -88,14 +113,13 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
   const fireCapiEvent = useCallback((eventName: string, eventId: string) => {
     if (!capiToken) return;
 
-    // Read Meta cookies for attribution
     function getCookie(name: string): string {
       if (typeof document === 'undefined') return '';
       const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
       return match ? decodeURIComponent(match[1]) : '';
     }
+
     const fbp = getCookie('_fbp');
-    // fbc: prefer cookie, fall back to fbclid in URL
     let fbc = getCookie('_fbc');
     if (!fbc && typeof window !== 'undefined') {
       const fbclid = new URLSearchParams(window.location.search).get('fbclid');
@@ -112,7 +136,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
       fbp,
       fbc,
     });
-    // sendBeacon garante envio mesmo quando o browser navega/suspende a aba (ex: abrir WhatsApp)
+
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       navigator.sendBeacon('/api/meta-event', new Blob([body], { type: 'application/json' }));
     } else {
@@ -126,35 +150,59 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
     fireCapiEvent(eventName, eventId);
   }, [firePixelEvent, fireCapiEvent]);
 
-  // PageView via CAPI no mount (fbq já dispara pelo script inline)
   useEffect(() => {
     const eventId = crypto.randomUUID();
     fireCapiEvent('PageView', eventId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fireCapiEvent]);
 
-  function handleYes() {
-    if (state.type !== 'step') return;
-    trackResponse(state.index, 'sim');
-    const nextIndex = state.index + 1;
-    if (nextIndex >= steps.length) {
-      const eventId = crypto.randomUUID();
-      firePixelEvent('Lead', eventId);
-      fireCapiEvent('Lead', eventId);
-      setState({ type: 'special', screen: 'celebration' });
-    } else {
-      setState({ type: 'step', index: nextIndex });
-    }
+  function openCelebration() {
+    const eventId = crypto.randomUUID();
+    firePixelEvent('Lead', eventId);
+    fireCapiEvent('Lead', eventId);
+    setState({ type: 'special', screen: 'celebration' });
   }
 
-  function handleNo() {
-    if (state.type !== 'step') return;
-    trackResponse(state.index, 'nao');
+  function openDestination(destination: ReturnType<typeof resolveWorkflowDestination>) {
+    if (destination.kind === 'step') {
+      setState({ type: 'step', stepId: destination.stepId });
+      return;
+    }
+
+    if (destination.screen === 'celebration') {
+      openCelebration();
+      return;
+    }
+
     setState({ type: 'special', screen: 'rejected' });
   }
 
-  const progressPercent = state.type === 'step'
-    ? Math.round(((state.index + 1) / steps.length) * 100)
+  function handleYes() {
+    if (!currentStep) return;
+    trackResponse(currentStep.id, 'sim');
+
+    const nextStepId = getLinearNextStepId(steps, currentStep.id);
+    if (nextStepId) {
+      setState({ type: 'step', stepId: nextStepId });
+      return;
+    }
+
+    openCelebration();
+  }
+
+  function handleNo() {
+    if (!currentStep) return;
+    trackResponse(currentStep.id, 'nao');
+    setState({ type: 'special', screen: 'rejected' });
+  }
+
+  function handleWorkflowOption(option: WorkflowOption) {
+    if (!currentStep) return;
+    trackResponse(currentStep.id, 'sim');
+    openDestination(resolveWorkflowDestination(steps, currentStep.id, option));
+  }
+
+  const progressPercent = state.type === 'step' && currentStepIndex >= 0 && steps.length > 0
+    ? Math.round(((currentStepIndex + 1) / steps.length) * 100)
     : 100;
 
   const showHeader = state.type !== 'special';
@@ -232,6 +280,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             noText={step.noText}
             onYes={handleYes}
             onNo={handleNo}
+            onSelectOption={handleWorkflowOption}
             theme={theme}
           />
         );
@@ -250,9 +299,8 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
   }
 
   return (
-    <div className="min-h-[100dvh] bg-white overflow-hidden">
+    <div className="min-h-[100dvh] overflow-hidden bg-white">
       <SocialProofToasts demo={demo} hasLogo={!!clinicLogo} />
-      {/* Meta Pixel */}
       {pixelId && (
         <script
           dangerouslySetInnerHTML={{
@@ -269,14 +317,12 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
         />
       )}
 
-      {/* Clinic Logo */}
       {clinicLogo && showHeader && (
-        <div className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-3 pb-2 bg-white/80 backdrop-blur-sm">
+        <div className="fixed left-0 right-0 top-0 z-40 flex justify-center bg-white/80 pt-3 pb-2 backdrop-blur-sm">
           <Image src={clinicLogo} alt="Logo da Clínica" width={120} height={40} className="h-10 w-auto object-contain" />
         </div>
       )}
 
-      {/* Progress bar */}
       {showHeader && (
         <div className={`fixed left-0 right-0 z-50 h-1 bg-gray-100 ${clinicLogo ? 'top-[56px]' : 'top-0'}`}>
           <motion.div
@@ -299,7 +345,7 @@ export default function MultiStepForm({ formData, clinicLogo, pixelId, capiToken
             exit="exit"
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            {state.type === 'step' && renderStep(steps[state.index])}
+            {state.type === 'step' && currentStep && renderStep(currentStep)}
 
             {state.type === 'special' && state.screen === 'rejected' && (
               <RejectionScreen

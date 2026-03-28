@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,8 @@ import FormStepBuilder, { StepCardsList } from './form-step-builder';
 import FormPreviewPanel from './form-preview-panel';
 import RichTextField from './rich-text-field';
 import CanvasBuilder from './canvas-builder';
+import WorkflowEditor from './workflow-editor';
+import { ensureWorkflowLayout, isDecisionStep } from '@/lib/workflow';
 
 const DEFAULT_STEPS: FormStep[] = [
   { id: 'default-foto', type: 'foto' },
@@ -78,6 +80,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [stepPickerOpen, setStepPickerOpen] = useState(false);
   const [insertPanelOpen, setInsertPanelOpen] = useState(false);
   const [stepIconPickerOpen, setStepIconPickerOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState<'step' | 'workflow'>('step');
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
   const initialProcedureName = initialData?.procedureName || templateData?.procedureName || '';
@@ -260,7 +263,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
       const url = await uploadImageFile(file);
       setSteps(prev => prev.map(step => step.id === currentStepId ? { ...step, icon: url } : step));
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Erro ao fazer upload do ícone');
+      alert(error instanceof Error ? error.message : 'Erro ao fazer upload do Ã­cone');
     } finally {
       setUploadingStepIcon(false);
     }
@@ -304,17 +307,17 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         const data = await res.json();
         const errMsg = typeof data.error === 'string'
           ? data.error
-          : data.error?.formErrors?.[0] || JSON.stringify(data.error) || 'Erro ao salvar formulário';
+          : data.error?.formErrors?.[0] || JSON.stringify(data.error) || 'Erro ao salvar formulÃ¡rio';
         alert(errMsg);
       }
     } catch {
-      alert('Erro ao salvar formulário');
+      alert('Erro ao salvar formulÃ¡rio');
     } finally {
       setSaving(false);
     }
   }
 
-  // Auto-save (edit mode only) — ref stores latest save fn to avoid stale closures
+  // Auto-save (edit mode only) â€” ref stores latest save fn to avoid stale closures
   saveRef.current = async () => {
     if (mode !== 'edit' || !initialData?.id || saving) return;
     try {
@@ -354,12 +357,23 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     setStepIconPickerOpen(false);
   }, [currentStepIndex, stepPickerOpen, configModalOpen]);
 
+  useEffect(() => {
+    if (!steps.some(step => !step.workflowPosition)) return;
+    setSteps(prev => ensureWorkflowLayout(prev));
+  }, [steps]);
+
+  useEffect(() => {
+    if (editorMode === 'step') return;
+    setInsertPanelOpen(false);
+  }, [editorMode]);
+
   const inputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
   const stepInputClass = "w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900";
   const labelClass = "block text-sm font-medium text-gray-700 mb-2";
 
   const currentStep = steps[currentStepIndex];
-  const showElementsBuilder = !!currentStep && (currentStep.type === 'livre' || insertPanelOpen);
+  const currentStepIsDecision = !!currentStep && isDecisionStep(currentStep);
+  const showElementsBuilder = editorMode === 'step' && !!currentStep && (currentStep.type === 'livre' || insertPanelOpen);
   const currentTheme = getTheme(form.theme);
   const currentStepSupportsIcon = !!currentStep && canCustomizeStepIcon(currentStep.type);
   const activeStepIcon = currentStepSupportsIcon ? (currentStep.icon?.trim() || getDefaultStepIconId(currentStep.type)) : '';
@@ -372,15 +386,33 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
 
-        {/* ── Form name + Anterior/Próximo ── */}
-        <div className="flex items-center justify-between px-1 mb-2">
-          <p className="text-sm font-semibold text-gray-900 truncate">{form.name || 'Novo formulário'}</p>
-          <div className="flex items-center gap-1 flex-shrink-0">
+        {/* â”€â”€ Form name + Anterior/PrÃ³ximo â”€â”€ */}
+        <div className="mb-2 flex items-center justify-between gap-4 px-1">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-gray-900">{form.name || 'Novo formulário'}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setEditorMode('step')}
+                className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${editorMode === 'step' ? 'bg-[#6B1C3A] text-white shadow-sm' : 'bg-white text-[#6B1C3A] hover:bg-[#6B1C3A]/5'}`}
+              >
+                Editor
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorMode('workflow')}
+                className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${editorMode === 'workflow' ? 'bg-[#6B1C3A] text-white shadow-sm' : 'bg-white text-[#6B1C3A] hover:bg-[#6B1C3A]/5'}`}
+              >
+                Workflow
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-shrink-0 items-center gap-1">
             <button
               type="button"
               onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
               disabled={currentStepIndex === 0}
-              className="px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="cursor-pointer rounded-xl px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30"
             >
               ← Anterior
             </button>
@@ -388,14 +420,14 @@ export default function FormEditor({ initialData, mode, templateId, templateData
               type="button"
               onClick={() => setCurrentStepIndex(i => Math.min(steps.length, i + 1))}
               disabled={currentStepIndex === steps.length}
-              className="px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] hover:bg-white hover:shadow-sm rounded-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="cursor-pointer rounded-xl px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30"
             >
               Próximo →
             </button>
           </div>
         </div>
 
-        {/* ── Step tabs card ── */}
+        {/* ── Step tabs card â”€â”€ */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100dvh - 180px)' }}>
 
           {/* Navigation bar + dots (from FormStepBuilder) */}
@@ -410,7 +442,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
             onPickerChange={setStepPickerOpen}
             onInsertButtonClick={() => setInsertPanelOpen(prev => !prev)}
             insertButtonActive={insertPanelOpen}
-            showInsertButton={currentStepIndex < steps.length && currentStep?.type !== 'livre'}
+            showInsertButton={editorMode === 'step' && currentStepIndex < steps.length && currentStep?.type !== 'livre'}
           />
 
           {/* Divider */}
@@ -422,7 +454,18 @@ export default function FormEditor({ initialData, mode, templateId, templateData
               Escolha o tipo de etapa acima
             </div>
           )}
-          {!stepPickerOpen && currentStep && (
+          {!stepPickerOpen && editorMode === 'workflow' && (
+            <div className="p-6 overflow-y-auto flex-1 min-h-0">
+              <WorkflowEditor
+                steps={steps}
+                onChange={setSteps}
+                currentStepIndex={currentStepIndex}
+                onCurrentStepIndexChange={setCurrentStepIndex}
+                createStep={buildStepForEditor}
+              />
+            </div>
+          )}
+          {!stepPickerOpen && editorMode === 'step' && currentStep && (
             <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
 
               {currentStepSupportsIcon && (
@@ -551,14 +594,14 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 </div>
               )}
 
-              {/* ── FOTO ── */}
+              {/* â”€â”€ FOTO â”€â”€ */}
               {currentStep.type === 'foto' && (
                 <>
                   <div>
                     <label className={labelClass}>
-                      Headline da 1ª tela
+                      Headline da 1Âª tela
                       <span className="ml-2 text-xs text-gray-400 font-normal">
-                        Pergunta principal · selecione texto para colorir
+                        Pergunta principal Â· selecione texto para colorir
                       </span>
                     </label>
                     <RichTextField
@@ -616,7 +659,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                                   )}
                                   <span className="truncate">
                                     {photo[type]
-                                      ? `✓ ${form.singlePhoto ? 'Foto' : (type === 'before' ? 'Antes' : 'Depois')}`
+                                      ? `âœ“ ${form.singlePhoto ? 'Foto' : (type === 'before' ? 'Antes' : 'Depois')}`
                                       : (form.singlePhoto ? 'Foto' : (type === 'before' ? 'Foto Antes' : 'Foto Depois'))}
                                   </span>
                                 </button>
@@ -650,7 +693,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     <label className={labelClass}>
                       Texto de apoio
                       <span className="ml-2 text-xs text-gray-400 font-normal">
-                        Abaixo das fotos · selecione texto para colorir
+                        Abaixo das fotos Â· selecione texto para colorir
                       </span>
                     </label>
                     <RichTextField
@@ -662,10 +705,10 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     />
                   </div>
 
-                  {/* Botão Sim / Não */}
+                  {/* BotÃ£o Sim / NÃ£o */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className={labelClass}>Botão Sim</label>
+                      <label className={labelClass}>BotÃ£o Sim</label>
                       <input
                         type="text"
                         value={currentStep.yesText || ''}
@@ -675,12 +718,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                       />
                     </div>
                     <div>
-                      <label className={labelClass}>Botão Não</label>
+                      <label className={labelClass}>BotÃ£o NÃ£o</label>
                       <input
                         type="text"
                         value={currentStep.noText || ''}
                         onChange={e => updateCurrentStep({ noText: e.target.value })}
-                        placeholder="Não"
+                        placeholder="NÃ£o"
                         className={stepInputClass}
                       />
                     </div>
@@ -688,22 +731,22 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 </>
               )}
 
-              {/* ── DISPONIBILIDADE ── */}
+              {/* â”€â”€ DISPONIBILIDADE â”€â”€ */}
               {currentStep.type === 'disponibilidade' && (
                 <>
                   <div>
-                    <label className={labelClass}>Pergunta principal <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>Pergunta principal <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={customTexts.availabilityQuestion || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, availabilityQuestion: v }))}
-                      placeholder="Você teria disponibilidade em algum desses dias?"
+                      placeholder="VocÃª teria disponibilidade em algum desses dias?"
                       singleLine
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Texto da duração <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>Texto da duraÃ§Ã£o <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={customTexts.durationNote || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, durationNote: v }))}
@@ -714,7 +757,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                   </div>
 
                   <div>
-                    <label className={labelClass}>Dias disponíveis</label>
+                    <label className={labelClass}>Dias disponÃ­veis</label>
                     <div onClick={() => setShowCalendar(!showCalendar)}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl cursor-pointer min-h-[48px] flex items-center gap-2 flex-wrap">
                       {selectedDates.length > 0 ? (
@@ -748,7 +791,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className={labelClass}>Botão Sim</label>
+                      <label className={labelClass}>BotÃ£o Sim</label>
                       <input
                         type="text"
                         value={currentStep.yesText || ''}
@@ -758,12 +801,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                       />
                     </div>
                     <div>
-                      <label className={labelClass}>Botão Não</label>
+                      <label className={labelClass}>BotÃ£o NÃ£o</label>
                       <input
                         type="text"
                         value={currentStep.noText || ''}
                         onChange={e => updateCurrentStep({ noText: e.target.value })}
-                        placeholder="Não"
+                        placeholder="NÃ£o"
                         className={stepInputClass}
                       />
                     </div>
@@ -771,11 +814,11 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 </>
               )}
 
-              {/* ── PREÇO ── */}
+              {/* â”€â”€ PREÃ‡O â”€â”€ */}
               {currentStep.type === 'preco' && (
                 <>
                   <div>
-                    <label className={labelClass}>Nome do Procedimento <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>Nome do Procedimento <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={form.procedureName}
                       onChange={v => updateField('procedureName', v)}
@@ -786,29 +829,29 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                   </div>
 
                   <div>
-                    <label className={labelClass}>Contexto (1ª linha) <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>Contexto (1Âª linha) <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={customTexts.pricingContext || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, pricingContext: v }))}
-                      placeholder={`Sabendo que um paciente de ${stripHtml(form.procedureName) || 'Procedimento'} pagaria em média [preço].`}
+                      placeholder={`Sabendo que um paciente de ${stripHtml(form.procedureName) || 'Procedimento'} pagaria em mÃ©dia [preÃ§o].`}
                       singleLine
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Pergunta principal <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>Pergunta principal <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={customTexts.pricingQuestion || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, pricingQuestion: v }))}
-                      placeholder="E por ser PACIENTE MODELO ganharia uma condição especial..."
+                      placeholder="E por ser PACIENTE MODELO ganharia uma condiÃ§Ã£o especial..."
                       singleLine
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Rótulo do card <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>RÃ³tulo do card <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={customTexts.pricingLabel || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, pricingLabel: v }))}
@@ -869,11 +912,11 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                   <div>
                     <label className={labelClass}>
                       Parcelamento
-                      <span className="ml-2 text-xs text-gray-400 font-normal">Deixe em 0 para não exibir parcelamento</span>
+                      <span className="ml-2 text-xs text-gray-400 font-normal">Deixe em 0 para nÃ£o exibir parcelamento</span>
                     </label>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Número de parcelas</label>
+                        <label className="block text-xs text-gray-500 mb-1">NÃºmero de parcelas</label>
                         <input
                           type="number"
                           min="0"
@@ -903,7 +946,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className={labelClass}>Botão Sim</label>
+                      <label className={labelClass}>BotÃ£o Sim</label>
                       <input
                         type="text"
                         value={currentStep.yesText || ''}
@@ -913,12 +956,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                       />
                     </div>
                     <div>
-                      <label className={labelClass}>Botão Não</label>
+                      <label className={labelClass}>BotÃ£o NÃ£o</label>
                       <input
                         type="text"
                         value={currentStep.noText || ''}
                         onChange={e => updateCurrentStep({ noText: e.target.value })}
-                        placeholder="Não"
+                        placeholder="NÃ£o"
                         className={stepInputClass}
                       />
                     </div>
@@ -926,26 +969,26 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 </>
               )}
 
-              {/* ── TAXA ── */}
+              {/* â”€â”€ TAXA â”€â”€ */}
               {currentStep.type === 'taxa' && (
                 <>
                   <div>
-                    <label className={labelClass}>Texto antes do valor <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>Texto antes do valor <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={customTexts.feeTextPrefix || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, feeTextPrefix: v }))}
-                      placeholder="Para reservar seu horário na agenda, solicitamos um valor simbólico de"
+                      placeholder="Para reservar seu horÃ¡rio na agenda, solicitamos um valor simbÃ³lico de"
                       singleLine
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
                   </div>
 
                   <div>
-                    <label className={labelClass}>Texto secundário <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                    <label className={labelClass}>Texto secundÃ¡rio <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                     <RichTextField
                       value={customTexts.feeBenefitText || ''}
                       onChange={v => setCustomTexts(prev => ({ ...prev, feeBenefitText: v }))}
-                      placeholder="Mas fique tranquilo(a)! Esse valor será abatido do valor do procedimento."
+                      placeholder="Mas fique tranquilo(a)! Esse valor serÃ¡ abatido do valor do procedimento."
                       singleLine
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                     />
@@ -992,7 +1035,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className={labelClass}>Botão Sim</label>
+                      <label className={labelClass}>BotÃ£o Sim</label>
                       <input
                         type="text"
                         value={currentStep.yesText || ''}
@@ -1002,12 +1045,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                       />
                     </div>
                     <div>
-                      <label className={labelClass}>Botão Não</label>
+                      <label className={labelClass}>BotÃ£o NÃ£o</label>
                       <input
                         type="text"
                         value={currentStep.noText || ''}
                         onChange={e => updateCurrentStep({ noText: e.target.value })}
-                        placeholder="Não"
+                        placeholder="NÃ£o"
                         className={stepInputClass}
                       />
                     </div>
@@ -1015,7 +1058,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 </>
               )}
 
-              {/* ── PERGUNTA ── */}
+              {/* â”€â”€ PERGUNTA â”€â”€ */}
               {currentStep.type === 'pergunta' && (
                 <>
                   <div>
@@ -1029,32 +1072,48 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelClass}>Botão Sim</label>
-                      <input
-                        type="text"
-                        value={currentStep.yesText || ''}
-                        onChange={e => updateCurrentStep({ yesText: e.target.value })}
-                        placeholder="Sim, topo!"
-                        className={stepInputClass}
-                      />
+                  {currentStepIsDecision ? (
+                    <div className="rounded-2xl border border-violet-100 bg-violet-50/70 p-4">
+                      <p className="text-sm font-semibold text-violet-900">Essa etapa está em modo Workflow</p>
+                      <p className="mt-1 text-xs leading-relaxed text-violet-700">
+                        Os cards de escolha e os destinos dessa pergunta são configurados no modo Workflow.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setEditorMode('workflow')}
+                        className="mt-3 rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100"
+                      >
+                        Abrir Workflow
+                      </button>
                     </div>
-                    <div>
-                      <label className={labelClass}>Botão Não</label>
-                      <input
-                        type="text"
-                        value={currentStep.noText || ''}
-                        onChange={e => updateCurrentStep({ noText: e.target.value })}
-                        placeholder="Não, obrigado"
-                        className={stepInputClass}
-                      />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={labelClass}>Botão Sim</label>
+                        <input
+                          type="text"
+                          value={currentStep.yesText || ''}
+                          onChange={e => updateCurrentStep({ yesText: e.target.value })}
+                          placeholder="Sim, topo!"
+                          className={stepInputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Botão Não</label>
+                        <input
+                          type="text"
+                          value={currentStep.noText || ''}
+                          onChange={e => updateCurrentStep({ noText: e.target.value })}
+                          placeholder="Não, obrigado"
+                          className={stepInputClass}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               )}
 
-              {/* ── LIVRE ── */}
+              {/* ── LIVRE â”€â”€ */}
               {currentStep.type === 'livre' && (
                 <div>
                   <label className={labelClass}>Nome da tela</label>
@@ -1092,37 +1151,37 @@ export default function FormEditor({ initialData, mode, templateId, templateData
             </div>
           )}
 
-          {/* ── Aba Celebração ── */}
+          {/* â”€â”€ Aba CelebraÃ§Ã£o â”€â”€ */}
           {!stepPickerOpen && currentStepIndex === steps.length && (
             <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
               <div>
-                <label className={labelClass}>Título <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                <label className={labelClass}>TÃ­tulo <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                 <RichTextField
                   value={customTexts.celebrationTitle || ''}
                   onChange={v => setCustomTexts(prev => ({ ...prev, celebrationTitle: v }))}
-                  placeholder="Parabéns!"
+                  placeholder="ParabÃ©ns!"
                   singleLine
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                 />
               </div>
 
               <div>
-                <label className={labelClass}>Subtítulo <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                <label className={labelClass}>SubtÃ­tulo <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                 <RichTextField
                   value={customTexts.celebrationSubtitle || ''}
                   onChange={v => setCustomTexts(prev => ({ ...prev, celebrationSubtitle: v }))}
-                  placeholder="Você foi qualificada para ser nossa paciente modelo!"
+                  placeholder="VocÃª foi qualificada para ser nossa paciente modelo!"
                   singleLine
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                 />
               </div>
 
               <div>
-                <label className={labelClass}>Mensagem <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
+                <label className={labelClass}>Mensagem <span className="text-xs text-gray-400 font-normal">Â· selecione texto para colorir</span></label>
                 <RichTextField
                   value={customTexts.celebrationMessage || ''}
                   onChange={v => setCustomTexts(prev => ({ ...prev, celebrationMessage: v }))}
-                  placeholder="É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras"
+                  placeholder="Ã‰ sÃ³ chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras"
                   singleLine
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 cursor-text"
                 />
@@ -1132,16 +1191,18 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
         </div>
 
-        {/* ── Step cards list ── */}
-        <StepCardsList
-          steps={steps}
-          onChange={setSteps}
-          currentIndex={currentStepIndex}
-          onCurrentIndexChange={setCurrentStepIndex}
-          hasCelebration
-        />
+        {/* â”€â”€ Step cards list â”€â”€ */}
+        {editorMode === 'step' && (
+          <StepCardsList
+            steps={steps}
+            onChange={setSteps}
+            currentIndex={currentStepIndex}
+            onCurrentIndexChange={setCurrentStepIndex}
+            hasCelebration
+          />
+        )}
 
-        {/* ── Config Modal ── */}
+        {/* â”€â”€ Config Modal â”€â”€ */}
         {configModalOpen && (
           <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto" onClick={e => { if (e.target === e.currentTarget) setConfigModalOpen(false); }}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
@@ -1151,7 +1212,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Configurações gerais
+                  ConfiguraÃ§Ãµes gerais
                 </span>
                 <button type="button" onClick={() => setConfigModalOpen(false)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1162,18 +1223,18 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
               <div className="px-6 py-6 space-y-6">
 
-                {/* Nome do formulário */}
+                {/* Nome do formulÃ¡rio */}
                 <div>
-                  <label className={labelClass}>Nome do Formulário</label>
+                  <label className={labelClass}>Nome do FormulÃ¡rio</label>
                   <input type="text" value={form.name} onChange={e => updateField('name', e.target.value)}
-                    placeholder="Ex: Botox Março 2026" className={inputClass} required />
+                    placeholder="Ex: Botox MarÃ§o 2026" className={inputClass} required />
                 </div>
 
                 {/* Nome do procedimento */}
                 <div>
                   <label className={labelClass}>
                     Nome do Procedimento
-                    <span className="ml-2 text-xs text-gray-400 font-normal">Aparece nas telas de foto e preço · selecione texto para colorir</span>
+                    <span className="ml-2 text-xs text-gray-400 font-normal">Aparece nas telas de foto e preÃ§o Â· selecione texto para colorir</span>
                   </label>
                   <RichTextField
                     value={form.procedureName}
@@ -1232,7 +1293,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
                 {/* Tela Final */}
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900 mb-4">Configuração da Tela Final</h3>
+                  <h3 className="text-base font-semibold text-gray-900 mb-4">ConfiguraÃ§Ã£o da Tela Final</h3>
                   <div className="mb-6">
                     <label className={labelClass}>
                       Quando o paciente disser Sim em tudo, o que acontece?
@@ -1246,7 +1307,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                           <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                           </svg>
-                          <span className="font-semibold text-sm text-gray-900">Botão do WhatsApp</span>
+                          <span className="font-semibold text-sm text-gray-900">BotÃ£o do WhatsApp</span>
                         </div>
                         <p className="text-xs text-gray-500">Redireciona para o WhatsApp</p>
                       </button>
@@ -1258,7 +1319,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                           <svg className="w-5 h-5 text-[#6B1C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
-                          <span className="font-semibold text-sm text-gray-900">Formulário de Dados</span>
+                          <span className="font-semibold text-sm text-gray-900">FormulÃ¡rio de Dados</span>
                         </div>
                         <p className="text-xs text-gray-500">Preenche dados e envia pro painel</p>
                       </button>
@@ -1269,15 +1330,15 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     <div>
                       <label className={labelClass}>Mensagem do WhatsApp</label>
                       <textarea value={form.whatsappMessage} onChange={e => updateField('whatsappMessage', e.target.value)}
-                        placeholder="Ex: Olá! Tenho interesse em ser paciente modelo para o procedimento!"
+                        placeholder="Ex: OlÃ¡! Tenho interesse em ser paciente modelo para o procedimento!"
                         rows={3} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6B1C3A] focus:border-transparent outline-none transition-all text-gray-900 resize-none" />
-                      <p className="text-xs text-gray-400 mt-1">Deixe vazio para usar a mensagem padrão</p>
+                      <p className="text-xs text-gray-400 mt-1">Deixe vazio para usar a mensagem padrÃ£o</p>
                     </div>
                   )}
 
                   {form.finalScreenType === 'form' && (
                     <div>
-                      <label className={labelClass}>Campos do formulário de dados</label>
+                      <label className={labelClass}>Campos do formulÃ¡rio de dados</label>
                       <div className="space-y-3">
                         {(['name', 'whatsapp', 'email'] as const).map(field => (
                           <div key={field} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
@@ -1302,22 +1363,22 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     <h3 className="text-base font-semibold text-gray-900">Meta Ads (Facebook & Instagram)</h3>
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Opcional</span>
                   </div>
-                  <p className="text-sm text-gray-500 mb-4">Rastreamento exclusivo para este formulário</p>
+                  <p className="text-sm text-gray-500 mb-4">Rastreamento exclusivo para este formulÃ¡rio</p>
                   <div className="space-y-4">
                     <div>
                       <label className={labelClass}>ID do Pixel</label>
-                      <p className="text-xs text-gray-400 mb-2">Encontre em Gerenciador de Eventos → Configurações.</p>
+                      <p className="text-xs text-gray-400 mb-2">Encontre em Gerenciador de Eventos â†’ ConfiguraÃ§Ãµes.</p>
                       <input type="text" value={form.pixelId} onChange={e => updateField('pixelId', e.target.value)}
                         placeholder="Ex: 1234567890123456" className={inputClass} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <label className={labelClass}>Token da API de Conversões (CAPI)</label>
+                        <label className={labelClass}>Token da API de ConversÃµes (CAPI)</label>
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Server-side</span>
                       </div>
                       <input type="password" value={form.capiToken} onChange={e => updateField('capiToken', e.target.value)}
                         placeholder="EAAMxxxxxxxx..." className={`${inputClass} font-mono text-sm`} />
-                      <p className="text-xs text-orange-600 mt-1.5">⚠️ Nunca compartilhe este token.</p>
+                      <p className="text-xs text-orange-600 mt-1.5">âš ï¸ Nunca compartilhe este token.</p>
                     </div>
                   </div>
                 </div>
@@ -1334,17 +1395,17 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           </div>
         )}
 
-        {/* ── Submit bar: só aparece no modo criar ── */}
+        {/* â”€â”€ Submit bar: sÃ³ aparece no modo criar â”€â”€ */}
         {mode === 'create' && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex justify-end">
             <button type="submit" disabled={saving}
               className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? 'Criando...' : 'Criar Formulário'}
+              {saving ? 'Criando...' : 'Criar FormulÃ¡rio'}
             </button>
           </div>
         )}
 
-        {/* ── Toast auto-save (edit mode) ── */}
+        {/* â”€â”€ Toast auto-save (edit mode) â”€â”€ */}
         {savedToast && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-2xl shadow-xl text-sm font-medium animate-fade-in">
             <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
@@ -1357,7 +1418,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
       </div>
     </form>
 
-    {/* Live preview — only on large screens */}
+    {/* Live preview â€” only on large screens */}
     <div className="hidden xl:block">
       <FormPreviewPanel form={{ ...form, customTexts, slug }} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
     </div>
@@ -1365,3 +1426,8 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     </div>
   );
 }
+
+
+
+
+

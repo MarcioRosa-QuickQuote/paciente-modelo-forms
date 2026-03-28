@@ -1,4 +1,4 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 
 export const formInputSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -54,6 +54,17 @@ export const formInputSchema = z.object({
     yesText: z.string().optional(),
     noText: z.string().optional(),
     hidden: z.boolean().optional(),
+    workflowPosition: z.object({
+      x: z.number(),
+      y: z.number(),
+    }).optional(),
+    workflowOptions: z.array(z.object({
+      id: z.string(),
+      label: z.string(),
+      description: z.string().optional(),
+      target: z.enum(['next', 'step', 'celebration', 'rejected']).optional(),
+      nextStepId: z.string().optional(),
+    })).optional(),
     elements: z.array(z.object({
       id: z.string(),
       type: z.enum(['heading', 'text', 'image', 'buttons', 'spacer', 'divider',

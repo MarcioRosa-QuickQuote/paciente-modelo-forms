@@ -1,6 +1,7 @@
-export type FinalScreenType = 'whatsapp' | 'form';
+﻿export type FinalScreenType = 'whatsapp' | 'form';
 
 export type FormStepType = 'foto' | 'disponibilidade' | 'preco' | 'taxa' | 'pergunta' | 'livre';
+export type WorkflowOptionTarget = 'next' | 'step' | 'celebration' | 'rejected';
 
 export type CanvasElementType =
   | 'heading' | 'text' | 'image' | 'buttons' | 'spacer' | 'divider'
@@ -28,6 +29,19 @@ export interface CanvasElement {
   showAddress?: boolean;
 }
 
+export interface WorkflowPosition {
+  x: number;
+  y: number;
+}
+
+export interface WorkflowOption {
+  id: string;
+  label: string;
+  description?: string;
+  target?: WorkflowOptionTarget;
+  nextStepId?: string;
+}
+
 export interface FormStep {
   id: string;
   type: FormStepType;
@@ -38,22 +52,20 @@ export interface FormStep {
   noText?: string;
   elements?: CanvasElement[];
   hidden?: boolean; // se true, a tela não aparece no formulário gerado
+  workflowPosition?: WorkflowPosition;
+  workflowOptions?: WorkflowOption[];
 }
 
 export interface CustomTexts {
-  // Tela 2 - Disponibilidade
   availabilityQuestion?: string;
   durationNote?: string;
-  // Tela 3 - Preço
   pricingContext?: string;
   pricingQuestion?: string;
   pricingLabel?: string;
-  // Tela 4 - Taxa
   feeTextPrefix?: string;
   feeBenefitText?: string;
   feeDeductedLabel?: string;
   feeSafeLabel?: string;
-  // Celebração
   celebrationTitle?: string;
   celebrationSubtitle?: string;
   celebrationMessage?: string;
