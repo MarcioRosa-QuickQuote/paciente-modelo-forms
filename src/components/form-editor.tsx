@@ -452,7 +452,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
             </div>
           )}
           {!stepPickerOpen && editorMode === 'workflow' && (
-            <div className="p-6 overflow-y-auto flex-1 min-h-0">
+            <div className="overflow-hidden flex-1 min-h-0 bg-[#fcfbfd]">
               <WorkflowEditor
                 steps={steps}
                 onChange={setSteps}
