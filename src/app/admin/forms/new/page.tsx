@@ -12,12 +12,16 @@ function NewFormContent() {
     return <TemplateSelector onSelect={setSelectedTemplateId} />;
   }
 
-  const template = getTemplate(selectedTemplateId);
+  const workflowStarter = selectedTemplateId === 'workflow-builder';
+  const resolvedTemplateId = workflowStarter ? 'em-branco' : selectedTemplateId;
+  const template = getTemplate(resolvedTemplateId);
+
   return (
     <FormEditor
       mode="create"
-      templateId={selectedTemplateId}
+      templateId={resolvedTemplateId}
       templateData={template?.data}
+      initialEditorMode={workflowStarter ? 'workflow' : 'step'}
     />
   );
 }

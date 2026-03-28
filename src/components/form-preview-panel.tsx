@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { FormInput, FormStep, PhotoPair } from '@/types/form';
@@ -21,7 +21,7 @@ interface Props {
 
 type ViewMode = 'mobile' | 'desktop';
 
-// â”€â”€ Helper UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helper UI ─────────────────────────────────────────────────────────────────
 
 function Btn({ gradient, text, outlined }: { gradient?: string; text: string; outlined?: boolean }) {
   return (
@@ -129,7 +129,7 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
             <ul key={el.id} className="space-y-1.5">
               {(el.content || '').split('\n').filter(Boolean).map((item, i) => (
                 <li key={i} className={`flex items-center gap-2 text-gray-700 ${desktop ? 'text-sm' : 'text-xs'}`}>
-                  <span className="text-green-500 font-bold flex-shrink-0">âœ“</span> {item}
+                  <span className="text-green-500 font-bold flex-shrink-0">✓</span> {item}
                 </li>
               ))}
             </ul>
@@ -261,7 +261,7 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
                 />
               </div>
               {/*
-                  Informe o endereÃ§o para exibir o mapa.
+                  Informe o endereço para exibir o mapa.
 
               */}
               {el.showAddress && el.address && (
@@ -281,7 +281,7 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
   );
 }
 
-// â”€â”€ Step previews â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Step previews ─────────────────────────────────────────────────────────────
 
 function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; photos: PhotoPair[]; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
@@ -355,7 +355,7 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
       {!hasCustomButtons && (
         <div className="flex gap-2 w-full">
           <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, quero!'} />
-          <Btn text={step?.noText || 'NÃ£o'} outlined />
+          <Btn text={step?.noText || 'Não'} outlined />
         </div>
       )}
     </div>
@@ -364,7 +364,7 @@ function PreviewFoto({ form, photos, theme, desktop, step }: { form: FormInput; 
 
 function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInput; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
-  const question = ct.availabilityQuestion || 'VocÃª teria disponibilidade em algum desses dias?';
+  const question = ct.availabilityQuestion || 'Você teria disponibilidade em algum desses dias?';
   const durationNote = ct.durationNote || (form.procedureDuration ? `O procedimento dura cerca de ${form.procedureDuration}.` : 'O procedimento dura cerca de 2h.');
   const hasCustomButtons = stepHasCustomButtons(step?.elements);
 
@@ -397,7 +397,7 @@ function PreviewDisponibilidade({ form, theme, desktop, step }: { form: FormInpu
       {!hasCustomButtons && (
         <div className="flex gap-2 w-full">
           <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim, tenho!'} />
-          <Btn text={step?.noText || 'NÃ£o'} outlined />
+          <Btn text={step?.noText || 'Não'} outlined />
         </div>
       )}
     </div>
@@ -418,10 +418,10 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
   const hasCustomButtons = stepHasCustomButtons(step?.elements);
   const pricingContext = ct.pricingContext
     ? resolveTokens(ct.pricingContext, procedureName, form.regularPrice)
-    : `Sabendo que um paciente de <strong>${procedureName}</strong> pagaria em mÃ©dia <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
+    : `Sabendo que um paciente de <strong>${procedureName}</strong> pagaria em média <span style="text-decoration:line-through;color:#9ca3af">${formatCurrency(form.regularPrice)}</span>.`;
   const pricingQuestion = ct.pricingQuestion
     ? resolveTokens(ct.pricingQuestion, procedureName, form.regularPrice)
-    : `E por ser <strong>PACIENTE MODELO</strong> ganharia uma condiÃ§Ã£o especial, teria disponibilidade de investir o valor abaixo?`;
+    : `E por ser <strong>PACIENTE MODELO</strong> ganharia uma condição especial, teria disponibilidade de investir o valor abaixo?`;
   const pricingLabel = ct.pricingLabel || 'Valor especial paciente modelo';
 
   return (
@@ -453,7 +453,7 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
       {!hasCustomButtons && (
         <div className="flex gap-2 w-full">
           <Btn gradient={theme.yesBtn} text={step?.yesText || 'Sim!'} />
-          <Btn text={step?.noText || 'NÃ£o'} outlined />
+          <Btn text={step?.noText || 'Não'} outlined />
         </div>
       )}
     </div>
@@ -462,8 +462,8 @@ function PreviewPreco({ form, theme, desktop, step }: { form: FormInput; theme: 
 
 function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: Theme; desktop: boolean; step?: FormStep }) {
   const ct = form.customTexts || {};
-  const feePrefix = ct.feeTextPrefix || 'Para reservar seu horÃ¡rio, pedimos um valor simbÃ³lico de';
-  const feeBenefit = ct.feeBenefitText || 'Esse valor serÃ¡ abatido do procedimento.';
+  const feePrefix = ct.feeTextPrefix || 'Para reservar seu horário, pedimos um valor simbólico de';
+  const feeBenefit = ct.feeBenefitText || 'Esse valor será abatido do procedimento.';
   const feeDeducted = ct.feeDeductedLabel || 'Valor abatido';
   const feeSafe = ct.feeSafeLabel || 'Seguro';
   const hasCustomButtons = stepHasCustomButtons(step?.elements);
@@ -491,7 +491,7 @@ function PreviewTaxa({ form, theme, desktop, step }: { form: FormInput; theme: T
       {!hasCustomButtons && (
         <div className="flex gap-2 w-full">
           <Btn gradient={theme.yesBtn} text={step?.yesText || 'Aceito o valor'} />
-          <Btn text={step?.noText || 'NÃ£o'} outlined />
+          <Btn text={step?.noText || 'Não'} outlined />
         </div>
       )}
     </div>
@@ -551,13 +551,13 @@ function PreviewLivre({ step, theme, desktop }: { step: FormStep; theme: Theme; 
 
 function PreviewCelebration({ form, theme, desktop }: { form: FormInput; theme: Theme; desktop: boolean }) {
   const ct = form.customTexts || {};
-  const title = ct.celebrationTitle || 'ParabÃ©ns!';
-  const subtitle = ct.celebrationSubtitle || 'VocÃª foi qualificada para ser nossa paciente modelo!';
-  const message = ct.celebrationMessage || 'Ã‰ sÃ³ chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras.';
+  const title = ct.celebrationTitle || 'Parabéns!';
+  const subtitle = ct.celebrationSubtitle || 'Você foi qualificada para ser nossa paciente modelo!';
+  const message = ct.celebrationMessage || 'É só chamar a gente no WhatsApp e aguardar o retorno de uma das nossas consultoras.';
 
   return (
     <div className={`flex flex-col items-center text-center ${desktop ? 'px-6 py-10 gap-4' : 'px-4 py-8 gap-3'}`}>
-      <div className={desktop ? 'text-5xl' : 'text-4xl'}>ðŸŽ‰</div>
+      <div className={desktop ? 'text-5xl' : 'text-4xl'}>🎉</div>
       <h3 className={`font-black text-gray-900 ${desktop ? 'text-2xl' : 'text-lg'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(title, { singleLine: true }) }} />
       <p className={`text-gray-600 leading-snug ${desktop ? 'text-base' : 'text-sm'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(subtitle, { singleLine: true }) }} />
       <p className={`text-gray-400 leading-relaxed ${desktop ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: sanitizeRichTextHtml(message, { singleLine: true }) }} />
@@ -569,11 +569,11 @@ function PreviewCelebration({ form, theme, desktop }: { form: FormInput; theme: 
   );
 }
 
-// â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Main Component ────────────────────────────────────────────────────────────
 
 const STEP_LABELS: Record<string, string> = {
   foto: 'Fotos', disponibilidade: 'Disponibilidade',
-  preco: 'PreÃ§o', taxa: 'Taxa', pergunta: 'Pergunta', livre: 'Tela Livre',
+  preco: 'Preço', taxa: 'Taxa', pergunta: 'Pergunta', livre: 'Tela Livre',
 };
 
 export default function FormPreviewPanel({ form, photos, steps, currentIndex, onCurrentIndexChange }: Props) {
@@ -593,7 +593,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
     if (isCelebration) return <PreviewCelebration form={form} theme={theme} desktop={desktop} />;
     if (!step) return (
       <div className="flex flex-col items-center justify-center h-40 text-gray-400 px-4 text-center">
-        <p className="text-xs">Adicione etapas para ver a prÃ©-visualizaÃ§Ã£o</p>
+        <p className="text-xs">Adicione etapas para ver a pré-visualização</p>
       </div>
     );
     switch (step.type) {
@@ -615,9 +615,9 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-gray-800">PrÃ©-visualizaÃ§Ã£o</p>
+            <p className="text-sm font-semibold text-gray-800">Pré-visualização</p>
             <p className="text-xs text-gray-400">
-              {isCelebration ? 'CelebraÃ§Ã£o' : (step ? STEP_LABELS[step.type] : 'â€”')} Â· {steps.length > 0 ? `${activeIndex + 1}/${totalCount}` : '0/0'}
+              {isCelebration ? 'Celebração' : (step ? STEP_LABELS[step.type] : '—')} · {steps.length > 0 ? `${activeIndex + 1}/${totalCount}` : '0/0'}
             </p>
           </div>
 
@@ -652,7 +652,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
         {/* Preview area */}
         <div className="p-3">
           {viewMode === 'mobile' ? (
-            /* â”€â”€ Phone frame â”€â”€ */
+            /* ── Phone frame ── */
             <div>
               <div className="mx-auto" style={{ width: '280px' }}>
               <div className="relative rounded-[38px] border-[8px] border-gray-800 overflow-hidden bg-white shadow-2xl" style={{ height: '580px' }}>
@@ -678,7 +678,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
             </div>
             </div>
           ) : (
-            /* â”€â”€ Desktop / browser frame â”€â”€ */
+            /* ── Desktop / browser frame ── */
             <div className="rounded-xl border-2 border-gray-300 overflow-hidden bg-gray-100">
               {/* Browser chrome */}
               <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-200 border-b border-gray-300">
@@ -722,7 +722,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
             />
           </div>
 
-          {/* Ver FormulÃ¡rio */}
+          {/* Ver Formulário */}
           {form.slug && (
             <a
               href={`/formulario/${form.slug}`}
@@ -733,7 +733,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
-              Ver FormulÃ¡rio
+              Ver Formulário
             </a>
           )}
 
@@ -743,7 +743,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
   );
 }
 
-// â”€â”€ Exported mini preview (used in stats hover tooltip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Exported mini preview (used in stats hover tooltip) ───────────────────────
 
 export function StepPreviewContent({ form, photos, steps, stepIndex }: {
   form: FormInput;

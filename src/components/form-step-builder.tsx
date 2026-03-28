@@ -95,6 +95,8 @@ interface FormStepBuilderProps {
   onConfigOpen?: () => void;
   onPickerChange?: (open: boolean) => void;
   onInsertButtonClick?: () => void;
+  onWorkflowToggle?: () => void;
+  workflowActive?: boolean;
   insertButtonActive?: boolean;
   showInsertButton?: boolean;
 }
@@ -285,6 +287,8 @@ export default function FormStepBuilder({
   onConfigOpen,
   onPickerChange,
   onInsertButtonClick,
+  onWorkflowToggle,
+  workflowActive = false,
   insertButtonActive = false,
   showInsertButton = false,
 }: FormStepBuilderProps) {
@@ -384,6 +388,23 @@ export default function FormStepBuilder({
             Inserir Botão
           </button>
         )}
+        {onWorkflowToggle && (
+          <button
+            type="button"
+            onClick={() => {
+              togglePicker(false);
+              onWorkflowToggle();
+            }}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex-shrink-0 ${
+              workflowActive
+                ? 'bg-[#6B1C3A] text-white shadow-sm'
+                : 'bg-white text-[#6B1C3A] border border-[#6B1C3A]/20 hover:bg-[#6B1C3A]/5'
+            }`}
+            title={workflowActive ? 'Voltar para edição das telas' : 'Abrir o workflow do funil'}
+          >
+            {workflowActive ? 'Voltar ao Editor' : 'Workflow'}
+          </button>
+        )}
         {steps.length > 1 && !isCelebration && (
           <button
             type="button"
@@ -398,13 +419,15 @@ export default function FormStepBuilder({
         )}
 
         {/* Add step button */}
-        <button
-          type="button"
-          onClick={() => togglePicker(!showPicker)}
-          className="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-lg flex-shrink-0 hover:opacity-90 transition-opacity"
-        >
-          + Criar Tela
-        </button>
+        {!workflowActive && (
+          <button
+            type="button"
+            onClick={() => togglePicker(!showPicker)}
+            className="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-lg flex-shrink-0 hover:opacity-90 transition-opacity"
+          >
+            + Criar Tela
+          </button>
+        )}
 
         {/* Config gear icon */}
         {onConfigOpen && (

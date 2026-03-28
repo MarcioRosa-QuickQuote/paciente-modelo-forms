@@ -14,11 +14,12 @@ const NICHE_GROUPS = [
   { label: 'Saúde & Fitness', ids: ['nutricao-emagrecimento', 'personal-trainer'] },
   { label: 'Advocacia', ids: ['advocacia-trabalhista', 'advocacia-previdenciaria'] },
   { label: 'Psicologia', ids: ['psicologia-terapia'] },
-];
+] as const;
 
 function TemplateCard({ template, onSelect }: { template: FormTemplate; onSelect: (id: string) => void }) {
   return (
     <button
+      type="button"
       onClick={() => onSelect(template.id)}
       className="group text-left bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-[#6B1C3A]/30 transition-all duration-200 overflow-hidden w-full cursor-pointer"
     >
@@ -61,6 +62,47 @@ function TemplateCard({ template, onSelect }: { template: FormTemplate; onSelect
   );
 }
 
+function WorkflowStarterCard({ onSelect }: { onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="group text-left bg-white rounded-2xl border border-[#6B1C3A]/15 shadow-sm hover:shadow-md hover:border-[#6B1C3A]/35 transition-all duration-200 overflow-hidden w-full cursor-pointer"
+    >
+      <div className="h-16 bg-gradient-to-br from-[#6B1C3A] to-[#B14576] flex items-center px-4 gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-white shadow-sm">
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h6v4H4V6zm0 8h6v4H4v-4zm10-8h6v4h-6V6zm0 8h6v4h-6v-4zM10 8h4m-2 0v8" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-white font-bold text-sm leading-tight">Criar com Workflow</p>
+          <p className="text-white/70 text-xs">Funil ramificado</p>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <p className="text-sm text-gray-600 leading-relaxed mb-3">
+          Monte caminhos diferentes por resposta e leve cada perfil para a próxima tela certa.
+        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs bg-violet-50 text-violet-700 px-2 py-0.5 rounded-full font-medium">Fluxo visual</span>
+          <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full font-medium">Arraste e solte</span>
+        </div>
+      </div>
+
+      <div className="px-4 pb-4">
+        <div className="flex items-center gap-1 text-[#6B1C3A] text-sm font-semibold group-hover:gap-2 transition-all">
+          <span>Abrir workflow</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export default function TemplateSelector({ onSelect }: Props) {
   const router = useRouter();
   const templateMap = Object.fromEntries(FORM_TEMPLATES.map(t => [t.id, t]));
@@ -68,21 +110,24 @@ export default function TemplateSelector({ onSelect }: Props) {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
-        <button onClick={() => router.push('/admin')}
-          className="flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-colors mb-4 text-sm">
+        <button
+          type="button"
+          onClick={() => router.push('/admin')}
+          className="flex items-center gap-2 text-gray-400 hover:text-gray-700 transition-colors mb-4 text-sm"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Voltar
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Escolha um modelo</h1>
-        <p className="text-gray-500 mt-1">Selecione o modelo mais próximo do seu negócio — você personaliza tudo depois.</p>
+        <p className="text-gray-500 mt-1">Selecione o modelo mais próximo do seu negócio. Você personaliza tudo depois.</p>
       </div>
 
       <div className="space-y-8">
         {NICHE_GROUPS.map(group => {
           const templates = group.ids.map(id => templateMap[id]).filter(Boolean);
-          if (!templates.length) return null;
+          if (!templates.length && group.label !== 'Personalizado') return null;
 
           return (
             <div key={group.label}>
@@ -91,6 +136,9 @@ export default function TemplateSelector({ onSelect }: Props) {
                 {templates.map(template => (
                   <TemplateCard key={template.id} template={template} onSelect={onSelect} />
                 ))}
+                {group.label === 'Personalizado' && (
+                  <WorkflowStarterCard onSelect={() => onSelect('workflow-builder')} />
+                )}
               </div>
             </div>
           );
