@@ -380,6 +380,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const activeStepIcon = currentStepSupportsIcon ? (currentStep.icon?.trim() || getDefaultStepIconId(currentStep.type)) : '';
   const hasUploadedStepIcon = currentStepSupportsIcon && isUploadedStepIcon(currentStep?.icon);
   const hasLegacyCustomIcon = currentStepSupportsIcon && !!currentStep?.icon && !isPresetStepIcon(currentStep.icon) && !hasUploadedStepIcon;
+  const showSidePreview = editorMode !== 'workflow';
 
   function toggleWorkflowMode() {
     setEditorMode(prev => prev === 'workflow' ? 'step' : 'workflow');
@@ -387,7 +388,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
   return (
     <div className="w-full">
-    <div className="xl:grid xl:grid-cols-[1fr_500px] xl:gap-6 xl:items-start">
+    <div className={showSidePreview ? 'xl:grid xl:grid-cols-[1fr_500px] xl:gap-6 xl:items-start' : ''}>
     <form onSubmit={handleSubmit}>
       <div className="space-y-4">
 
@@ -458,6 +459,8 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 currentStepIndex={currentStepIndex}
                 onCurrentStepIndexChange={setCurrentStepIndex}
                 createStep={buildStepForEditor}
+                previewForm={{ ...form, customTexts, slug }}
+                photos={photos}
               />
             </div>
           )}
@@ -1415,9 +1418,11 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     </form>
 
     {/* Live preview — only on large screens */}
-    <div className="hidden xl:block">
-      <FormPreviewPanel form={{ ...form, customTexts, slug }} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
-    </div>
+    {showSidePreview && (
+      <div className="hidden xl:block">
+        <FormPreviewPanel form={{ ...form, customTexts, slug }} photos={photos} steps={steps} currentIndex={currentStepIndex} onCurrentIndexChange={setCurrentStepIndex} />
+      </div>
+    )}
     </div>
     </div>
   );

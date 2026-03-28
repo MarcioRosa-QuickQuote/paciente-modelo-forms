@@ -17,6 +17,7 @@ interface Props {
   steps: FormStep[];
   currentIndex?: number;
   onCurrentIndexChange?: (index: number) => void;
+  sticky?: boolean;
 }
 
 type ViewMode = 'mobile' | 'desktop';
@@ -576,7 +577,7 @@ const STEP_LABELS: Record<string, string> = {
   preco: 'Preço', taxa: 'Taxa', pergunta: 'Pergunta', livre: 'Tela Livre',
 };
 
-export default function FormPreviewPanel({ form, photos, steps, currentIndex, onCurrentIndexChange }: Props) {
+export default function FormPreviewPanel({ form, photos, steps, currentIndex, onCurrentIndexChange, sticky = true }: Props) {
   const [internalStep, setInternalStep] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('mobile');
   const theme = getTheme(form.theme);
@@ -609,7 +610,7 @@ export default function FormPreviewPanel({ form, photos, steps, currentIndex, on
   const progressPct = isCelebration ? 100 : (steps.length > 0 ? ((safeIndex + 1) / steps.length) * 100 : 0);
 
   return (
-    <div className="sticky top-6">
+    <div className={sticky ? 'sticky top-6' : ''}>
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
         {/* Header */}
