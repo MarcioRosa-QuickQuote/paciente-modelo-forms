@@ -93,6 +93,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
   const elementsBuilderRef = useRef<HTMLDivElement | null>(null);
+  const workflowBackdropMouseDownRef = useRef(false);
   const persistedFormIdRef = useRef<string | null>(initialData?.id || null);
   const createBaselineRef = useRef<string | null>(null);
   const draftCreationInFlightRef = useRef(false);
@@ -257,6 +258,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
   function updateField<K extends keyof FormInput>(key: K, value: FormInput[K]) {
     setForm(prev => ({ ...prev, [key]: value }));
+  }
+
+  function hasActiveTextSelection() {
+    if (typeof window === 'undefined') return false;
+    const selection = window.getSelection();
+    return !!selection && selection.type === 'Range' && (selection.toString().trim().length > 0);
   }
 
   const handleDateSelect = useCallback((dates: Date[] | undefined) => {
@@ -882,8 +889,18 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           {!stepPickerOpen && currentStep && (editorMode === 'step' || workflowStepModalOpen) && (
             <div
               className={workflowStepModalOpen ? 'fixed inset-0 z-[70] overflow-y-auto bg-black/45 p-4 backdrop-blur-sm' : ''}
+              onMouseDown={workflowStepModalOpen ? (event => {
+                workflowBackdropMouseDownRef.current = event.target === event.currentTarget;
+              }) : undefined}
               onClick={workflowStepModalOpen ? (event => {
-                if (event.target === event.currentTarget) closeWorkflowStepModal();
+                const clickedBackdrop = event.target === event.currentTarget;
+                const startedOnBackdrop = workflowBackdropMouseDownRef.current;
+                workflowBackdropMouseDownRef.current = false;
+
+                if (!clickedBackdrop || !startedOnBackdrop) return;
+                if (hasActiveTextSelection()) return;
+
+                closeWorkflowStepModal();
               }) : undefined}
             >
               <div className={workflowStepModalOpen ? 'mx-auto flex w-full max-w-[min(96vw,1440px)] flex-col rounded-[28px] bg-white shadow-2xl' : 'contents'}>
