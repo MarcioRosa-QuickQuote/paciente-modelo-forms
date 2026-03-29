@@ -57,8 +57,18 @@ function stripHtml(value?: string): string {
 
 function summarizeStep(step: FormStep, steps: FormStep[]): string {
   if (step.branchGenerated) {
+    const sourceStep = steps.find(candidate => candidate.id === step.branchSourceStepId);
+    const sourceOption = sourceStep?.workflowOptions?.find(option => option.id === step.branchSourceOptionId);
+    const sourceOptionText = stripHtml(sourceOption?.label || sourceOption?.description);
+
+    if (sourceOptionText) {
+      return sourceOptionText.length > 72
+        ? `${sourceOptionText.slice(0, 72).trimEnd()}...`
+        : sourceOptionText;
+    }
+
     const sourceQuestion = stripHtml(
-      steps.find(candidate => candidate.id === step.branchSourceStepId)?.question,
+      sourceStep?.question,
     );
 
     if (sourceQuestion) {
