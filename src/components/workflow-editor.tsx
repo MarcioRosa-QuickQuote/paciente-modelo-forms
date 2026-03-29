@@ -1,7 +1,7 @@
 'use client';
 
 import { MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { FormInput, FormStep, FormStepType, PhotoPair, WorkflowOption } from '@/types/form';
+import { CustomTexts, FormInput, FormStep, FormStepType, PhotoPair, WorkflowOption } from '@/types/form';
 import {
   WORKFLOW_CANVAS_MIN_HEIGHT,
   WORKFLOW_CANVAS_MIN_WIDTH,
@@ -11,13 +11,18 @@ import {
   getSpecialWorkflowPosition,
   getStepWorkflowPosition,
   isDecisionStep,
+  parseWorkflowNodePosition,
+  serializeWorkflowNodePosition,
   syncDecisionBranchSteps,
+  type WorkflowSpecialScreen,
 } from '@/lib/workflow';
 import { StepPreviewContent } from './form-preview-panel';
 
 interface Props {
   steps: FormStep[];
   onChange: (steps: FormStep[]) => void;
+  customTexts: CustomTexts;
+  onCustomTextsChange: (updater: (prev: CustomTexts) => CustomTexts) => void;
   currentStepIndex: number;
   onCurrentStepIndexChange: (index: number) => void;
   onStepEditRequest: (index: number) => void;
@@ -129,6 +134,8 @@ function WorkflowPhonePreview({ stepIndex, form, photos, steps }: { stepIndex: n
 export default function WorkflowEditor({
   steps,
   onChange,
+  customTexts,
+  onCustomTextsChange,
   currentStepIndex,
   onCurrentStepIndexChange,
   onStepEditRequest,
@@ -138,12 +145,15 @@ export default function WorkflowEditor({
 }: Props) {
   const canvasViewportRef = useRef<HTMLDivElement | null>(null);
   const [dragging, setDragging] = useState<{
-    stepId: string;
+    kind: 'step' | 'special';
+    stepId?: string;
+    screen?: WorkflowSpecialScreen;
     startX: number;
     startY: number;
     pointerX: number;
     pointerY: number;
   } | null>(null);
+  const [selectedSpecialNode, setSelectedSpecialNode] = useState<WorkflowSpecialScreen | null>(null);
   const [insertMenu, setInsertMenu] = useState<{
     sourceStepId: string;
     x: number;
@@ -159,8 +169,22 @@ export default function WorkflowEditor({
   const stepsWithLayout = useMemo(() => ensureWorkflowLayout(steps), [steps]);
   const selectedStep = stepsWithLayout[currentStepIndex] ?? null;
   const connections = useMemo(() => buildWorkflowConnections(stepsWithLayout), [stepsWithLayout]);
-  const celebrationPosition = useMemo(() => getSpecialWorkflowPosition(stepsWithLayout, 'celebration'), [stepsWithLayout]);
-  const rejectedPosition = useMemo(() => getSpecialWorkflowPosition(stepsWithLayout, 'rejected'), [stepsWithLayout]);
+  const specialPositions = useMemo<Partial<Record<WorkflowSpecialScreen, { x: number; y: number }>>>(() => {
+    const celebration = parseWorkflowNodePosition(customTexts.workflowCelebrationNodePosition);
+    const rejected = parseWorkflowNodePosition(customTexts.workflowRejectedNodePosition);
+    return {
+      ...(celebration ? { celebration } : {}),
+      ...(rejected ? { rejected } : {}),
+    };
+  }, [customTexts.workflowCelebrationNodePosition, customTexts.workflowRejectedNodePosition]);
+  const celebrationPosition = useMemo(
+    () => getSpecialWorkflowPosition(stepsWithLayout, 'celebration', specialPositions),
+    [specialPositions, stepsWithLayout],
+  );
+  const rejectedPosition = useMemo(
+    () => getSpecialWorkflowPosition(stepsWithLayout, 'rejected', specialPositions),
+    [specialPositions, stepsWithLayout],
+  );
 
   useEffect(() => {
     if (!steps.some(step => !step.workflowPosition)) return;
@@ -175,6 +199,21 @@ export default function WorkflowEditor({
     function handleMouseMove(event: globalThis.MouseEvent) {
       const deltaX = event.clientX - activeDrag.pointerX;
       const deltaY = event.clientY - activeDrag.pointerY;
+
+      if (activeDrag.kind === 'special' && activeDrag.screen) {
+        const key = activeDrag.screen === 'celebration'
+          ? 'workflowCelebrationNodePosition'
+          : 'workflowRejectedNodePosition';
+
+        onCustomTextsChange(prev => ({
+          ...prev,
+          [key]: serializeWorkflowNodePosition({
+            x: activeDrag.startX + deltaX,
+            y: activeDrag.startY + deltaY,
+          }),
+        }));
+        return;
+      }
 
       onChange(stepsWithLayout.map(step => {
         if (step.id !== activeDrag.stepId) return step;
@@ -199,13 +238,17 @@ export default function WorkflowEditor({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragging, onChange, stepsWithLayout]);
+  }, [dragging, onChange, onCustomTextsChange, stepsWithLayout]);
 
   useEffect(() => {
     if (!dragging) return;
     setHoverPreview(null);
     setInsertMenu(null);
   }, [dragging]);
+
+  useEffect(() => {
+    setSelectedSpecialNode(null);
+  }, [currentStepIndex]);
 
   useEffect(() => {
     if (!insertMenu) return;
@@ -486,7 +529,7 @@ export default function WorkflowEditor({
       };
     });
 
-    onChange(syncDecisionBranches(nextSteps, stepId));
+    onChange(normalizeWorkflowStructure(syncDecisionBranches(nextSteps, stepId)));
   }
 
   function addWorkflowOption() {
@@ -783,7 +826,7 @@ export default function WorkflowEditor({
 
           {stepsWithLayout.map((step, index) => {
             const position = getStepWorkflowPosition(step, index);
-            const selected = index === currentStepIndex;
+            const selected = selectedSpecialNode === null && index === currentStepIndex;
             const canDelete = stepsWithLayout.length > 1;
 
             return (
@@ -832,12 +875,14 @@ export default function WorkflowEditor({
                     onMouseDown={event => {
                       event.preventDefault();
                       setDragging({
+                        kind: 'step',
                         stepId: step.id,
                         startX: position.x,
                         startY: position.y,
                         pointerX: event.clientX,
                         pointerY: event.clientY,
                       });
+                      setSelectedSpecialNode(null);
                       onCurrentStepIndexChange(index);
                     }}
                     className="flex min-w-0 flex-1 cursor-grab items-center gap-2 text-left active:cursor-grabbing"
@@ -853,6 +898,7 @@ export default function WorkflowEditor({
                       onClick={event => {
                         event.stopPropagation();
                         setHoverPreview(null);
+                        setSelectedSpecialNode(null);
                         onStepEditRequest(index);
                       }}
                       className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
@@ -880,7 +926,14 @@ export default function WorkflowEditor({
                   </div>
                 </div>
 
-                <button type="button" onClick={() => onCurrentStepIndexChange(index)} className="w-full text-left">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedSpecialNode(null);
+                    onCurrentStepIndexChange(index);
+                  }}
+                  className="w-full text-left"
+                >
                   <p className="text-sm font-semibold text-gray-900">{step.label || STEP_TYPE_LABELS[step.type]}</p>
                   <p className="mt-2 text-xs leading-relaxed text-gray-500">{summarizeStep(step, stepsWithLayout)}</p>
                 </button>
@@ -937,27 +990,128 @@ export default function WorkflowEditor({
             </div>
           )}
 
-          <div className="absolute rounded-[28px] border border-emerald-200 bg-emerald-50/80 p-4 shadow-sm" style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: celebrationPosition.x, top: celebrationPosition.y }}>
+          <div
+            className="absolute overflow-visible"
+            style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: celebrationPosition.x, top: celebrationPosition.y }}
+          >
             <span className="pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">Saída</p>
-            <p className="mt-2 text-lg font-semibold text-emerald-900">Celebração</p>
-            <p className="mt-2 text-xs leading-relaxed text-emerald-700">Todos os caminhos podem convergir para a tela final do funil.</p>
+            <div className={`rounded-[28px] border p-4 shadow-sm transition-all ${selectedSpecialNode === 'celebration' ? 'border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-500/10' : 'border-emerald-200 bg-emerald-50/80'}`}>
+              <div className="mb-3 flex items-center rounded-xl bg-white/70 px-3 py-2 text-[11px] font-semibold text-emerald-700">
+                <button
+                  type="button"
+                  onMouseDown={event => {
+                    event.preventDefault();
+                    setDragging({
+                      kind: 'special',
+                      screen: 'celebration',
+                      startX: celebrationPosition.x,
+                      startY: celebrationPosition.y,
+                      pointerX: event.clientX,
+                      pointerY: event.clientY,
+                    });
+                    setHoverPreview(null);
+                    setSelectedSpecialNode('celebration');
+                  }}
+                  className="flex min-w-0 flex-1 cursor-grab items-center gap-2 text-left active:cursor-grabbing"
+                >
+                  <span className="truncate">Saída</span>
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setHoverPreview(null);
+                  setSelectedSpecialNode('celebration');
+                }}
+                className="w-full text-left"
+              >
+                <p className="text-lg font-semibold text-emerald-900">Celebração</p>
+                <p className="mt-2 text-xs leading-relaxed text-emerald-700">Encaminha o lead para a tela final do funil quando ele segue qualificado.</p>
+              </button>
+            </div>
           </div>
 
-          <div className="absolute rounded-[28px] border border-rose-200 bg-rose-50/80 p-4 shadow-sm" style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: rejectedPosition.x, top: rejectedPosition.y }}>
+          <div
+            className="absolute overflow-visible"
+            style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: rejectedPosition.x, top: rejectedPosition.y }}
+          >
             <span className="pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white bg-rose-500 shadow-sm" />
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">Saída</p>
-            <p className="mt-2 text-lg font-semibold text-rose-900">Reprovação</p>
-            <p className="mt-2 text-xs leading-relaxed text-rose-700">Use quando a opção deve encerrar o funil fora da qualificação.</p>
+            <div className={`rounded-[28px] border p-4 shadow-sm transition-all ${selectedSpecialNode === 'rejected' ? 'border-rose-500 bg-rose-50 shadow-lg shadow-rose-500/10' : 'border-rose-200 bg-rose-50/80'}`}>
+              <div className="mb-3 flex items-center rounded-xl bg-white/70 px-3 py-2 text-[11px] font-semibold text-rose-700">
+                <button
+                  type="button"
+                  onMouseDown={event => {
+                    event.preventDefault();
+                    setDragging({
+                      kind: 'special',
+                      screen: 'rejected',
+                      startX: rejectedPosition.x,
+                      startY: rejectedPosition.y,
+                      pointerX: event.clientX,
+                      pointerY: event.clientY,
+                    });
+                    setHoverPreview(null);
+                    setSelectedSpecialNode('rejected');
+                  }}
+                  className="flex min-w-0 flex-1 cursor-grab items-center gap-2 text-left active:cursor-grabbing"
+                >
+                  <span className="truncate">Saída</span>
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setHoverPreview(null);
+                  setSelectedSpecialNode('rejected');
+                }}
+                className="w-full text-left"
+              >
+                <p className="text-lg font-semibold text-rose-900">Reprovação</p>
+                <p className="mt-2 text-xs leading-relaxed text-rose-700">Encerra o funil quando a resposta indica que o lead não deve seguir para a oferta final.</p>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="mt-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
-        {!selectedStep ? (
+        {!selectedStep && !selectedSpecialNode ? (
           <div className="space-y-2 text-sm text-gray-500">
             <p className="font-semibold text-gray-800">Selecione uma etapa</p>
             <p>Escolha um card no canvas para editar as saídas e o comportamento dele no workflow.</p>
+          </div>
+        ) : selectedSpecialNode ? (
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Saída selecionada</p>
+                <h3 className="mt-2 text-lg font-semibold text-gray-900">
+                  {selectedSpecialNode === 'celebration' ? 'Celebração' : 'Reprovação'}
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {selectedSpecialNode === 'celebration'
+                    ? 'Destino final para quem segue qualificado no funil.'
+                    : 'Destino de encerramento para respostas que desqualificam o lead.'}
+                </p>
+              </div>
+              <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${selectedSpecialNode === 'celebration' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                Nó de saída
+              </span>
+            </div>
+
+            <div className={`rounded-2xl border p-4 text-sm leading-relaxed ${selectedSpecialNode === 'celebration' ? 'border-emerald-100 bg-emerald-50/70 text-emerald-900' : 'border-rose-100 bg-rose-50/70 text-rose-900'}`}>
+              {selectedSpecialNode === 'celebration' ? (
+                <p>
+                  Use a <strong>Celebração</strong> quando a resposta deve levar o paciente até a tela final do funil, com WhatsApp ou formulário.
+                  Agora esse card também pode ser movido no canvas.
+                </p>
+              ) : (
+                <p>
+                  Use a <strong>Reprovação</strong> quando a resposta deve encerrar o funil fora da qualificação. Antes ele aparecia só como referência;
+                  agora você consegue conectar uma resposta a ele escolhendo <strong>Destino &gt; Reprovação</strong> na opção da pergunta.
+                </p>
+              )}
+            </div>
           </div>
         ) : (
           <div className="space-y-5">
@@ -977,7 +1131,7 @@ export default function WorkflowEditor({
                 <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
                   <p className="text-sm font-semibold text-violet-900">Pergunta com múltiplas saídas</p>
                   <p className="mt-1 text-xs leading-relaxed text-violet-700">
-                    Cada resposta cria automaticamente um card em branco no workflow. Esses cards convergem para o próximo passo principal do funil.
+                    Cada resposta cria automaticamente um card em branco no workflow. Esses cards convergem para o próximo passo principal do funil, a menos que você mande a resposta direto para Celebração ou Reprovação.
                   </p>
                 </div>
 
@@ -1010,8 +1164,38 @@ export default function WorkflowEditor({
                       <textarea value={option.description || ''} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, description: event.target.value }))} rows={2} className="w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10" placeholder="Explique rapidamente o tipo de caso para esse caminho." />
                     </div>
 
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Destino</label>
+                      <select
+                        value={option.target === 'celebration' || option.target === 'rejected' ? option.target : 'branch'}
+                        onChange={event => {
+                          const nextTarget = event.target.value;
+                          updateOption(selectedStep.id, option.id, current => {
+                            if (nextTarget === 'celebration') {
+                              return { ...current, target: 'celebration', nextStepId: undefined };
+                            }
+
+                            if (nextTarget === 'rejected') {
+                              return { ...current, target: 'rejected', nextStepId: undefined };
+                            }
+
+                            return { ...current, target: 'step', nextStepId: current.nextStepId };
+                          });
+                        }}
+                        className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10"
+                      >
+                        <option value="branch">Card derivado em branco</option>
+                        <option value="celebration">Celebração</option>
+                        <option value="rejected">Reprovação</option>
+                      </select>
+                    </div>
+
                     <div className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/70 px-4 py-3 text-xs leading-relaxed text-violet-700">
-                      Essa resposta abre um card derivado em branco e, depois dele, o fluxo volta para o próximo card principal.
+                      {option.target === 'celebration'
+                        ? 'Essa resposta encerra esse caminho na saída de Celebração.'
+                        : option.target === 'rejected'
+                          ? 'Essa resposta encerra esse caminho na saída de Reprovação.'
+                          : 'Essa resposta abre um card derivado em branco e, depois dele, o fluxo volta para o próximo card principal.'}
                     </div>
                   </div>
                 ))}

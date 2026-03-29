@@ -70,6 +70,19 @@ interface FormEditorProps {
   initialEditorMode?: 'step' | 'workflow';
 }
 
+interface EditorHistorySnapshot {
+  form: FormInput;
+  photos: PhotoPair[];
+  steps: FormStep[];
+  customTexts: CustomTexts;
+  selectedDates: string[];
+  currentStepIndex: number;
+  editorMode: 'step' | 'workflow';
+  isDraftDocument: boolean;
+}
+
+const MAX_HISTORY_SNAPSHOTS = 120;
+
 export default function FormEditor({ initialData, mode, templateId, templateData, initialEditorMode = 'step' }: FormEditorProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -99,6 +112,10 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const draftCreationInFlightRef = useRef(false);
   const lastAutoSavedSnapshotRef = useRef<string | null>(null);
   const savedToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const historyRef = useRef<EditorHistorySnapshot[]>([]);
+  const historyIndexRef = useRef(-1);
+  const applyingHistoryRef = useRef(false);
+  const [canUndo, setCanUndo] = useState(false);
   const initialProcedureName = initialData?.procedureName || templateData?.procedureName || '';
   const initialProcedureDuration = initialData?.procedureDuration || templateData?.procedureDuration || '';
   const shouldPrefillTextDefaults = templateId !== 'em-branco' && (mode === 'create' || !isBlankFormLike(initialData));
@@ -184,6 +201,51 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [modelPriceDisplay, setModelPriceDisplay] = useState(formatBRL(form.modelPrice));
   const [feePriceDisplay, setFeePriceDisplay] = useState(formatBRL(form.feeAmount));
   const [installmentAmountDisplay, setInstallmentAmountDisplay] = useState(formatBRL(form.installmentAmount));
+
+  function buildHistorySnapshot(): EditorHistorySnapshot {
+    return {
+      form: JSON.parse(JSON.stringify(form)) as FormInput,
+      photos: JSON.parse(JSON.stringify(photos)) as PhotoPair[],
+      steps: JSON.parse(JSON.stringify(steps)) as FormStep[],
+      customTexts: JSON.parse(JSON.stringify(customTexts)) as CustomTexts,
+      selectedDates: selectedDates.map(date => date.toISOString()),
+      currentStepIndex,
+      editorMode,
+      isDraftDocument,
+    };
+  }
+
+  function restoreHistorySnapshot(snapshot: EditorHistorySnapshot) {
+    applyingHistoryRef.current = true;
+    setForm(snapshot.form);
+    setPhotos(snapshot.photos);
+    setSteps(snapshot.steps);
+    setCustomTexts(snapshot.customTexts);
+    setSelectedDates(snapshot.selectedDates.map(value => new Date(value)));
+    setCurrentStepIndex(Math.min(snapshot.currentStepIndex, snapshot.steps.length));
+    setEditorMode(snapshot.editorMode);
+    setIsDraftDocument(snapshot.isDraftDocument);
+    setInsertPanelOpen(false);
+    setStepIconPickerOpen(false);
+    setWorkflowStepModalOpen(false);
+    setStepPickerOpen(false);
+  }
+
+  function syncUndoState(nextIndex: number) {
+    setCanUndo(nextIndex > 0);
+  }
+
+  function undoLastChange() {
+    if (historyIndexRef.current <= 0) return;
+
+    const nextIndex = historyIndexRef.current - 1;
+    const snapshot = historyRef.current[nextIndex];
+    if (!snapshot) return;
+
+    historyIndexRef.current = nextIndex;
+    syncUndoState(nextIndex);
+    restoreHistorySnapshot(snapshot);
+  }
 
   const slug = generateSlug(form.name);
 
@@ -661,6 +723,57 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   }, [persistedFormId, initialData?.id]);
 
   useEffect(() => {
+    const snapshot = buildHistorySnapshot();
+    const currentSnapshot = historyIndexRef.current >= 0 ? historyRef.current[historyIndexRef.current] : null;
+    const nextKey = JSON.stringify(snapshot);
+    const currentKey = currentSnapshot ? JSON.stringify(currentSnapshot) : null;
+
+    if (applyingHistoryRef.current) {
+      applyingHistoryRef.current = false;
+      return;
+    }
+
+    if (currentKey === nextKey) return;
+
+    const nextHistory = historyIndexRef.current >= 0
+      ? historyRef.current.slice(0, historyIndexRef.current + 1)
+      : [];
+
+    nextHistory.push(snapshot);
+
+    if (nextHistory.length > MAX_HISTORY_SNAPSHOTS) {
+      nextHistory.shift();
+    }
+
+    historyRef.current = nextHistory;
+    historyIndexRef.current = nextHistory.length - 1;
+    syncUndoState(historyIndexRef.current);
+  }, [customTexts, editorMode, form, isDraftDocument, photos, selectedDates, steps, currentStepIndex]);
+
+  useEffect(() => {
+    function handleUndoShortcut(event: KeyboardEvent) {
+      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.key.toLowerCase() !== 'z') return;
+
+      const target = event.target;
+      if (
+        target instanceof HTMLElement
+        && (
+          target.closest('[contenteditable="true"]')
+          || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+        )
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      undoLastChange();
+    }
+
+    window.addEventListener('keydown', handleUndoShortcut);
+    return () => window.removeEventListener('keydown', handleUndoShortcut);
+  }, []);
+
+  useEffect(() => {
     if (mode !== 'edit' && !(mode === 'create' && createBaselineRef.current !== null)) return;
     if (!authReady) return;
     const timer = setTimeout(() => saveRef.current?.(), 1500);
@@ -814,6 +927,17 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           <div className="flex flex-shrink-0 items-center gap-1">
             <button
               type="button"
+              onClick={undoLastChange}
+              disabled={!canUndo}
+              className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Desfazer
+            </button>
+            <button
+              type="button"
               onClick={() => setCurrentStepIndex(i => Math.max(0, i - 1))}
               disabled={currentStepIndex === 0}
               className="cursor-pointer rounded-xl px-3 py-1.5 text-sm font-semibold text-[#6B1C3A] transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30"
@@ -877,6 +1001,8 @@ export default function FormEditor({ initialData, mode, templateId, templateData
               <WorkflowEditor
                 steps={steps}
                 onChange={setSteps}
+                customTexts={customTexts}
+                onCustomTextsChange={setCustomTexts}
                 currentStepIndex={currentStepIndex}
                 onCurrentStepIndexChange={setCurrentStepIndex}
                 onStepEditRequest={openWorkflowStepModal}
@@ -919,6 +1045,17 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                           Salvo automaticamente
                         </span>
                       )}
+                      <button
+                        type="button"
+                        onClick={undoLastChange}
+                        disabled={!canUndo}
+                        className="inline-flex items-center gap-1 rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Desfazer
+                      </button>
                       {currentStep.type !== 'livre' && (
                         <button
                           type="button"

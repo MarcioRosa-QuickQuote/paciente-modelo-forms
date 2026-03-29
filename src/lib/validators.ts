@@ -81,6 +81,8 @@ const customTextsSchema = z.object({
   celebrationTitle: z.string().optional(),
   celebrationSubtitle: z.string().optional(),
   celebrationMessage: z.string().optional(),
+  workflowCelebrationNodePosition: z.string().optional(),
+  workflowRejectedNodePosition: z.string().optional(),
 }).default({});
 
 const photoPairSchema = z.object({

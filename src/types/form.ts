@@ -73,6 +73,8 @@ export interface CustomTexts {
   celebrationTitle?: string;
   celebrationSubtitle?: string;
   celebrationMessage?: string;
+  workflowCelebrationNodePosition?: string;
+  workflowRejectedNodePosition?: string;
 }
 
 export interface FormFields {

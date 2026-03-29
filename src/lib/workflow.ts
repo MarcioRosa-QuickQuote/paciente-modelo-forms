@@ -37,6 +37,31 @@ export function getDefaultWorkflowPosition(index: number): WorkflowPosition {
   };
 }
 
+export function parseWorkflowNodePosition(value?: string): WorkflowPosition | null {
+  if (!value) return null;
+
+  try {
+    const parsed = JSON.parse(value) as Partial<WorkflowPosition>;
+    if (typeof parsed.x !== 'number' || typeof parsed.y !== 'number') {
+      return null;
+    }
+
+    return {
+      x: Math.max(32, Math.round(parsed.x)),
+      y: Math.max(32, Math.round(parsed.y)),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function serializeWorkflowNodePosition(position: WorkflowPosition): string {
+  return JSON.stringify({
+    x: Math.max(32, Math.round(position.x)),
+    y: Math.max(32, Math.round(position.y)),
+  });
+}
+
 export function getStepWorkflowPosition(step: FormStep, index: number): WorkflowPosition {
   return step.workflowPosition ?? getDefaultWorkflowPosition(index);
 }
@@ -105,7 +130,19 @@ export function resolveWorkflowDestination(
   return { kind: 'special', screen: 'celebration' };
 }
 
-export function getSpecialWorkflowPosition(steps: FormStep[], screen: WorkflowSpecialScreen): WorkflowPosition {
+export function getSpecialWorkflowPosition(
+  steps: FormStep[],
+  screen: WorkflowSpecialScreen,
+  overrides?: Partial<Record<WorkflowSpecialScreen, WorkflowPosition>>,
+): WorkflowPosition {
+  const override = overrides?.[screen];
+  if (override) {
+    return {
+      x: Math.max(32, Math.round(override.x)),
+      y: Math.max(32, Math.round(override.y)),
+    };
+  }
+
   const positions = steps.map((step, index) => getStepWorkflowPosition(step, index));
   const maxX = positions.length > 0 ? Math.max(...positions.map(position => position.x)) : START_X;
   const minY = positions.length > 0 ? Math.min(...positions.map(position => position.y)) : START_Y;
@@ -184,12 +221,13 @@ export function syncDecisionBranchSteps(
 
   const decisionStep = strippedSteps[decisionIndex];
   const options = decisionStep.workflowOptions || [];
+  const branchOptions = options.filter(option => option.target !== 'celebration' && option.target !== 'rejected');
   let normalizedSteps = strippedSteps.map((step, index) => {
     if (index <= decisionIndex) return step;
 
     const position = getStepWorkflowPosition(step, index);
 
-    if (hadBranches && options.length === 0) {
+    if (hadBranches && branchOptions.length === 0) {
       return {
         ...step,
         workflowPosition: {
@@ -215,7 +253,7 @@ export function syncDecisionBranchSteps(
   const downstreamMinX = downstreamSteps.length > 0
     ? Math.min(...downstreamSteps.map((step, index) => getStepWorkflowPosition(step, normalizedDecisionIndex + 1 + index).x))
     : null;
-  const minimumMainX = decisionPosition.x + GAP_X * 2;
+  const minimumMainX = decisionPosition.x + (branchOptions.length > 0 ? GAP_X * 2 : GAP_X);
 
   if (downstreamMinX !== null && downstreamMinX < minimumMainX) {
     const deltaX = minimumMainX - downstreamMinX;
@@ -244,9 +282,9 @@ export function syncDecisionBranchSteps(
       .map(step => [step.branchSourceOptionId as string, step]),
   );
   const branchX = shiftedDecisionPosition.x + GAP_X;
-  const startY = shiftedDecisionPosition.y - ((options.length - 1) * BRANCH_GAP_Y) / 2;
+  const startY = shiftedDecisionPosition.y - ((branchOptions.length - 1) * BRANCH_GAP_Y) / 2;
 
-  const generatedBranchSteps = options.map((option, optionIndex) => {
+  const generatedBranchSteps = branchOptions.map((option, optionIndex) => {
     const existingBranchStep = existingBranchStepsByOptionId.get(option.id);
     const baseStep = existingBranchStep ?? createBranchStep();
 
@@ -272,9 +310,16 @@ export function syncDecisionBranchSteps(
   const syncedDecisionStep: FormStep = {
     ...shiftedDecisionStep,
     workflowOptions: options.map(option => ({
-      ...option,
-      target: 'step',
-      nextStepId: generatedBranchStepIdByOptionId.get(option.id),
+      ...(option.target === 'celebration' || option.target === 'rejected'
+        ? {
+            ...option,
+            nextStepId: undefined,
+          }
+        : {
+            ...option,
+            target: 'step' as const,
+            nextStepId: generatedBranchStepIdByOptionId.get(option.id),
+          }),
     })),
   };
 
