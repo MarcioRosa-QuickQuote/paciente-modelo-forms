@@ -55,9 +55,19 @@ function stripHtml(value?: string): string {
   return (value || '').replace(/<[^>]*>/g, '').trim();
 }
 
-function summarizeStep(step: FormStep): string {
+function summarizeStep(step: FormStep, steps: FormStep[]): string {
   if (step.branchGenerated) {
-    return 'Card derivado automaticamente da multipergunta.';
+    const sourceQuestion = stripHtml(
+      steps.find(candidate => candidate.id === step.branchSourceStepId)?.question,
+    );
+
+    if (sourceQuestion) {
+      return sourceQuestion.length > 72
+        ? `${sourceQuestion.slice(0, 72).trimEnd()}...`
+        : sourceQuestion;
+    }
+
+    return 'Etapa derivada da pergunta anterior.';
   }
 
   if (step.type === 'pergunta') {
@@ -790,7 +800,7 @@ export default function WorkflowEditor({
 
                 <button type="button" onClick={() => onCurrentStepIndexChange(index)} className="w-full text-left">
                   <p className="text-sm font-semibold text-gray-900">{step.label || STEP_TYPE_LABELS[step.type]}</p>
-                  <p className="mt-2 text-xs leading-relaxed text-gray-500">{summarizeStep(step)}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-gray-500">{summarizeStep(step, stepsWithLayout)}</p>
                 </button>
               </div>
             </div>
@@ -873,7 +883,7 @@ export default function WorkflowEditor({
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Etapa selecionada</p>
                 <h3 className="mt-2 text-lg font-semibold text-gray-900">{selectedStep.label || STEP_TYPE_LABELS[selectedStep.type]}</h3>
-                <p className="mt-1 text-sm text-gray-500">{summarizeStep(selectedStep)}</p>
+                <p className="mt-1 text-sm text-gray-500">{summarizeStep(selectedStep, stepsWithLayout)}</p>
               </div>
               <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500">
                 {STEP_TYPE_LABELS[selectedStep.type]}
