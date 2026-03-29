@@ -407,6 +407,15 @@ export default function WorkflowEditor({
     });
   }
 
+  function buildSeededWorkflowOptions(minimum = 2): WorkflowOption[] {
+    return Array.from({ length: minimum }, (_, index) => ({
+      id: crypto.randomUUID(),
+      label: `Opção ${index + 1}`,
+      description: '',
+      target: 'next',
+    }));
+  }
+
   function removeWorkflowOption(stepId: string, optionId: string) {
     const step = stepsWithLayout.find(item => item.id === stepId);
     if (!step) return;
@@ -443,6 +452,12 @@ export default function WorkflowEditor({
 
     const newStep = {
       ...createStep(type),
+      ...(type === 'pergunta'
+        ? {
+            question: 'O que mais te incomoda?',
+            workflowOptions: buildSeededWorkflowOptions(2),
+          }
+        : {}),
       workflowPosition: {
         x: nextX,
         y: nextY,
@@ -456,7 +471,9 @@ export default function WorkflowEditor({
     ];
 
     onChange(nextSteps);
-    onCurrentStepIndexChange(sourceIndex + 1);
+    const nextIndex = sourceIndex + 1;
+    onCurrentStepIndexChange(nextIndex);
+    onStepEditRequest(nextIndex);
     setInsertMenu(null);
   }
 
