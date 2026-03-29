@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deleteForm, getFormById, initializeDb, rowToFormData, updateForm } from '@/db';
-import { formInputSchema } from '@/lib/validators';
+import { draftFormInputSchema, formInputSchema } from '@/lib/validators';
 import { generateSlug } from '@/lib/utils';
 
 function getErrorDetails(error: unknown): string {
@@ -66,7 +66,10 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const parsed = formInputSchema.partial().safeParse(body);
+    const shouldValidateAsDraft = body?.isDraft === true || (existing.is_draft && body?.isDraft !== false);
+    const parsed = shouldValidateAsDraft
+      ? draftFormInputSchema.partial().safeParse(body)
+      : formInputSchema.partial().safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

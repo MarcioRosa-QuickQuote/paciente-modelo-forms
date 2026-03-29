@@ -93,6 +93,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
   const elementsBuilderRef = useRef<HTMLDivElement | null>(null);
+  const persistedFormIdRef = useRef<string | null>(initialData?.id || null);
   const createBaselineRef = useRef<string | null>(null);
   const draftCreationInFlightRef = useRef(false);
   const lastAutoSavedSnapshotRef = useRef<string | null>(null);
@@ -482,7 +483,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         alert(errMsg);
         return;
       }
-      const targetId = persistedFormId || initialData?.id || null;
+      const targetId = persistedFormIdRef.current || persistedFormId || initialData?.id || null;
       const url = targetId ? `/api/forms/${targetId}` : '/api/forms';
       const method = targetId ? 'PUT' : 'POST';
 
@@ -520,7 +521,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         setAutoSaveErrorMessage('Sua sessão não foi carregada. Recarregue a página e tente novamente.');
         return;
       }
-      const targetId = persistedFormId || initialData?.id || null;
+      const targetId = persistedFormIdRef.current || persistedFormId || initialData?.id || null;
 
       if (!targetId) {
         if (mode !== 'create' || createBaselineRef.current === null || draftCreationInFlightRef.current) return;
@@ -541,6 +542,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
         if (res.ok) {
           const data = await res.json();
+          persistedFormIdRef.current = data.id;
           setPersistedFormId(data.id);
           setIsDraftDocument(true);
           lastAutoSavedSnapshotRef.current = draftRequestSnapshot;
@@ -627,6 +629,10 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, initialData?.id]);
+
+  useEffect(() => {
+    persistedFormIdRef.current = persistedFormId || initialData?.id || null;
+  }, [persistedFormId, initialData?.id]);
 
   useEffect(() => {
     if (mode !== 'edit' && !(mode === 'create' && createBaselineRef.current !== null)) return;
