@@ -32,7 +32,7 @@ const INSERT_LINE_WIDTH = 16;
 const INSERT_BUTTON_SIZE = 34;
 const HOVER_PREVIEW_WIDTH = 348;
 const HOVER_PREVIEW_HEIGHT = 654;
-const NODE_GAP_X = 320;
+const NODE_GAP_X = 380;
 
 const STEP_TYPE_LABELS: Record<FormStepType, string> = {
   foto: 'Fotos Antes/Depois',
@@ -230,6 +230,69 @@ export default function WorkflowEditor({
     return frames;
   }, [celebrationPosition, rejectedPosition, stepsWithLayout]);
 
+  function applyMinimumHorizontalSpacing(currentSteps: FormStep[]): FormStep[] {
+    const laneItems = new Map<number, Array<{ index: number; x: number }>>();
+
+    currentSteps.forEach((step, index) => {
+      const position = getStepWorkflowPosition(step, index);
+      const laneKey = Math.round(position.y / 88);
+      const currentLane = laneItems.get(laneKey) || [];
+      currentLane.push({ index, x: position.x });
+      laneItems.set(laneKey, currentLane);
+    });
+
+    let changed = false;
+    const nextSteps = currentSteps.map(step => ({
+      ...step,
+      workflowPosition: step.workflowPosition ? { ...step.workflowPosition } : step.workflowPosition,
+    }));
+
+    laneItems.forEach(items => {
+      const ordered = [...items].sort((left, right) => left.x - right.x);
+      let previousX: number | null = null;
+
+      ordered.forEach(item => {
+        const position = getStepWorkflowPosition(nextSteps[item.index], item.index);
+
+        if (previousX === null) {
+          previousX = position.x;
+          return;
+        }
+
+        const requiredX = previousX + NODE_GAP_X;
+        if (position.x < requiredX) {
+          nextSteps[item.index] = {
+            ...nextSteps[item.index],
+            workflowPosition: {
+              x: requiredX,
+              y: position.y,
+            },
+          };
+          previousX = requiredX;
+          changed = true;
+          return;
+        }
+
+        previousX = position.x;
+      });
+    });
+
+    return changed ? nextSteps : currentSteps;
+  }
+
+  useEffect(() => {
+    const spacedSteps = applyMinimumHorizontalSpacing(stepsWithLayout);
+    const hasSpacingChange = spacedSteps.some((step, index) => {
+      const currentPosition = getStepWorkflowPosition(stepsWithLayout[index], index);
+      const nextPosition = getStepWorkflowPosition(step, index);
+      return currentPosition.x !== nextPosition.x || currentPosition.y !== nextPosition.y;
+    });
+
+    if (hasSpacingChange) {
+      onChange(spacedSteps);
+    }
+  }, [onChange, stepsWithLayout]);
+
   function updateStep(stepId: string, updates: Partial<FormStep>) {
     onChange(stepsWithLayout.map(step => step.id === stepId ? { ...step, ...updates } : step));
   }
@@ -282,7 +345,7 @@ export default function WorkflowEditor({
     const shiftedSteps = stepsWithLayout.map((step, index) => {
       const position = getStepWorkflowPosition(step, index);
       const sameLane = Math.abs(position.y - sourcePosition.y) < 88;
-      const shouldShift = step.id !== sourceStepId && sameLane && position.x >= nextX - 16;
+      const shouldShift = step.id !== sourceStepId && sameLane && position.x >= nextX - 24;
 
       if (!shouldShift) return step;
 
@@ -351,7 +414,7 @@ export default function WorkflowEditor({
     const frame = nodeFrames.get(stepId);
     if (!frame) return;
 
-    const x = clamp(frame.x + NODE_WIDTH + 16, 24, canvasWidth - 236);
+    const x = clamp(frame.x + NODE_WIDTH + INSERT_LINE_WIDTH + INSERT_BUTTON_SIZE + 24, 24, canvasWidth - 236);
     const y = clamp(frame.y + frame.height + 14, 24, canvasHeight - 138);
 
     setInsertMenu(current => current?.sourceStepId === stepId ? null : {
@@ -433,7 +496,7 @@ export default function WorkflowEditor({
   }
 
   return (
-    <div className="flex h-full min-h-[620px] flex-col">
+    <div className="flex h-full min-h-0 w-full flex-col">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
         <div>
           <p className="text-sm font-semibold text-gray-900">Workflow do Funil</p>
@@ -448,7 +511,7 @@ export default function WorkflowEditor({
 
       <div
         ref={canvasViewportRef}
-        className="relative min-h-[520px] flex-1 overflow-auto rounded-[28px] bg-[radial-gradient(circle_at_top,_rgba(107,28,58,0.06),_transparent_28%),linear-gradient(180deg,#ffffff_0%,#faf8fc_100%)]"
+        className="relative h-full min-h-0 flex-1 overflow-auto rounded-[28px] bg-[radial-gradient(circle_at_top,_rgba(107,28,58,0.06),_transparent_28%),linear-gradient(180deg,#ffffff_0%,#faf8fc_100%)]"
       >
         <div className="relative min-h-full" style={{ width: canvasWidth, height: canvasHeight }}>
           <svg className="pointer-events-none absolute inset-0 h-full w-full">
@@ -473,18 +536,26 @@ export default function WorkflowEditor({
                 <span className={`pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${decision ? 'bg-violet-500' : 'bg-slate-300'}`} />
                 <span className={`pointer-events-none absolute -right-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${decision ? 'bg-violet-500' : 'bg-slate-300'}`} />
 
-                <div className="pointer-events-none absolute left-full top-1/2 flex -translate-y-1/2 items-center pl-3">
-                  <span className="h-[2px] w-[16px] rounded-full bg-slate-300" />
+                <div className="pointer-events-none absolute left-full top-1/2 flex -translate-y-1/2 items-center pl-4">
+                  <span className="h-[2px] w-[20px] rounded-full bg-slate-300" />
                 </div>
 
                 <button
                   type="button"
                   data-workflow-insert-trigger
+                  onMouseEnter={event => {
+                    event.stopPropagation();
+                    setHoverPreview(current => current?.stepIndex === index ? null : current);
+                  }}
+                  onMouseMove={event => {
+                    event.stopPropagation();
+                    setHoverPreview(current => current?.stepIndex === index ? null : current);
+                  }}
                   onClick={event => {
                     event.stopPropagation();
                     openInsertMenu(step.id);
                   }}
-                  className="absolute left-full top-1/2 z-10 ml-4 flex h-[34px] w-[34px] -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-lg font-semibold text-gray-500 shadow-sm transition-all hover:border-[#6B1C3A]/30 hover:text-[#6B1C3A] hover:shadow"
+                  className="absolute left-full top-1/2 z-10 ml-6 flex h-[34px] w-[34px] -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-lg font-semibold text-gray-500 shadow-sm transition-all hover:border-[#6B1C3A]/30 hover:text-[#6B1C3A] hover:shadow"
                   aria-label="Inserir etapa após este card"
                 >
                   +
