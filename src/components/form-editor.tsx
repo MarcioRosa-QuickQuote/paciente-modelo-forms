@@ -653,12 +653,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           )}
           {!stepPickerOpen && currentStep && (editorMode === 'step' || workflowStepModalOpen) && (
             <div
-              className={workflowStepModalOpen ? 'fixed inset-0 z-[70] flex items-start justify-center bg-black/45 p-4 backdrop-blur-sm' : ''}
+              className={workflowStepModalOpen ? 'fixed inset-0 z-[70] overflow-y-auto bg-black/45 p-4 backdrop-blur-sm' : ''}
               onClick={workflowStepModalOpen ? (event => {
                 if (event.target === event.currentTarget) closeWorkflowStepModal();
               }) : undefined}
             >
-              <div className={workflowStepModalOpen ? 'flex max-h-[calc(100dvh-32px)] w-full max-w-[min(96vw,1440px)] flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl' : 'contents'}>
+              <div className={workflowStepModalOpen ? 'mx-auto flex w-full max-w-[min(96vw,1440px)] flex-col rounded-[28px] bg-white shadow-2xl' : 'contents'}>
                 {workflowStepModalOpen && (
                   <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-4">
                     <div className="min-w-0">
@@ -685,8 +685,8 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     </div>
                   </div>
                 )}
-                <div className={workflowStepModalOpen ? 'grid min-h-0 flex-1 xl:grid-cols-[minmax(0,1fr)_420px]' : 'p-6 space-y-5'}>
-                  <div className={workflowStepModalOpen ? 'space-y-5 overflow-y-auto p-6' : 'p-6 space-y-5'}>
+                <div className={workflowStepModalOpen ? 'grid xl:grid-cols-[minmax(0,1fr)_420px]' : 'p-6 space-y-5'}>
+                  <div className={workflowStepModalOpen ? 'space-y-5 p-6' : 'p-6 space-y-5'}>
 
               {currentStepSupportsIcon && (
                 <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4 space-y-4">
@@ -1425,15 +1425,17 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
                   </div>
                   {workflowStepModalOpen && (
-                    <div className="hidden min-h-0 border-l border-gray-100 bg-gray-50/50 p-4 xl:block">
-                      <FormPreviewPanel
-                        form={{ ...form, customTexts, slug }}
-                        photos={photos}
-                        steps={steps}
-                        currentIndex={currentStepIndex}
-                        onCurrentIndexChange={setCurrentStepIndex}
-                        sticky={false}
-                      />
+                    <div className="hidden border-l border-gray-100 bg-gray-50/50 p-4 xl:block">
+                      <div className="sticky top-4">
+                        <FormPreviewPanel
+                          form={{ ...form, customTexts, slug }}
+                          photos={photos}
+                          steps={steps}
+                          currentIndex={currentStepIndex}
+                          onCurrentIndexChange={setCurrentStepIndex}
+                          sticky={false}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
