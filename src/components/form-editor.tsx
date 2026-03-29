@@ -89,6 +89,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [isDraftDocument, setIsDraftDocument] = useState(mode === 'create' || initialData?.isDraft === true);
   const [authReady, setAuthReady] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [autoSaveErrorMessage, setAutoSaveErrorMessage] = useState<string | null>(null);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
   const elementsBuilderRef = useRef<HTMLDivElement | null>(null);
@@ -200,6 +201,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   }
 
   function showSavedAutomaticallyToast() {
+    setAutoSaveErrorMessage(null);
     setSavedToast(true);
     if (savedToastTimeoutRef.current) {
       clearTimeout(savedToastTimeoutRef.current);
@@ -207,6 +209,26 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     savedToastTimeoutRef.current = setTimeout(() => {
       setSavedToast(false);
     }, 2000);
+  }
+
+  function describeAutoSaveError(status: number, rawMessage: string, isDraftRequest: boolean) {
+    const normalizedMessage = rawMessage.toLowerCase();
+
+    if (status === 401 || normalizedMessage.includes('não autenticado') || normalizedMessage.includes('nao autenticado')) {
+      return 'Sua sessão não foi reconhecida. Recarregue a página e faça login novamente.';
+    }
+
+    if (normalizedMessage.includes('is_draft')) {
+      return 'O banco de produção ainda não tem a coluna is_draft. Rode o SQL: ALTER TABLE forms ADD COLUMN IF NOT EXISTS is_draft BOOLEAN DEFAULT false;';
+    }
+
+    if (status >= 500) {
+      return isDraftRequest
+        ? 'O servidor falhou ao criar o rascunho automático.'
+        : 'O servidor falhou ao salvar as alterações automaticamente.';
+    }
+
+    return rawMessage || 'O salvamento automático falhou.';
   }
 
   function updateField<K extends keyof FormInput>(key: K, value: FormInput[K]) {
@@ -471,7 +493,10 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
     try {
       const headers = await getAuthHeaders();
-      if (!headers) return;
+      if (!headers) {
+        setAutoSaveErrorMessage('Sua sessão não foi carregada. Recarregue a página e tente novamente.');
+        return;
+      }
       const targetId = persistedFormId || initialData?.id || null;
 
       if (!targetId) {
@@ -498,7 +523,9 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           lastAutoSavedSnapshotRef.current = draftRequestSnapshot;
           showSavedAutomaticallyToast();
         } else {
-          console.error('Falha ao criar rascunho automaticamente', await res.text());
+          const rawMessage = await res.text();
+          setAutoSaveErrorMessage(describeAutoSaveError(res.status, rawMessage, true));
+          console.error('Falha ao criar rascunho automaticamente', rawMessage);
         }
         return;
       }
@@ -522,9 +549,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         lastAutoSavedSnapshotRef.current = updateSnapshot;
         showSavedAutomaticallyToast();
       } else {
-        console.error('Falha ao salvar formulario automaticamente', await res.text());
+        const rawMessage = await res.text();
+        setAutoSaveErrorMessage(describeAutoSaveError(res.status, rawMessage, false));
+        console.error('Falha ao salvar formulario automaticamente', rawMessage);
       }
     } catch (error) {
+      setAutoSaveErrorMessage('Erro inesperado ao salvar automaticamente. Tente novamente em alguns segundos.');
       console.error('Erro no autosave do formulario', error);
     }
     finally {
@@ -743,6 +773,13 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         </div>
 
         {/* ── Step tabs card ── */}
+        {autoSaveErrorMessage && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-sm">
+            <p className="font-semibold">Falha no salvamento automático</p>
+            <p className="mt-1 leading-relaxed">{autoSaveErrorMessage}</p>
+          </div>
+        )}
+
         <div
           className={editorMode === 'workflow'
             ? 'relative left-1/2 w-[calc(100vw-16px)] max-w-none -translate-x-1/2 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col'
