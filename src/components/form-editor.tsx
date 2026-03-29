@@ -713,6 +713,14 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 Modo workflow
               </span>
             )}
+            {savedToast && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Salvo automaticamente
+              </span>
+            )}
           </div>
           <div className="flex flex-shrink-0 items-center gap-1">
             <button
@@ -797,6 +805,14 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                       <h3 className="truncate text-lg font-semibold text-gray-900">{currentStep.label || `Tela ${currentStepIndex + 1}`}</h3>
                     </div>
                     <div className="flex items-center gap-2">
+                      {savedToast && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Salvo automaticamente
+                        </span>
+                      )}
                       {currentStep.type !== 'livre' && (
                         <button
                           type="button"
@@ -1830,7 +1846,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
         {/* ── Toast auto-save (edit mode) ── */}
         {savedToast && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-2xl shadow-xl text-sm font-medium animate-fade-in">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-2xl shadow-xl text-sm font-medium animate-fade-in">
             <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
