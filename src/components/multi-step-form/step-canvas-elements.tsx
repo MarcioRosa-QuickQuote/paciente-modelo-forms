@@ -174,14 +174,14 @@ export default function StepCanvasElements({
               style={{ background: theme.yesBtn }}
               className="flex-1 py-3.5 px-4 text-white font-bold text-base rounded-2xl shadow-lg"
             >
-              {el.yesText || fallbackYesText || 'Sim'}
+              {el.yesText || 'Antes'}
             </motion.button>
             <motion.button
               onClick={onNo}
               whileTap={{ scale: 0.95 }}
               className="flex-1 py-3.5 px-4 bg-gray-100 text-gray-600 font-bold text-base rounded-2xl hover:bg-gray-200 transition-colors"
             >
-              {el.noText || fallbackNoText || 'Nao'}
+              {el.noText || 'Depois'}
             </motion.button>
           </div>
         );

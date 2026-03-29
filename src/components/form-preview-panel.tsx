@@ -198,8 +198,8 @@ function PreviewExtraElements({ step, theme, desktop }: { step?: FormStep; theme
         if (el.type === 'buttons') {
           return (
             <div key={el.id} className="flex gap-2 w-full">
-              <Btn gradient={theme.yesBtn} text={el.yesText || 'Sim'} />
-              <Btn text={el.noText || 'Nao'} outlined />
+              <Btn gradient={theme.yesBtn} text={el.yesText || 'Antes'} />
+              <Btn text={el.noText || 'Depois'} outlined />
             </div>
           );
         }
@@ -766,6 +766,5 @@ export function StepPreviewContent({ form, photos, steps, stepIndex }: {
     default: return null;
   }
 }
-
 
 
