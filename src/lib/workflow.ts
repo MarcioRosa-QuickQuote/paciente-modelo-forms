@@ -11,6 +11,7 @@ const START_X = 72;
 const START_Y = 96;
 const GAP_X = 260;
 const GAP_Y = 180;
+const BRANCH_GAP_Y = 220;
 
 export type WorkflowSpecialScreen = 'celebration' | 'rejected';
 export type WorkflowDestination =
@@ -227,7 +228,7 @@ export function syncDecisionBranchSteps(
       .map(step => [step.branchSourceOptionId as string, step]),
   );
   const branchX = decisionPosition.x + GAP_X;
-  const startY = decisionPosition.y - ((options.length - 1) * GAP_Y) / 2;
+  const startY = decisionPosition.y - ((options.length - 1) * BRANCH_GAP_Y) / 2;
 
   const generatedBranchSteps = options.map((option, optionIndex) => {
     const existingBranchStep = existingBranchStepsByOptionId.get(option.id);
@@ -243,7 +244,7 @@ export function syncDecisionBranchSteps(
       workflowNextStepId: branchTargetStepId,
       workflowPosition: {
         x: branchX,
-        y: Math.max(32, Math.round(startY + optionIndex * GAP_Y)),
+        y: Math.max(32, Math.round(startY + optionIndex * BRANCH_GAP_Y)),
       },
     };
   });

@@ -27,7 +27,7 @@ interface Props {
 }
 
 const NODE_WIDTH = 188;
-const NODE_HEIGHT = 112;
+const NODE_HEIGHT = 152;
 const SPECIAL_NODE_WIDTH = 220;
 const SPECIAL_NODE_HEIGHT = 104;
 const INSERT_LINE_WIDTH = 14;
@@ -53,14 +53,6 @@ const STEP_TYPE_LABELS: Record<FormStepType, string> = {
 
 function stripHtml(value?: string): string {
   return (value || '').replace(/<[^>]*>/g, '').trim();
-}
-
-function getBranchOriginLabel(steps: FormStep[], step: FormStep): string | null {
-  if (!step.branchGenerated || !step.branchSourceStepId || !step.branchSourceOptionId) return null;
-
-  const sourceStep = steps.find(candidate => candidate.id === step.branchSourceStepId);
-  const sourceOption = sourceStep?.workflowOptions?.find(option => option.id === step.branchSourceOptionId);
-  return sourceOption?.label?.trim() || null;
 }
 
 function summarizeStep(step: FormStep): string {
@@ -700,9 +692,7 @@ export default function WorkflowEditor({
           {stepsWithLayout.map((step, index) => {
             const position = getStepWorkflowPosition(step, index);
             const selected = index === currentStepIndex;
-            const decision = isDecisionStep(step);
             const canDelete = stepsWithLayout.length > 1;
-            const branchOriginLabel = getBranchOriginLabel(stepsWithLayout, step);
 
             return (
               <div
@@ -710,10 +700,10 @@ export default function WorkflowEditor({
                 className="group absolute overflow-visible"
                 style={{ width: NODE_WIDTH, minHeight: NODE_HEIGHT, left: position.x, top: position.y }}
               >
-                <span className={`pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${decision ? 'bg-violet-500' : 'bg-slate-300'}`} />
-                <span className={`pointer-events-none absolute -right-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${decision ? 'bg-violet-500' : 'bg-slate-300'}`} />
+                <span className={`pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${isDecisionStep(step) ? 'bg-violet-500' : 'bg-slate-300'}`} />
+                <span className={`pointer-events-none absolute -right-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${isDecisionStep(step) ? 'bg-violet-500' : 'bg-slate-300'}`} />
 
-                <div className="pointer-events-none absolute left-full top-1/2 flex -translate-y-1/2 items-center pl-3">
+                <div className="pointer-events-none absolute left-full top-[58%] flex -translate-y-1/2 items-center pl-3">
                   <span className="h-[2px] w-[14px] rounded-full bg-slate-300" />
                 </div>
 
@@ -732,14 +722,14 @@ export default function WorkflowEditor({
                     event.stopPropagation();
                     openInsertMenu(step.id);
                   }}
-                  className="absolute left-full top-1/2 z-10 ml-4 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-base font-semibold text-gray-500 shadow-sm transition-all hover:border-[#6B1C3A]/30 hover:text-[#6B1C3A] hover:shadow"
+                  className="absolute left-full top-[58%] z-10 ml-4 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-base font-semibold text-gray-500 shadow-sm transition-all hover:border-[#6B1C3A]/30 hover:text-[#6B1C3A] hover:shadow"
                   aria-label="Inserir etapa após este card"
                 >
                   +
                 </button>
 
                 <div
-                  className={`min-h-[112px] rounded-[24px] border bg-white p-3 shadow-sm transition-all ${selected ? 'z-20 border-[#6B1C3A] shadow-lg shadow-[#6B1C3A]/10' : 'border-gray-200'} ${step.hidden ? 'opacity-60' : ''}`}
+                  className={`min-h-[152px] rounded-[24px] border bg-white p-3 shadow-sm transition-all ${selected ? 'z-20 border-[#6B1C3A] shadow-lg shadow-[#6B1C3A]/10' : 'border-gray-200'} ${step.hidden ? 'opacity-60' : ''}`}
                   onMouseEnter={event => updateHoverPreview(event, index)}
                   onMouseMove={event => updateHoverPreview(event, index)}
                   onMouseLeave={() => setHoverPreview(current => current?.stepIndex === index ? null : current)}
@@ -802,18 +792,6 @@ export default function WorkflowEditor({
                   <p className="text-sm font-semibold text-gray-900">{step.label || STEP_TYPE_LABELS[step.type]}</p>
                   <p className="mt-2 text-xs leading-relaxed text-gray-500">{summarizeStep(step)}</p>
                 </button>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {decision ? (
-                    <span className="rounded-full bg-violet-50 px-2 py-1 text-[10px] font-semibold text-violet-700">{(step.workflowOptions || []).length} saídas</span>
-                  ) : (
-                    <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-500">Fluxo linear</span>
-                  )}
-                  {branchOriginLabel && (
-                    <span className="rounded-full bg-sky-50 px-2 py-1 text-[10px] font-semibold text-sky-700">Vem de: {branchOriginLabel}</span>
-                  )}
-                  {step.hidden && <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700">Oculta</span>}
-                </div>
               </div>
             </div>
             );
