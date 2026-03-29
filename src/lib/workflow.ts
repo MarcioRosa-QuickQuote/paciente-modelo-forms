@@ -56,9 +56,19 @@ export function getStepOrderIndex(steps: FormStep[], stepId: string): number {
   return steps.findIndex(step => step.id === stepId);
 }
 
+function getExplicitNextVisibleStepId(steps: FormStep[], step?: FormStep): string | null {
+  if (!step?.workflowNextStepId) return null;
+  const visibleTarget = getOrderedVisibleSteps(steps).find(candidate => candidate.id === step.workflowNextStepId);
+  return visibleTarget?.id ?? null;
+}
+
 export function getLinearNextStepId(steps: FormStep[], currentStepId: string): string | null {
   const visibleSteps = getOrderedVisibleSteps(steps);
   const currentIndex = visibleSteps.findIndex(step => step.id === currentStepId);
+  const currentStep = visibleSteps[currentIndex];
+  const explicitNextStepId = getExplicitNextVisibleStepId(steps, currentStep);
+
+  if (explicitNextStepId) return explicitNextStepId;
 
   if (currentIndex === -1) return visibleSteps[0]?.id ?? null;
   return visibleSteps[currentIndex + 1]?.id ?? null;
@@ -142,7 +152,10 @@ export function buildWorkflowConnections(steps: FormStep[]): WorkflowConnection[
       return;
     }
 
-    const nextStep = steps[index + 1];
+    const explicitNextStep = step.workflowNextStepId
+      ? steps.find(candidate => candidate.id === step.workflowNextStepId)
+      : undefined;
+    const nextStep = explicitNextStep ?? steps[index + 1];
     const toKey = nextStep?.id ?? WORKFLOW_SPECIAL_NODE_IDS.celebration;
 
     connections.push({
@@ -154,4 +167,104 @@ export function buildWorkflowConnections(steps: FormStep[]): WorkflowConnection[
   });
 
   return connections;
+}
+
+export function syncDecisionBranchSteps(
+  steps: FormStep[],
+  decisionStepId: string,
+  createBranchStep: () => FormStep,
+): FormStep[] {
+  const existingBranchSteps = steps.filter(step => step.branchGenerated && step.branchSourceStepId === decisionStepId);
+  const hadBranches = existingBranchSteps.length > 0;
+  const strippedSteps = steps.filter(step => !(step.branchGenerated && step.branchSourceStepId === decisionStepId));
+  const decisionIndex = strippedSteps.findIndex(step => step.id === decisionStepId);
+
+  if (decisionIndex === -1) return steps;
+
+  const decisionStep = strippedSteps[decisionIndex];
+  const options = decisionStep.workflowOptions || [];
+  const normalizedSteps = strippedSteps.map((step, index) => {
+    if (index <= decisionIndex) return step;
+
+    const position = getStepWorkflowPosition(step, index);
+
+    if (!hadBranches && options.length > 0) {
+      return {
+        ...step,
+        workflowPosition: {
+          x: position.x + GAP_X,
+          y: position.y,
+        },
+      };
+    }
+
+    if (hadBranches && options.length === 0) {
+      return {
+        ...step,
+        workflowPosition: {
+          x: Math.max(32, position.x - GAP_X),
+          y: position.y,
+        },
+      };
+    }
+
+    return step;
+  });
+
+  if (options.length === 0) {
+    return normalizedSteps;
+  }
+
+  const normalizedDecisionIndex = normalizedSteps.findIndex(step => step.id === decisionStepId);
+  const normalizedDecisionStep = normalizedSteps[normalizedDecisionIndex];
+  if (!normalizedDecisionStep) return normalizedSteps;
+
+  const decisionPosition = getStepWorkflowPosition(normalizedDecisionStep, normalizedDecisionIndex);
+  const branchTargetStepId = normalizedSteps[normalizedDecisionIndex + 1]?.id;
+  const existingBranchStepsByOptionId = new Map(
+    existingBranchSteps
+      .filter(step => !!step.branchSourceOptionId)
+      .map(step => [step.branchSourceOptionId as string, step]),
+  );
+  const branchX = decisionPosition.x + GAP_X;
+  const startY = decisionPosition.y - ((options.length - 1) * GAP_Y) / 2;
+
+  const generatedBranchSteps = options.map((option, optionIndex) => {
+    const existingBranchStep = existingBranchStepsByOptionId.get(option.id);
+    const baseStep = existingBranchStep ?? createBranchStep();
+
+    return {
+      ...baseStep,
+      type: 'livre' as const,
+      hidden: false,
+      branchGenerated: true,
+      branchSourceStepId: decisionStepId,
+      branchSourceOptionId: option.id,
+      workflowNextStepId: branchTargetStepId,
+      workflowPosition: {
+        x: branchX,
+        y: Math.max(32, Math.round(startY + optionIndex * GAP_Y)),
+      },
+    };
+  });
+
+  const generatedBranchStepIdByOptionId = new Map(
+    generatedBranchSteps.map(step => [step.branchSourceOptionId as string, step.id]),
+  );
+
+  const syncedDecisionStep: FormStep = {
+    ...normalizedDecisionStep,
+    workflowOptions: options.map(option => ({
+      ...option,
+      target: 'step',
+      nextStepId: generatedBranchStepIdByOptionId.get(option.id),
+    })),
+  };
+
+  return [
+    ...normalizedSteps.slice(0, normalizedDecisionIndex),
+    syncedDecisionStep,
+    ...generatedBranchSteps,
+    ...normalizedSteps.slice(normalizedDecisionIndex + 1),
+  ];
 }

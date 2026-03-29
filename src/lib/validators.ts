@@ -60,6 +60,10 @@ const stepSchema = z.object({
     x: z.number(),
     y: z.number(),
   }).optional(),
+  workflowNextStepId: z.string().optional(),
+  branchGenerated: z.boolean().optional(),
+  branchSourceStepId: z.string().optional(),
+  branchSourceOptionId: z.string().optional(),
   workflowOptions: z.array(workflowOptionSchema).optional(),
   elements: z.array(canvasElementSchema).optional(),
 });

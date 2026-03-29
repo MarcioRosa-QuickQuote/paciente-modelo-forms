@@ -11,6 +11,7 @@ import {
   getSpecialWorkflowPosition,
   getStepWorkflowPosition,
   isDecisionStep,
+  syncDecisionBranchSteps,
 } from '@/lib/workflow';
 import { StepPreviewContent } from './form-preview-panel';
 
@@ -54,7 +55,19 @@ function stripHtml(value?: string): string {
   return (value || '').replace(/<[^>]*>/g, '').trim();
 }
 
+function getBranchOriginLabel(steps: FormStep[], step: FormStep): string | null {
+  if (!step.branchGenerated || !step.branchSourceStepId || !step.branchSourceOptionId) return null;
+
+  const sourceStep = steps.find(candidate => candidate.id === step.branchSourceStepId);
+  const sourceOption = sourceStep?.workflowOptions?.find(option => option.id === step.branchSourceOptionId);
+  return sourceOption?.label?.trim() || null;
+}
+
 function summarizeStep(step: FormStep): string {
+  if (step.branchGenerated) {
+    return 'Card derivado automaticamente da multipergunta.';
+  }
+
   if (step.type === 'pergunta') {
     return stripHtml(step.question) || 'Etapa de decisão do workflow';
   }
@@ -380,31 +393,41 @@ export default function WorkflowEditor({
     onChange(stepsWithLayout.map(step => step.id === stepId ? { ...step, ...updates } : step));
   }
 
+  function syncDecisionBranches(nextSteps: FormStep[], decisionStepId: string) {
+    return syncDecisionBranchSteps(nextSteps, decisionStepId, () => createStep('livre'));
+  }
+
   function updateOption(stepId: string, optionId: string, updater: (option: WorkflowOption) => WorkflowOption) {
-    onChange(stepsWithLayout.map(step => {
+    const nextSteps = stepsWithLayout.map(step => {
       if (step.id !== stepId) return step;
       return {
         ...step,
         workflowOptions: (step.workflowOptions || []).map(option => option.id === optionId ? updater(option) : option),
       };
-    }));
+    });
+
+    onChange(syncDecisionBranches(nextSteps, stepId));
   }
 
   function addWorkflowOption() {
     if (!selectedStep || selectedStep.type !== 'pergunta') return;
 
     const nextCount = (selectedStep.workflowOptions?.length || 0) + 1;
-    updateStep(selectedStep.id, {
-      workflowOptions: [
-        ...(selectedStep.workflowOptions || []),
-        {
-          id: crypto.randomUUID(),
-          label: `Opção ${nextCount}`,
-          description: '',
-          target: 'next',
-        },
-      ],
-    });
+    onChange(syncDecisionBranches(stepsWithLayout.map(step => {
+      if (step.id !== selectedStep.id) return step;
+      return {
+        ...step,
+        workflowOptions: [
+          ...(selectedStep.workflowOptions || []),
+          {
+            id: crypto.randomUUID(),
+            label: `Opção ${nextCount}`,
+            description: '',
+            target: 'next' as const,
+          },
+        ],
+      };
+    }), selectedStep.id));
   }
 
   function buildSeededWorkflowOptions(minimum = 2): WorkflowOption[] {
@@ -412,7 +435,7 @@ export default function WorkflowEditor({
       id: crypto.randomUUID(),
       label: `Opção ${index + 1}`,
       description: '',
-      target: 'next',
+      target: 'next' as const,
     }));
   }
 
@@ -420,9 +443,13 @@ export default function WorkflowEditor({
     const step = stepsWithLayout.find(item => item.id === stepId);
     if (!step) return;
 
-    updateStep(stepId, {
-      workflowOptions: (step.workflowOptions || []).filter(option => option.id !== optionId),
-    });
+    onChange(syncDecisionBranches(stepsWithLayout.map(currentStep => {
+      if (currentStep.id !== stepId) return currentStep;
+      return {
+        ...currentStep,
+        workflowOptions: (step.workflowOptions || []).filter(option => option.id !== optionId),
+      };
+    }), stepId));
   }
 
   function insertWorkflowStepAfter(sourceStepId: string, type: Extract<FormStepType, 'pergunta' | 'livre'>) {
@@ -430,14 +457,27 @@ export default function WorkflowEditor({
     if (sourceIndex === -1) return;
 
     const sourceStep = stepsWithLayout[sourceIndex];
+    const sourceBranchIndexes = stepsWithLayout
+      .map((step, index) => (step.branchGenerated && step.branchSourceStepId === sourceStepId ? index : -1))
+      .filter(index => index >= 0);
+    const insertAfterIndex = sourceBranchIndexes.length > 0 ? Math.max(...sourceBranchIndexes) : sourceIndex;
     const sourcePosition = getStepWorkflowPosition(sourceStep, sourceIndex);
-    const nextX = sourcePosition.x + NODE_GAP_X;
-    const nextY = sourcePosition.y + (type === 'pergunta' ? 32 : 0);
+    const insertReferenceStep = stepsWithLayout[insertAfterIndex] ?? sourceStep;
+    const insertReferencePosition = getStepWorkflowPosition(insertReferenceStep, insertAfterIndex);
+    const inheritedNextStepId = sourceBranchIndexes.length > 0
+      ? stepsWithLayout[sourceBranchIndexes[0]]?.workflowNextStepId
+      : sourceStep.workflowNextStepId;
+    const nextX = sourceBranchIndexes.length > 0
+      ? sourcePosition.x + NODE_GAP_X * 2
+      : insertReferencePosition.x + NODE_GAP_X;
+    const nextY = sourceBranchIndexes.length > 0
+      ? sourcePosition.y + (type === 'pergunta' ? 32 : 0)
+      : insertReferencePosition.y + (type === 'pergunta' ? 32 : 0);
 
     const shiftedSteps = stepsWithLayout.map((step, index) => {
       const position = getStepWorkflowPosition(step, index);
-      const sameLane = Math.abs(position.y - sourcePosition.y) < 88;
-      const shouldShift = step.id !== sourceStepId && sameLane && position.x >= nextX - 12;
+      const sameLane = Math.abs(position.y - nextY) < 88;
+      const shouldShift = index > insertAfterIndex && sameLane && position.x >= nextX - 12;
 
       if (!shouldShift) return step;
 
@@ -458,20 +498,38 @@ export default function WorkflowEditor({
             workflowOptions: buildSeededWorkflowOptions(2),
           }
         : {}),
+      workflowNextStepId: inheritedNextStepId,
       workflowPosition: {
         x: nextX,
         y: nextY,
       },
     };
 
-    const nextSteps = [
-      ...shiftedSteps.slice(0, sourceIndex + 1),
+    const sourceUpdatedSteps = shiftedSteps.map(step => {
+      if (step.id !== sourceStepId) return step;
+      if (!step.workflowNextStepId && sourceBranchIndexes.length === 0) return step;
+      return {
+        ...step,
+        workflowNextStepId: newStep.id,
+      };
+    });
+
+    let nextSteps = [
+      ...sourceUpdatedSteps.slice(0, insertAfterIndex + 1),
       newStep,
-      ...shiftedSteps.slice(sourceIndex + 1),
+      ...sourceUpdatedSteps.slice(insertAfterIndex + 1),
     ];
 
+    if (sourceBranchIndexes.length > 0) {
+      nextSteps = syncDecisionBranches(nextSteps, sourceStepId);
+    }
+
+    if (type === 'pergunta') {
+      nextSteps = syncDecisionBranches(nextSteps, newStep.id);
+    }
+
     onChange(nextSteps);
-    const nextIndex = sourceIndex + 1;
+    const nextIndex = nextSteps.findIndex(step => step.id === newStep.id);
     onCurrentStepIndexChange(nextIndex);
     onStepEditRequest(nextIndex);
     setInsertMenu(null);
@@ -482,13 +540,44 @@ export default function WorkflowEditor({
 
     const deleteIndex = stepsWithLayout.findIndex(step => step.id === stepId);
     if (deleteIndex === -1) return;
+    const stepToDelete = stepsWithLayout[deleteIndex];
+
+    if (stepToDelete?.branchGenerated && stepToDelete.branchSourceStepId && stepToDelete.branchSourceOptionId) {
+      const nextSteps = stepsWithLayout
+        .map(step => {
+          if (step.id !== stepToDelete.branchSourceStepId) return step;
+          return {
+            ...step,
+            workflowOptions: (step.workflowOptions || []).filter(option => option.id !== stepToDelete.branchSourceOptionId),
+          };
+        })
+        .filter(step => step.id !== stepId);
+
+      const syncedSteps = syncDecisionBranches(nextSteps, stepToDelete.branchSourceStepId);
+      const nextIndex = Math.min(currentStepIndex, syncedSteps.length - 1);
+
+      onChange(syncedSteps);
+      onCurrentStepIndexChange(nextIndex);
+      setInsertMenu(current => current?.sourceStepId === stepId ? null : current);
+      setHoverPreview(current => current?.stepIndex === deleteIndex ? null : current);
+      return;
+    }
+
+    const removedStepIds = new Set([stepId]);
+    if (stepToDelete?.type === 'pergunta') {
+      stepsWithLayout.forEach(step => {
+        if (step.branchGenerated && step.branchSourceStepId === stepId) {
+          removedStepIds.add(step.id);
+        }
+      });
+    }
 
     const nextSteps = stepsWithLayout
-      .filter(step => step.id !== stepId)
+      .filter(step => !removedStepIds.has(step.id))
       .map(step => ({
         ...step,
         workflowOptions: (step.workflowOptions || []).map(option => {
-          if (option.target === 'step' && option.nextStepId === stepId) {
+          if (option.target === 'step' && option.nextStepId && removedStepIds.has(option.nextStepId)) {
             return {
               ...option,
               target: 'next' as const,
@@ -613,6 +702,7 @@ export default function WorkflowEditor({
             const selected = index === currentStepIndex;
             const decision = isDecisionStep(step);
             const canDelete = stepsWithLayout.length > 1;
+            const branchOriginLabel = getBranchOriginLabel(stepsWithLayout, step);
 
             return (
               <div
@@ -719,6 +809,9 @@ export default function WorkflowEditor({
                   ) : (
                     <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-500">Fluxo linear</span>
                   )}
+                  {branchOriginLabel && (
+                    <span className="rounded-full bg-sky-50 px-2 py-1 text-[10px] font-semibold text-sky-700">Vem de: {branchOriginLabel}</span>
+                  )}
                   {step.hidden && <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700">Oculta</span>}
                 </div>
               </div>
@@ -814,7 +907,7 @@ export default function WorkflowEditor({
                 <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4">
                   <p className="text-sm font-semibold text-violet-900">Pergunta com múltiplas saídas</p>
                   <p className="mt-1 text-xs leading-relaxed text-violet-700">
-                    Quando existir pelo menos uma opção aqui, essa etapa deixa de usar Sim/Não e passa a renderizar cards de escolha no formulário.
+                    Cada resposta cria automaticamente um card em branco no workflow. Esses cards convergem para o próximo passo principal do funil.
                   </p>
                 </div>
 
@@ -847,27 +940,9 @@ export default function WorkflowEditor({
                       <textarea value={option.description || ''} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, description: event.target.value }))} rows={2} className="w-full resize-none rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10" placeholder="Explique rapidamente o tipo de caso para esse caminho." />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Destino</label>
-                      <select value={option.target || 'next'} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, target: event.target.value as WorkflowOption['target'], nextStepId: event.target.value === 'step' ? current.nextStepId : undefined }))} className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10">
-                        <option value="next">Próxima tela na ordem</option>
-                        <option value="step">Ir para uma tela específica</option>
-                        <option value="celebration">Ir para celebração</option>
-                        <option value="rejected">Ir para reprovação</option>
-                      </select>
+                    <div className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/70 px-4 py-3 text-xs leading-relaxed text-violet-700">
+                      Essa resposta abre um card derivado em branco e, depois dele, o fluxo volta para o próximo card principal.
                     </div>
-
-                    {(option.target || 'next') === 'step' && (
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Tela de destino</label>
-                        <select value={option.nextStepId || ''} onChange={event => updateOption(selectedStep.id, option.id, current => ({ ...current, nextStepId: event.target.value }))} className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none transition-all focus:border-[#6B1C3A] focus:ring-2 focus:ring-[#6B1C3A]/10">
-                          <option value="">Selecione a etapa</option>
-                          {stepsWithLayout.filter(step => step.id !== selectedStep.id).map((step, index) => (
-                            <option key={step.id} value={step.id}>{index + 1}. {step.label || STEP_TYPE_LABELS[step.type]}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>

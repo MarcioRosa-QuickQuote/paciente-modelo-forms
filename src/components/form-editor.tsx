@@ -25,7 +25,7 @@ import FormPreviewPanel from './form-preview-panel';
 import RichTextField from './rich-text-field';
 import CanvasBuilder, { CanvasBuilderShortcut } from './canvas-builder';
 import WorkflowEditor from './workflow-editor';
-import { ensureWorkflowLayout, isDecisionStep } from '@/lib/workflow';
+import { ensureWorkflowLayout, isDecisionStep, syncDecisionBranchSteps } from '@/lib/workflow';
 import { formInputSchema } from '@/lib/validators';
 
 const DEFAULT_STEPS: FormStep[] = [
@@ -366,50 +366,69 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         id: crypto.randomUUID(),
         label: `Opcao ${options.length + 1}`,
         description: '',
-        target: 'next',
+        target: 'next' as const,
       });
     }
 
     return options;
   }
 
+  function syncDecisionBranches(nextSteps: FormStep[], decisionStepId: string) {
+    return syncDecisionBranchSteps(nextSteps, decisionStepId, () => buildStepForEditor('livre'));
+  }
+
   function updateCurrentWorkflowOption(optionId: string, updates: Partial<WorkflowOption>) {
-    setSteps(prev => prev.map((step, index) => {
-      if (index !== currentStepIndex) return step;
-      return {
-        ...step,
-        workflowOptions: (step.workflowOptions || []).map(option => option.id === optionId ? { ...option, ...updates } : option),
-      };
-    }));
+    setSteps(prev => {
+      const currentStep = prev[currentStepIndex];
+      const updatedSteps = prev.map((step, index) => {
+        if (index !== currentStepIndex) return step;
+        return {
+          ...step,
+          workflowOptions: (step.workflowOptions || []).map(option => option.id === optionId ? { ...option, ...updates } : option),
+        };
+      });
+
+      return currentStep?.id ? syncDecisionBranches(updatedSteps, currentStep.id) : updatedSteps;
+    });
   }
 
   function addCurrentWorkflowOption() {
-    setSteps(prev => prev.map((step, index) => {
-      if (index !== currentStepIndex) return step;
-      const nextCount = (step.workflowOptions?.length || 0) + 1;
-      return {
-        ...step,
-        workflowOptions: [
-          ...(step.workflowOptions || []),
-          {
-            id: crypto.randomUUID(),
-            label: `Opcao ${nextCount}`,
-            description: '',
-            target: 'next',
-          },
-        ],
-      };
-    }));
+    setSteps(prev => {
+      const currentStep = prev[currentStepIndex];
+      const updatedSteps = prev.map((step, index) => {
+        if (index !== currentStepIndex) return step;
+        const nextCount = (step.workflowOptions?.length || 0) + 1;
+        return {
+          ...step,
+          workflowOptions: [
+            ...(step.workflowOptions || []),
+            {
+              id: crypto.randomUUID(),
+              label: `Opcao ${nextCount}`,
+              description: '',
+              target: 'next' as const,
+            },
+          ],
+        };
+      });
+
+      return currentStep?.id ? syncDecisionBranches(updatedSteps, currentStep.id) : updatedSteps;
+    });
   }
 
   function removeCurrentWorkflowOption(optionId: string) {
-    setSteps(prev => prev.map((step, index) => {
-      if (index !== currentStepIndex) return step;
-      return {
-        ...step,
-        workflowOptions: (step.workflowOptions || []).filter(option => option.id !== optionId),
-      };
-    }));
+    setSteps(prev => {
+      const currentStep = prev[currentStepIndex];
+      const updatedSteps = prev.map((step, index) => {
+        if (index !== currentStepIndex) return step;
+        return {
+          ...step,
+          workflowOptions: (step.workflowOptions || []).filter(option => option.id !== optionId),
+        };
+      });
+
+      return currentStep?.id ? syncDecisionBranches(updatedSteps, currentStep.id) : updatedSteps;
+    });
   }
 
   async function getAuthHeaders() {
@@ -722,10 +741,14 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     const defaultQuestion = currentStep.question?.trim() || 'O que mais te incomoda?';
 
     if (currentStep.type === 'pergunta') {
-      updateCurrentStep({
-        question: defaultQuestion,
-        workflowOptions: buildSeededWorkflowOptions(currentStep.workflowOptions, 2),
-      });
+      setSteps(prev => syncDecisionBranches(prev.map((step, index) => {
+        if (index !== currentStepIndex) return step;
+        return {
+          ...step,
+          question: defaultQuestion,
+          workflowOptions: buildSeededWorkflowOptions(step.workflowOptions, 2),
+        };
+      }), currentStep.id));
       setInsertPanelOpen(false);
       return;
     }
@@ -740,7 +763,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     setSteps(prev => {
       const next = [...prev];
       next.splice(insertIndex, 0, newDecisionStep);
-      return next;
+      return syncDecisionBranches(next, newDecisionStep.id);
     });
     setCurrentStepIndex(insertIndex);
     setInsertPanelOpen(false);

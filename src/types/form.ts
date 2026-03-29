@@ -53,6 +53,10 @@ export interface FormStep {
   elements?: CanvasElement[];
   hidden?: boolean; // se true, a tela não aparece no formulário gerado
   workflowPosition?: WorkflowPosition;
+  workflowNextStepId?: string;
+  branchGenerated?: boolean;
+  branchSourceStepId?: string;
+  branchSourceOptionId?: string;
   workflowOptions?: WorkflowOption[];
 }
 

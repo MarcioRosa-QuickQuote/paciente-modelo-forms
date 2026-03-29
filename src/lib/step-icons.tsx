@@ -63,6 +63,40 @@ const STEP_ICON_RENDERERS: Record<string, StepIconRenderer> = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   ),
+  nose: className => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4c1.8 3.1 2.4 5.5 2.4 8.1 0 1.1.7 2.1 1.7 2.7 1 .6 1.5 1.2 1.5 2 0 1.8-2.1 3.2-5.6 3.2s-5.6-1.4-5.6-3.2c0-.8.5-1.4 1.5-2 1-.6 1.7-1.6 1.7-2.7C9.6 9.5 10.2 7.1 12 4Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 17.2c.6.5 1.3.8 2 .8s1.4-.3 2-.8" />
+    </svg>
+  ),
+  lips: className => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 10.5c1.8 2.5 4.8 4 8 4s6.2-1.5 8-4c-1.5-1.8-4.8-3.5-8-3.5s-6.5 1.7-8 3.5Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 10.5c1.6 2.8 4.7 5.5 8 5.5s6.4-2.7 8-5.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.2 12.8c1 .7 2.4 1.2 3.8 1.2s2.8-.5 3.8-1.2" />
+    </svg>
+  ),
+  eyes: className => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.5 12S6.3 6.5 12 6.5 21.5 12 21.5 12 17.7 17.5 12 17.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="2.5" strokeWidth={2} />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7.5 4.5 6M18 7.5 19.5 6M6 16.5 4.5 18M18 16.5 19.5 18" />
+    </svg>
+  ),
+  ears: className => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7c-1.7.6-3 2.5-3 5.1 0 2.9 1.5 5.2 3.4 5.9.8.3 1.4-.2 1.4-1v-2.6c0-.8-.6-1.5-1.4-1.8-.5-.2-.9-.7-.9-1.4 0-1.2.7-2.1 1.8-2.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 7c1.7.6 3 2.5 3 5.1 0 2.9-1.5 5.2-3.4 5.9-.8.3-1.4-.2-1.4-1v-2.6c0-.8.6-1.5 1.4-1.8.5-.2.9-.7.9-1.4 0-1.2-.7-2.1-1.8-2.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 8.5c0-1.8.9-3.5 2-3.5s2 1.7 2 3.5" />
+    </svg>
+  ),
+  syringe: className => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m14 4 6 6M13 5l6 6M9 9l6 6" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m8.5 9.5 6 6-4.8 4.8a2.2 2.2 0 0 1-3.1 0L3.7 17.4a2.2 2.2 0 0 1 0-3.1L8.5 9.5Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 2v4M20 6h-4M3 21l3-3" />
+    </svg>
+  ),
 };
 
 export const STEP_ICON_OPTIONS: StepIconOption[] = [
@@ -70,6 +104,11 @@ export const STEP_ICON_OPTIONS: StepIconOption[] = [
   { id: 'money', label: 'Dinheiro', render: STEP_ICON_RENDERERS.money },
   { id: 'shield', label: 'Seguranca', render: STEP_ICON_RENDERERS.shield },
   { id: 'question', label: 'Pergunta', render: STEP_ICON_RENDERERS.question },
+  { id: 'nose', label: 'Nariz', render: STEP_ICON_RENDERERS.nose },
+  { id: 'lips', label: 'Boca', render: STEP_ICON_RENDERERS.lips },
+  { id: 'eyes', label: 'Olhos', render: STEP_ICON_RENDERERS.eyes },
+  { id: 'ears', label: 'Orelhas', render: STEP_ICON_RENDERERS.ears },
+  { id: 'syringe', label: 'Seringa', render: STEP_ICON_RENDERERS.syringe },
   { id: 'star', label: 'Estrela', render: STEP_ICON_RENDERERS.star },
   { id: 'heart', label: 'Coracao', render: STEP_ICON_RENDERERS.heart },
   { id: 'sparkles', label: 'Destaque', render: STEP_ICON_RENDERERS.sparkles },
