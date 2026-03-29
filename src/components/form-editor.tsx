@@ -604,7 +604,12 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         </div>
 
         {/* ── Step tabs card ── */}
-        <div className={editorMode === 'workflow' ? 'relative left-1/2 w-[calc(100vw-16px)] max-w-none -translate-x-1/2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col' : 'bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col'} style={{ maxHeight: editorMode === 'workflow' ? 'calc(100dvh - 116px)' : 'calc(100dvh - 180px)' }}>
+        <div
+          className={editorMode === 'workflow'
+            ? 'relative left-1/2 w-[calc(100vw-16px)] max-w-none -translate-x-1/2 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col'
+            : 'rounded-2xl border border-gray-200 bg-white shadow-sm'}
+          style={editorMode === 'workflow' ? { maxHeight: 'calc(100dvh - 116px)' } : undefined}
+        >
 
           {/* Navigation bar + dots (from FormStepBuilder) */}
           <FormStepBuilder
@@ -628,7 +633,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
           {/* Step content area */}
           {stepPickerOpen && (
-            <div className="flex-1 flex items-center justify-center text-gray-300 text-sm">
+            <div className="flex min-h-[240px] items-center justify-center p-6 text-sm text-gray-300">
               Escolha o tipo de etapa acima
             </div>
           )}
@@ -648,7 +653,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           )}
           {!stepPickerOpen && currentStep && (editorMode === 'step' || workflowStepModalOpen) && (
             <div
-              className={workflowStepModalOpen ? 'fixed inset-0 z-[70] flex items-start justify-center bg-black/45 p-4 backdrop-blur-sm' : 'flex-1 min-h-0 overflow-y-auto'}
+              className={workflowStepModalOpen ? 'fixed inset-0 z-[70] flex items-start justify-center bg-black/45 p-4 backdrop-blur-sm' : ''}
               onClick={workflowStepModalOpen ? (event => {
                 if (event.target === event.currentTarget) closeWorkflowStepModal();
               }) : undefined}
@@ -1438,7 +1443,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
           {/* ── Aba Celebração ── */}
           {!stepPickerOpen && currentStepIndex === steps.length && (
-            <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
+            <div className="space-y-5 p-6">
               <div>
                 <label className={labelClass}>Título <span className="text-xs text-gray-400 font-normal">· selecione texto para colorir</span></label>
                 <RichTextField
