@@ -222,6 +222,16 @@ export default function FormEditor({ initialData, mode, templateId, templateData
       return 'O banco de produção ainda não tem a coluna is_draft. Rode o SQL: ALTER TABLE forms ADD COLUMN IF NOT EXISTS is_draft BOOLEAN DEFAULT false;';
     }
 
+    if (
+      normalizedMessage.includes('column')
+      || normalizedMessage.includes('does not exist')
+      || normalizedMessage.includes('violates')
+      || normalizedMessage.includes('null value')
+      || normalizedMessage.includes('constraint')
+    ) {
+      return rawMessage;
+    }
+
     if (status >= 500) {
       return isDraftRequest
         ? 'O servidor falhou ao criar o rascunho automático.'
@@ -229,6 +239,19 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     }
 
     return rawMessage || 'O salvamento automático falhou.';
+  }
+
+  async function readAutoSaveErrorMessage(response: Response) {
+    const rawText = await response.text();
+
+    try {
+      const parsed = JSON.parse(rawText) as { error?: unknown; details?: unknown };
+      const detailText = typeof parsed.details === 'string' ? parsed.details : '';
+      const errorText = typeof parsed.error === 'string' ? parsed.error : '';
+      return detailText || errorText || rawText;
+    } catch {
+      return rawText;
+    }
   }
 
   function updateField<K extends keyof FormInput>(key: K, value: FormInput[K]) {
@@ -523,7 +546,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           lastAutoSavedSnapshotRef.current = draftRequestSnapshot;
           showSavedAutomaticallyToast();
         } else {
-          const rawMessage = await res.text();
+          const rawMessage = await readAutoSaveErrorMessage(res);
           setAutoSaveErrorMessage(describeAutoSaveError(res.status, rawMessage, true));
           console.error('Falha ao criar rascunho automaticamente', rawMessage);
         }
@@ -549,7 +572,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         lastAutoSavedSnapshotRef.current = updateSnapshot;
         showSavedAutomaticallyToast();
       } else {
-        const rawMessage = await res.text();
+        const rawMessage = await readAutoSaveErrorMessage(res);
         setAutoSaveErrorMessage(describeAutoSaveError(res.status, rawMessage, false));
         console.error('Falha ao salvar formulario automaticamente', rawMessage);
       }

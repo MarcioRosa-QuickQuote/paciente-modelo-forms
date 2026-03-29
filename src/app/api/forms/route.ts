@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { getAllForms, createForm, rowToFormData, initializeDb } from '@/db';
+import { v4 as uuidv4 } from 'uuid';
+import { createForm, getAllForms, initializeDb, rowToFormData } from '@/db';
 import { formInputSchema } from '@/lib/validators';
 import { generateSlug } from '@/lib/utils';
-import { v4 as uuidv4 } from 'uuid';
 
 async function getUserIdFromRequest(request: NextRequest): Promise<string> {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) return '';
+
   const token = authHeader.replace('Bearer ', '');
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
-  const { data: { user } } = await supabase.auth.getUser(token);
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(token);
+
   return user?.id || '';
 }
 
@@ -26,8 +31,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(forms);
   } catch (error) {
     console.error('Error fetching forms:', error);
-    const msg = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: 'Erro ao buscar formulários', details: msg }, { status: 500 });
+    const details = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Erro ao buscar formularios', details }, { status: 500 });
   }
 }
 
@@ -35,15 +40,19 @@ export async function POST(request: NextRequest) {
   try {
     await initializeDb();
     const userId = await getUserIdFromRequest(request);
+
     if (!userId) {
-      return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 });
+      return NextResponse.json({ error: 'Usuario nao autenticado' }, { status: 401 });
     }
+
     const body = await request.json();
     const isDraftRequest = body?.isDraft === true;
 
     if (isDraftRequest) {
       const id = uuidv4();
-      const draftName = typeof body.name === 'string' && body.name.trim().length > 0 ? body.name.trim() : 'Novo rascunho';
+      const draftName = typeof body.name === 'string' && body.name.trim().length > 0
+        ? body.name.trim()
+        : 'Novo rascunho';
       const draftSlug = `${generateSlug(draftName || 'rascunho')}-${id.slice(0, 8)}`;
       const draftPhotos = Array.isArray(body.photos) ? body.photos : [];
       const firstPhoto = draftPhotos[0] || { before: body.beforeImage || '', after: body.afterImage || '' };
@@ -87,7 +96,6 @@ export async function POST(request: NextRequest) {
     }
 
     const parsed = formInputSchema.safeParse(body);
-
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
@@ -135,10 +143,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id, slug }, { status: 201 });
   } catch (error: unknown) {
     console.error('Error creating form:', error);
-    const msg = error instanceof Error ? error.message : '';
-    if (msg.includes('unique') || msg.includes('duplicate')) {
-      return NextResponse.json({ error: 'Já existe um formulário com esse nome' }, { status: 409 });
+    const details = error instanceof Error ? error.message : String(error);
+
+    if (details.includes('unique') || details.includes('duplicate')) {
+      return NextResponse.json({ error: 'Ja existe um formulario com esse nome', details }, { status: 409 });
     }
-    return NextResponse.json({ error: 'Erro ao criar formulário' }, { status: 500 });
+
+    return NextResponse.json({ error: 'Erro ao criar formulario', details }, { status: 500 });
   }
 }

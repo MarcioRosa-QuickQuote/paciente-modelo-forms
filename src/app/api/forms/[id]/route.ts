@@ -1,36 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFormById, updateForm, deleteForm, rowToFormData, initializeDb } from '@/db';
+import { deleteForm, getFormById, initializeDb, rowToFormData, updateForm } from '@/db';
 import { formInputSchema } from '@/lib/validators';
 import { generateSlug } from '@/lib/utils';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await initializeDb();
     const { id } = await params;
     const row = await getFormById(id);
+
     if (!row) {
-      return NextResponse.json({ error: 'Formulário não encontrado' }, { status: 404 });
+      return NextResponse.json({ error: 'Formulario nao encontrado' }, { status: 404 });
     }
+
     return NextResponse.json(rowToFormData(row));
   } catch (error) {
     console.error('Error fetching form:', error);
-    return NextResponse.json({ error: 'Erro ao buscar formulário' }, { status: 500 });
+    const details = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Erro ao buscar formulario', details }, { status: 500 });
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await initializeDb();
     const { id } = await params;
     const existing = await getFormById(id);
+
     if (!existing) {
-      return NextResponse.json({ error: 'Formulário não encontrado' }, { status: 404 });
+      return NextResponse.json({ error: 'Formulario nao encontrado' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -93,26 +97,29 @@ export async function PUT(
     return NextResponse.json(rowToFormData(updated!));
   } catch (error) {
     console.error('Error updating form:', error);
-    return NextResponse.json({ error: 'Erro ao atualizar formulário' }, { status: 500 });
+    const details = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Erro ao atualizar formulario', details }, { status: 500 });
   }
 }
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await initializeDb();
     const { id } = await params;
     const existing = await getFormById(id);
+
     if (!existing) {
-      return NextResponse.json({ error: 'Formulário não encontrado' }, { status: 404 });
+      return NextResponse.json({ error: 'Formulario nao encontrado' }, { status: 404 });
     }
 
     await deleteForm(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting form:', error);
-    return NextResponse.json({ error: 'Erro ao excluir formulário' }, { status: 500 });
+    const details = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Erro ao excluir formulario', details }, { status: 500 });
   }
 }
