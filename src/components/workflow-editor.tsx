@@ -19,6 +19,7 @@ interface Props {
   onChange: (steps: FormStep[]) => void;
   currentStepIndex: number;
   onCurrentStepIndexChange: (index: number) => void;
+  onStepEditRequest: (index: number) => void;
   createStep: (type: FormStepType) => FormStep;
   previewForm: FormInput;
   photos: PhotoPair[];
@@ -105,6 +106,7 @@ export default function WorkflowEditor({
   onChange,
   currentStepIndex,
   onCurrentStepIndexChange,
+  onStepEditRequest,
   createStep,
   previewForm,
   photos,
@@ -655,21 +657,38 @@ export default function WorkflowEditor({
                     <span className="rounded-full bg-white px-2 py-0.5 text-[10px] text-gray-500">{index + 1}</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onMouseDown={event => event.stopPropagation()}
-                    onClick={event => {
-                      event.stopPropagation();
-                      deleteWorkflowStep(step.id);
-                    }}
-                    disabled={!canDelete}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-30"
-                    aria-label="Excluir etapa"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12M9 7V5h6v2m-7 0 1 12h6l1-12M10 11v5M14 11v5" />
-                    </svg>
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onMouseDown={event => event.stopPropagation()}
+                      onClick={event => {
+                        event.stopPropagation();
+                        setHoverPreview(null);
+                        onStepEditRequest(index);
+                      }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                      aria-label="Editar etapa"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.768-6.768a2.5 2.5 0 113.536 3.536L12.536 16.536A4 4 0 0110.657 17.657L7 19l1.343-3.657A4 4 0 019 13z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={event => event.stopPropagation()}
+                      onClick={event => {
+                        event.stopPropagation();
+                        deleteWorkflowStep(step.id);
+                      }}
+                      disabled={!canDelete}
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-30"
+                      aria-label="Excluir etapa"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12M9 7V5h6v2m-7 0 1 12h6l1-12M10 11v5M14 11v5" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 <button type="button" onClick={() => onCurrentStepIndexChange(index)} className="w-full text-left">
@@ -783,7 +802,7 @@ export default function WorkflowEditor({
                 </div>
 
                 <button type="button" onClick={addWorkflowOption} className="w-full rounded-2xl border border-[#6B1C3A]/20 bg-white px-4 py-3 text-sm font-semibold text-[#6B1C3A] transition-colors hover:bg-[#6B1C3A]/5">
-                  + Adicionar opção
+                  + Adicionar resposta
                 </button>
 
                 {(selectedStep.workflowOptions || []).length === 0 && (

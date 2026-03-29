@@ -29,6 +29,9 @@ const HIGHLIGHT_COLORS = ['#f3f0ff', '#fef9c3', '#dcfce7', '#fce7f3', '#dbeafe',
 // ── Palette definitions ────────────────────────────────────────────────────────
 
 type PaletteItem = { type: CanvasElementType; label: string; icon: React.ReactNode; defaults: Partial<CanvasElement>; section: string };
+type ShortcutItemDef = { id: CanvasBuilderShortcut; label: string; icon: React.ReactNode; section: string };
+
+export type CanvasBuilderShortcut = 'multiperguntas';
 
 const PALETTE: PaletteItem[] = [
   // CONTEÚDO
@@ -223,6 +226,19 @@ const PALETTE: PaletteItem[] = [
   },
 ];
 
+const SHORTCUTS: ShortcutItemDef[] = [
+  {
+    id: 'multiperguntas',
+    section: 'Ação',
+    label: 'Multiperguntas',
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4z" />
+      </svg>
+    ),
+  },
+];
+
 const PALETTE_SECTIONS = ['Conteúdo', 'Campos', 'Ação', 'Layout'];
 
 function makeElement(type: CanvasElementType): CanvasElement {
@@ -252,6 +268,24 @@ function PaletteItem({ type, label, icon, onAdd }: { type: CanvasElementType; la
       </div>
       <span className="text-[11px] font-semibold text-gray-700 leading-tight">{label}</span>
     </div>
+  );
+}
+
+function ShortcutItem({ label, icon, onClick }: { label: string; icon: React.ReactNode; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-2 py-2 text-left transition-all hover:border-violet-300 hover:bg-violet-100"
+    >
+      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-white text-[11px] text-violet-700 shadow-sm">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <span className="block text-[11px] font-semibold leading-tight text-violet-800">{label}</span>
+        <span className="block text-[10px] leading-tight text-violet-600">Cria uma etapa com respostas que abrem caminhos no workflow.</span>
+      </div>
+    </button>
   );
 }
 
@@ -605,9 +639,10 @@ interface CanvasBuilderProps {
   elements: CanvasElement[];
   onChange: (elements: CanvasElement[]) => void;
   onImageUpload: (file: File) => Promise<string>;
+  onShortcutAction?: (action: CanvasBuilderShortcut) => void;
 }
 
-export default function CanvasBuilder({ elements, onChange, onImageUpload }: CanvasBuilderProps) {
+export default function CanvasBuilder({ elements, onChange, onImageUpload, onShortcutAction }: CanvasBuilderProps) {
   const [activeType, setActiveType] = useState<CanvasElementType | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -656,12 +691,21 @@ export default function CanvasBuilder({ elements, onChange, onImageUpload }: Can
         <div className="w-36 flex-shrink-0 space-y-3">
           {PALETTE_SECTIONS.map(section => {
             const items = PALETTE.filter(p => p.section === section);
+            const shortcuts = SHORTCUTS.filter(shortcut => shortcut.section === section);
             return (
               <div key={section}>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">{section}</p>
                 <div className="space-y-1">
                   {items.map(({ type, label, icon }) => (
                     <PaletteItem key={type} type={type} label={label} icon={icon} onAdd={() => addElement(type)} />
+                  ))}
+                  {shortcuts.map(shortcut => (
+                    <ShortcutItem
+                      key={shortcut.id}
+                      label={shortcut.label}
+                      icon={shortcut.icon}
+                      onClick={() => onShortcutAction?.(shortcut.id)}
+                    />
                   ))}
                 </div>
               </div>

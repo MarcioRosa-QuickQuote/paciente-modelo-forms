@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FormData, FormInput, PhotoPair, FormStep, FormStepType, CustomTexts } from '@/types/form';
+import { FormData, FormInput, PhotoPair, FormStep, FormStepType, CustomTexts, WorkflowOption } from '@/types/form';
 import { generateSlug } from '@/lib/utils';
 import { THEMES, getTheme } from '@/lib/themes';
 import { STEP_ICON_OPTIONS, StepIconGlyph, canCustomizeStepIcon, getDefaultStepIconId, isPresetStepIcon, isUploadedStepIcon } from '@/lib/step-icons';
@@ -23,7 +23,7 @@ import 'react-day-picker/style.css';
 import FormStepBuilder, { StepCardsList } from './form-step-builder';
 import FormPreviewPanel from './form-preview-panel';
 import RichTextField from './rich-text-field';
-import CanvasBuilder from './canvas-builder';
+import CanvasBuilder, { CanvasBuilderShortcut } from './canvas-builder';
 import WorkflowEditor from './workflow-editor';
 import { ensureWorkflowLayout, isDecisionStep } from '@/lib/workflow';
 
@@ -82,8 +82,11 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [insertPanelOpen, setInsertPanelOpen] = useState(false);
   const [stepIconPickerOpen, setStepIconPickerOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<'step' | 'workflow'>(initialEditorMode);
+  const [workflowStepModalOpen, setWorkflowStepModalOpen] = useState(false);
+  const [pendingBuilderScroll, setPendingBuilderScroll] = useState(false);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
+  const elementsBuilderRef = useRef<HTMLDivElement | null>(null);
   const initialProcedureName = initialData?.procedureName || templateData?.procedureName || '';
   const initialProcedureDuration = initialData?.procedureDuration || templateData?.procedureDuration || '';
   const shouldPrefillTextDefaults = templateId !== 'em-branco' && (mode === 'create' || !isBlankFormLike(initialData));
@@ -274,6 +277,60 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     setSteps(prev => prev.map((s, i) => i === currentStepIndex ? { ...s, ...updates } : s));
   }
 
+  function buildSeededWorkflowOptions(existingOptions?: WorkflowOption[], minimum = 2): WorkflowOption[] {
+    const options = [...(existingOptions || [])];
+
+    while (options.length < minimum) {
+      options.push({
+        id: crypto.randomUUID(),
+        label: `Opcao ${options.length + 1}`,
+        description: '',
+        target: 'next',
+      });
+    }
+
+    return options;
+  }
+
+  function updateCurrentWorkflowOption(optionId: string, updates: Partial<WorkflowOption>) {
+    setSteps(prev => prev.map((step, index) => {
+      if (index !== currentStepIndex) return step;
+      return {
+        ...step,
+        workflowOptions: (step.workflowOptions || []).map(option => option.id === optionId ? { ...option, ...updates } : option),
+      };
+    }));
+  }
+
+  function addCurrentWorkflowOption() {
+    setSteps(prev => prev.map((step, index) => {
+      if (index !== currentStepIndex) return step;
+      const nextCount = (step.workflowOptions?.length || 0) + 1;
+      return {
+        ...step,
+        workflowOptions: [
+          ...(step.workflowOptions || []),
+          {
+            id: crypto.randomUUID(),
+            label: `Opcao ${nextCount}`,
+            description: '',
+            target: 'next',
+          },
+        ],
+      };
+    }));
+  }
+
+  function removeCurrentWorkflowOption(optionId: string) {
+    setSteps(prev => prev.map((step, index) => {
+      if (index !== currentStepIndex) return step;
+      return {
+        ...step,
+        workflowOptions: (step.workflowOptions || []).filter(option => option.id !== optionId),
+      };
+    }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -374,7 +431,8 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
   const currentStep = steps[currentStepIndex];
   const currentStepIsDecision = !!currentStep && isDecisionStep(currentStep);
-  const showElementsBuilder = editorMode === 'step' && !!currentStep && (currentStep.type === 'livre' || insertPanelOpen);
+  const isStepEditorVisible = !!currentStep && (editorMode === 'step' || workflowStepModalOpen);
+  const showElementsBuilder = isStepEditorVisible && !!currentStep && (currentStep.type === 'livre' || insertPanelOpen);
   const currentTheme = getTheme(form.theme);
   const currentStepSupportsIcon = !!currentStep && canCustomizeStepIcon(currentStep.type);
   const activeStepIcon = currentStepSupportsIcon ? (currentStep.icon?.trim() || getDefaultStepIconId(currentStep.type)) : '';
@@ -385,6 +443,69 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   function toggleWorkflowMode() {
     setEditorMode(prev => prev === 'workflow' ? 'step' : 'workflow');
   }
+
+  function openInsertBuilder() {
+    setInsertPanelOpen(true);
+    setPendingBuilderScroll(true);
+  }
+
+  function openWorkflowStepModal(index: number) {
+    setCurrentStepIndex(index);
+    setWorkflowStepModalOpen(true);
+    setInsertPanelOpen(false);
+    setStepIconPickerOpen(false);
+  }
+
+  function closeWorkflowStepModal() {
+    setWorkflowStepModalOpen(false);
+    setInsertPanelOpen(false);
+    setStepIconPickerOpen(false);
+  }
+
+  function handleCanvasShortcut(action: CanvasBuilderShortcut) {
+    if (action !== 'multiperguntas' || !currentStep || currentStepIndex >= steps.length) return;
+
+    const defaultQuestion = currentStep.question?.trim() || 'O que mais te incomoda?';
+
+    if (currentStep.type === 'pergunta') {
+      updateCurrentStep({
+        question: defaultQuestion,
+        workflowOptions: buildSeededWorkflowOptions(currentStep.workflowOptions, 2),
+      });
+      setWorkflowStepModalOpen(false);
+      setInsertPanelOpen(false);
+      setEditorMode('workflow');
+      return;
+    }
+
+    const insertIndex = currentStepIndex + 1;
+    const newDecisionStep: FormStep = {
+      ...buildStepForEditor('pergunta'),
+      question: defaultQuestion,
+      workflowOptions: buildSeededWorkflowOptions([], 2),
+    };
+
+    setSteps(prev => {
+      const next = [...prev];
+      next.splice(insertIndex, 0, newDecisionStep);
+      return next;
+    });
+    setCurrentStepIndex(insertIndex);
+    setWorkflowStepModalOpen(false);
+    setInsertPanelOpen(false);
+    setEditorMode('workflow');
+  }
+
+  useEffect(() => {
+    if (!pendingBuilderScroll || !showElementsBuilder) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      elementsBuilderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setPendingBuilderScroll(false);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [pendingBuilderScroll, showElementsBuilder, currentStepIndex]);
 
   return (
     <div className="w-full">
@@ -435,7 +556,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
             hasCelebration
             onConfigOpen={() => setConfigModalOpen(true)}
             onPickerChange={setStepPickerOpen}
-            onInsertButtonClick={() => setInsertPanelOpen(prev => !prev)}
+            onInsertButtonClick={openInsertBuilder}
             onWorkflowToggle={toggleWorkflowMode}
             workflowActive={editorMode === 'workflow'}
             insertButtonActive={insertPanelOpen}
@@ -458,14 +579,48 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                 onChange={setSteps}
                 currentStepIndex={currentStepIndex}
                 onCurrentStepIndexChange={setCurrentStepIndex}
+                onStepEditRequest={openWorkflowStepModal}
                 createStep={buildStepForEditor}
                 previewForm={{ ...form, customTexts, slug }}
                 photos={photos}
               />
             </div>
           )}
-          {!stepPickerOpen && editorMode === 'step' && currentStep && (
-            <div className="p-6 space-y-5 overflow-y-auto flex-1 min-h-0">
+          {!stepPickerOpen && currentStep && (editorMode === 'step' || workflowStepModalOpen) && (
+            <div
+              className={workflowStepModalOpen ? 'fixed inset-0 z-[70] flex items-start justify-center bg-black/45 p-4 backdrop-blur-sm' : 'flex-1 min-h-0 overflow-y-auto'}
+              onClick={workflowStepModalOpen ? (event => {
+                if (event.target === event.currentTarget) closeWorkflowStepModal();
+              }) : undefined}
+            >
+              <div className={workflowStepModalOpen ? 'flex max-h-[calc(100dvh-32px)] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl' : 'contents'}>
+                {workflowStepModalOpen && (
+                  <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-4">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">Editar tela</p>
+                      <h3 className="truncate text-lg font-semibold text-gray-900">{currentStep.label || `Tela ${currentStepIndex + 1}`}</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {currentStep.type !== 'livre' && (
+                        <button
+                          type="button"
+                          onClick={openInsertBuilder}
+                          className="rounded-xl bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-200"
+                        >
+                          Inserir Botao
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={closeWorkflowStepModal}
+                        className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className={workflowStepModalOpen ? 'space-y-5 overflow-y-auto p-6' : 'p-6 space-y-5'}>
 
               {currentStepSupportsIcon && (
                 <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4 space-y-4">
@@ -1072,18 +1227,66 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                   </div>
 
                   {currentStepIsDecision ? (
-                    <div className="rounded-2xl border border-violet-100 bg-violet-50/70 p-4">
-                      <p className="text-sm font-semibold text-violet-900">Essa etapa está em modo Workflow</p>
-                      <p className="mt-1 text-xs leading-relaxed text-violet-700">
-                        Os cards de escolha e os destinos dessa pergunta são configurados no modo Workflow.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setEditorMode('workflow')}
-                        className="mt-3 rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100"
-                      >
-                        Abrir Workflow
-                      </button>
+                    <div className="space-y-4 rounded-2xl border border-violet-100 bg-violet-50/70 p-4">
+                      <div>
+                        <p className="text-sm font-semibold text-violet-900">Multiperguntas ativo</p>
+                        <p className="mt-1 text-xs leading-relaxed text-violet-700">
+                          Cada resposta vira um card no formulário e pode apontar para uma tela diferente no workflow.
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        {(currentStep.workflowOptions || []).map((option, index) => (
+                          <div key={option.id} className="rounded-2xl border border-violet-100 bg-white p-3">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-violet-500">Resposta {index + 1}</p>
+                              <button
+                                type="button"
+                                onClick={() => removeCurrentWorkflowOption(option.id)}
+                                className="text-xs font-semibold text-rose-500 transition-colors hover:text-rose-600"
+                              >
+                                Remover
+                              </button>
+                            </div>
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={option.label}
+                                onChange={event => updateCurrentWorkflowOption(option.id, { label: event.target.value })}
+                                placeholder="Ex: A ponta"
+                                className={stepInputClass}
+                              />
+                              <input
+                                type="text"
+                                value={option.description || ''}
+                                onChange={event => updateCurrentWorkflowOption(option.id, { description: event.target.value })}
+                                placeholder="Texto opcional do card"
+                                className={stepInputClass}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={addCurrentWorkflowOption}
+                          className="rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100"
+                        >
+                          + Adicionar resposta
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWorkflowStepModalOpen(false);
+                            setEditorMode('workflow');
+                          }}
+                          className="rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100"
+                        >
+                          Abrir Workflow
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
@@ -1127,7 +1330,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
               )}
 
               {showElementsBuilder && (
-                <div className="border-t border-gray-100 pt-5">
+                <div ref={elementsBuilderRef} className="border-t border-gray-100 pt-5">
                   <div className="mb-4">
                     <p className="text-sm font-semibold text-gray-900">
                       {currentStep.type === 'livre' ? 'Conteúdo da tela' : 'Blocos extras desta tela'}
@@ -1143,10 +1346,13 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                     elements={currentStep.elements || []}
                     onChange={elements => updateCurrentStep({ elements })}
                     onImageUpload={uploadCanvasImage}
+                    onShortcutAction={handleCanvasShortcut}
                   />
                 </div>
               )}
 
+                </div>
+              </div>
             </div>
           )}
 
