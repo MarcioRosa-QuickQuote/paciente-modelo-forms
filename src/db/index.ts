@@ -44,6 +44,7 @@ export async function getFormBySlug(slug: string): Promise<FormRow | null> {
     .select('*')
     .eq('slug', slug)
     .eq('is_active', true)
+    .eq('is_draft', false)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error;
@@ -75,6 +76,7 @@ export interface FormRow {
   id: string;
   name: string;
   slug: string;
+  is_draft: boolean;
   procedure_name: string;
   available_days: string;
   regular_price: number;
@@ -111,6 +113,7 @@ interface CreateFormInput {
   id: string;
   name: string;
   slug: string;
+  is_draft: boolean;
   procedure_name: string;
   available_days: string;
   regular_price: number;
@@ -354,6 +357,7 @@ export function rowToFormData(row: FormRow) {
     id: row.id,
     name: row.name,
     slug: row.slug,
+    isDraft: row.is_draft ?? false,
     procedureName: row.procedure_name,
     availableDays: row.available_days,
     regularPrice: Number(row.regular_price),

@@ -26,6 +26,7 @@ import RichTextField from './rich-text-field';
 import CanvasBuilder, { CanvasBuilderShortcut } from './canvas-builder';
 import WorkflowEditor from './workflow-editor';
 import { ensureWorkflowLayout, isDecisionStep } from '@/lib/workflow';
+import { formInputSchema } from '@/lib/validators';
 
 const DEFAULT_STEPS: FormStep[] = [
   { id: 'default-foto', type: 'foto' },
@@ -84,9 +85,13 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [editorMode, setEditorMode] = useState<'step' | 'workflow'>(initialEditorMode);
   const [workflowStepModalOpen, setWorkflowStepModalOpen] = useState(false);
   const [pendingBuilderScroll, setPendingBuilderScroll] = useState(false);
+  const [persistedFormId, setPersistedFormId] = useState<string | null>(initialData?.id || null);
+  const [isDraftDocument, setIsDraftDocument] = useState(mode === 'create' || initialData?.isDraft === true);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
   const elementsBuilderRef = useRef<HTMLDivElement | null>(null);
+  const createBaselineRef = useRef<string | null>(null);
+  const draftCreationInFlightRef = useRef(false);
   const initialProcedureName = initialData?.procedureName || templateData?.procedureName || '';
   const initialProcedureDuration = initialData?.procedureDuration || templateData?.procedureDuration || '';
   const shouldPrefillTextDefaults = templateId !== 'em-branco' && (mode === 'create' || !isBlankFormLike(initialData));
@@ -138,6 +143,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
   const [form, setForm] = useState<FormInput>({
     name: initialData?.name || '',
+    isDraft: initialData?.isDraft ?? (mode === 'create'),
     procedureName: initialProcedureName,
     availableDays: initialData?.availableDays || '',
     regularPrice: initialData?.regularPrice || 0,
@@ -173,6 +179,21 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [installmentAmountDisplay, setInstallmentAmountDisplay] = useState(formatBRL(form.installmentAmount));
 
   const slug = generateSlug(form.name);
+
+  if (mode === 'create' && createBaselineRef.current === null) {
+    const firstPhoto = photos[0] || { before: '', after: '' };
+    createBaselineRef.current = JSON.stringify({
+      ...form,
+      isDraft: false,
+      isActive: form.isActive,
+      whatsappNumber: form.whatsappNumber.replace(/\D/g, ''),
+      photos,
+      beforeImage: firstPhoto.before,
+      afterImage: firstPhoto.after,
+      steps: ensureWorkflowLayout(steps),
+      customTexts,
+    });
+  }
 
   function updateField<K extends keyof FormInput>(key: K, value: FormInput[K]) {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -331,34 +352,56 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     }));
   }
 
+  async function getAuthHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
+    }
+    return headers;
+  }
+
+  function buildEditorPayload(options?: { isDraft?: boolean; isActive?: boolean }) {
+    const firstPhoto = photos[0] || { before: '', after: '' };
+    return {
+      ...form,
+      isDraft: options?.isDraft ?? isDraftDocument,
+      isActive: options?.isActive ?? form.isActive,
+      whatsappNumber: form.whatsappNumber.replace(/\D/g, ''),
+      photos,
+      beforeImage: firstPhoto.before,
+      afterImage: firstPhoto.after,
+      steps,
+      customTexts,
+    };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
+      const headers = await getAuthHeaders();
+      const submitData = buildEditorPayload({
+        isDraft: false,
+        isActive: form.isActive,
+      });
+      const validation = formInputSchema.safeParse(submitData);
+      if (!validation.success) {
+        const errMsg = validation.error.flatten().formErrors[0]
+          || Object.values(validation.error.flatten().fieldErrors).flat()[0]
+          || 'Preencha os campos obrigatorios antes de publicar o formulario';
+        alert(errMsg);
+        return;
       }
-
-      const firstPhoto = photos[0] || { before: '', after: '' };
-      const submitData = {
-        ...form,
-        whatsappNumber: form.whatsappNumber.replace(/\D/g, ''),
-        photos,
-        beforeImage: firstPhoto.before,
-        afterImage: firstPhoto.after,
-        steps,
-        customTexts,
-      };
-
-      const url = mode === 'create' ? '/api/forms' : `/api/forms/${initialData?.id}`;
-      const method = mode === 'create' ? 'POST' : 'PUT';
+      const targetId = persistedFormId || initialData?.id || null;
+      const url = targetId ? `/api/forms/${targetId}` : '/api/forms';
+      const method = targetId ? 'PUT' : 'POST';
 
       const res = await fetch(url, { method, headers, body: JSON.stringify(submitData) });
 
       if (res.ok) {
+        setIsDraftDocument(false);
         router.push('/admin');
         router.refresh();
       } else {
@@ -375,40 +418,61 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     }
   }
 
-  // Auto-save (edit mode only) — ref stores latest save fn to avoid stale closures
+  // Auto-save / draft persistence — ref stores latest save fn to avoid stale closures
   saveRef.current = async () => {
-    if (mode !== 'edit' || !initialData?.id || saving) return;
+    if (saving) return;
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
-      const firstPhoto = photos[0] || { before: '', after: '' };
-      const res = await fetch(`/api/forms/${initialData.id}`, {
+      const headers = await getAuthHeaders();
+      const targetId = persistedFormId || initialData?.id || null;
+
+      if (!targetId) {
+        if (mode !== 'create' || createBaselineRef.current === null || draftCreationInFlightRef.current) return;
+
+        const draftChangeSnapshot = JSON.stringify(buildEditorPayload({ isDraft: false, isActive: form.isActive }));
+        if (draftChangeSnapshot === createBaselineRef.current) return;
+
+        draftCreationInFlightRef.current = true;
+        const res = await fetch('/api/forms', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(buildEditorPayload({ isDraft: true, isActive: false })),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setPersistedFormId(data.id);
+          setIsDraftDocument(true);
+          setSavedToast(true);
+          setTimeout(() => setSavedToast(false), 2000);
+        }
+        return;
+      }
+
+      const res = await fetch(`/api/forms/${targetId}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({
-          ...form,
-          whatsappNumber: form.whatsappNumber.replace(/\D/g, ''),
-          photos,
-          beforeImage: firstPhoto.before,
-          afterImage: firstPhoto.after,
-          steps,
-          customTexts,
-        }),
+        body: JSON.stringify(buildEditorPayload({
+          isDraft: isDraftDocument,
+          isActive: isDraftDocument ? false : form.isActive,
+        })),
       });
       if (res.ok) {
         setSavedToast(true);
         setTimeout(() => setSavedToast(false), 2000);
       }
     } catch { /* silent */ }
+    finally {
+      draftCreationInFlightRef.current = false;
+    }
   };
 
   useEffect(() => {
-    if (mode !== 'edit') return;
+    if (mode !== 'edit' && !(mode === 'create' && createBaselineRef.current !== null)) return;
     const timer = setTimeout(() => saveRef.current?.(), 1500);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form, photos, steps, customTexts]);
+  }, [mode, form, photos, steps, customTexts, persistedFormId, isDraftDocument]);
 
   useEffect(() => {
     setInsertPanelOpen(false);
@@ -1617,11 +1681,11 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         )}
 
         {/* ── Submit bar: só aparece no modo criar ── */}
-        {mode === 'create' && (
+        {isDraftDocument && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm px-6 py-4 flex justify-end">
             <button type="submit" disabled={saving}
               className="px-8 py-2.5 bg-gradient-to-r from-[#6B1C3A] to-[#9B2D5E] text-white rounded-xl font-semibold hover:from-[#5A1731] hover:to-[#8A2653] transition-all shadow-lg shadow-[#6B1C3A]/20 disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? 'Criando...' : 'Criar Formulário'}
+              {saving ? 'Salvando...' : (persistedFormId ? 'Publicar Formulário' : 'Criar Formulário')}
             </button>
           </div>
         )}

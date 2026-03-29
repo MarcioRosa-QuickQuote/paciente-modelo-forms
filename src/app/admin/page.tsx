@@ -110,6 +110,7 @@ export default function AdminDashboard() {
   }
 
   async function handleToggleActive(form: FormData) {
+    if (form.isDraft) return;
     if (togglingIds.includes(form.id)) return;
 
     const nextIsActive = !form.isActive;
@@ -166,11 +167,11 @@ export default function AdminDashboard() {
           </div>
           <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
             <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Ativos</p>
-            <p className="text-3xl font-bold text-emerald-600">{forms.filter(form => form.isActive).length}</p>
+            <p className="text-3xl font-bold text-emerald-600">{forms.filter(form => !form.isDraft && form.isActive).length}</p>
           </div>
           <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Inativos</p>
-            <p className="text-3xl font-bold text-gray-400">{forms.filter(form => !form.isActive).length}</p>
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Rascunhos</p>
+            <p className="text-3xl font-bold text-amber-500">{forms.filter(form => form.isDraft).length}</p>
           </div>
         </div>
       )}
@@ -195,7 +196,8 @@ export default function AdminDashboard() {
         <div className="grid gap-4">
           {forms.map(form => {
             const isToggling = togglingIds.includes(form.id);
-            const isLinkDisabled = !form.isActive || isToggling;
+            const isDraftCard = form.isDraft;
+            const isLinkDisabled = isDraftCard || !form.isActive || isToggling;
 
             return (
               <div key={form.id} className="space-y-0">
@@ -204,15 +206,21 @@ export default function AdminDashboard() {
                     <div className="min-w-0 flex-1">
                       <div className="mb-3 flex flex-wrap items-center gap-3">
                         <h3 className="truncate text-lg font-bold text-gray-900">{form.name}</h3>
-                        <span
-                          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            form.isActive
-                              ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
-                              : 'bg-gray-50 text-gray-500 ring-1 ring-gray-200'
-                          }`}
-                        >
-                          {form.isActive ? 'Ativo' : 'Inativo'}
-                        </span>
+                        {isDraftCard ? (
+                          <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
+                            Rascunho
+                          </span>
+                        ) : (
+                          <span
+                            className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                              form.isActive
+                                ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                                : 'bg-gray-50 text-gray-500 ring-1 ring-gray-200'
+                            }`}
+                          >
+                            {form.isActive ? 'Ativo' : 'Inativo'}
+                          </span>
+                        )}
                       </div>
 
                       <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -230,46 +238,58 @@ export default function AdminDashboard() {
                         </p>
                       </div>
 
-                      <div className={`flex w-fit items-center gap-2 rounded-lg px-3 py-1.5 ${form.isActive ? 'bg-gray-50' : 'bg-gray-50/70 opacity-70'}`}>
+                      <div className={`flex w-fit items-center gap-2 rounded-lg px-3 py-1.5 ${!isLinkDisabled ? 'bg-gray-50' : 'bg-gray-50/70 opacity-70'}`}>
                         <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                         </svg>
-                        <code className="text-xs text-gray-500">/formulario/{form.slug}</code>
+                        <code className="text-xs text-gray-500">
+                          {isDraftCard ? 'Rascunho privado - ainda nao publicado' : `/formulario/${form.slug}`}
+                        </code>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-stretch gap-3 xl:ml-4 xl:items-end">
+                      {isDraftCard && (
+                        <Link
+                          href={`/admin/forms/${form.id}`}
+                          className="inline-flex items-center justify-center rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+                        >
+                          Continuar editando
+                        </Link>
+                      )}
                       <button
                         type="button"
                         role="switch"
                         aria-checked={form.isActive}
-                        aria-label={form.isActive ? 'Desativar formulario' : 'Ativar formulario'}
-                        disabled={isToggling}
+                        aria-label={isDraftCard ? 'Rascunho nao pode ser ativado' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
+                        disabled={isToggling || isDraftCard}
                         onClick={() => handleToggleActive(form)}
                         className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors ${
-                          form.isActive ? 'bg-emerald-500' : 'bg-gray-300'
-                        } ${isToggling ? 'cursor-wait opacity-70' : 'hover:shadow-sm'}`}
-                        title={form.isActive ? 'Desativar formulario' : 'Ativar formulario'}
+                          !isDraftCard && form.isActive ? 'bg-emerald-500' : 'bg-gray-300'
+                        } ${isToggling ? 'cursor-wait opacity-70' : isDraftCard ? 'cursor-not-allowed opacity-50' : 'hover:shadow-sm'}`}
+                        title={isDraftCard ? 'Publique o rascunho primeiro' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
                       >
                         <span className="sr-only">
-                          {form.isActive ? 'Desativar formulario' : 'Ativar formulario'}
+                          {isDraftCard ? 'Publique o rascunho primeiro' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
                         </span>
                         <span
                           className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                            form.isActive ? 'translate-x-6' : 'translate-x-1'
+                            !isDraftCard && form.isActive ? 'translate-x-6' : 'translate-x-1'
                           }`}
                         />
                       </button>
 
                       <div className="flex flex-wrap items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
                         <button
-                          onClick={() => toggleStats(form.id)}
+                          onClick={() => !isDraftCard && toggleStats(form.id)}
                           className={`rounded-xl p-2.5 transition-all ${
-                            expandedStats === form.id
+                            isDraftCard
+                              ? 'cursor-not-allowed text-gray-300'
+                              : expandedStats === form.id
                               ? 'bg-[#6B1C3A]/10 text-[#6B1C3A]'
                               : 'text-gray-400 hover:bg-[#6B1C3A]/5 hover:text-[#6B1C3A]'
                           }`}
-                          title="Estatisticas"
+                          title={isDraftCard ? 'Rascunho ainda sem estatisticas' : 'Estatisticas'}
                         >
                           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -284,14 +304,14 @@ export default function AdminDashboard() {
                               ? 'cursor-not-allowed text-gray-300'
                               : 'text-gray-400 hover:bg-[#6B1C3A]/5 hover:text-[#6B1C3A]'
                           }`}
-                          title={form.isActive ? 'Copiar link' : 'Link desativado'}
+                          title={isDraftCard ? 'Rascunho ainda nao possui link publico' : form.isActive ? 'Copiar link' : 'Link desativado'}
                         >
                           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                           </svg>
                         </button>
 
-                        {form.isActive ? (
+                        {!isDraftCard && form.isActive ? (
                           <Link
                             href={`/formulario/${form.slug}`}
                             target="_blank"
@@ -308,7 +328,7 @@ export default function AdminDashboard() {
                             type="button"
                             disabled
                             className="cursor-not-allowed rounded-xl p-2.5 text-gray-300"
-                            title="Link desativado"
+                            title={isDraftCard ? 'Rascunho ainda nao possui link publico' : 'Link desativado'}
                           >
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

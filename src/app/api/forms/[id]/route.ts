@@ -47,6 +47,12 @@ export async function PUT(
       updateData.name = data.name;
       updateData.slug = generateSlug(data.name);
     }
+    if (data.isDraft !== undefined) {
+      updateData.is_draft = data.isDraft;
+      if (data.isDraft) {
+        updateData.is_active = false;
+      }
+    }
     if (data.procedureName !== undefined) updateData.procedure_name = data.procedureName;
     if (data.availableDays !== undefined) updateData.available_days = data.availableDays;
     if (data.regularPrice !== undefined) updateData.regular_price = data.regularPrice;

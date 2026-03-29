@@ -86,6 +86,7 @@ export interface FormData {
   id: string;
   name: string;
   slug: string;
+  isDraft: boolean;
   procedureName: string;
   availableDays: string;
   regularPrice: number;
@@ -121,6 +122,7 @@ export interface FormData {
 export interface FormInput {
   name: string;
   slug?: string;
+  isDraft?: boolean;
   procedureName: string;
   availableDays: string;
   regularPrice: number;

@@ -2,6 +2,7 @@
 
 export const formInputSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
+  isDraft: z.boolean().default(false),
   procedureName: z.string().min(1, 'Nome do procedimento é obrigatório'),
   availableDays: z.string().default(''),
   regularPrice: z.number().positive('Valor deve ser positivo'),

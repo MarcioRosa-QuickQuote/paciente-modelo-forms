@@ -96,3 +96,4 @@ ALTER TABLE forms ADD COLUMN IF NOT EXISTS custom_texts JSONB DEFAULT '{}';
 -- 12. Adicionar suporte a foto única centralizada
 ALTER TABLE forms ADD COLUMN IF NOT EXISTS single_photo BOOLEAN DEFAULT false;
 ALTER TABLE forms ADD COLUMN IF NOT EXISTS show_only_installment BOOLEAN DEFAULT false;
+ALTER TABLE forms ADD COLUMN IF NOT EXISTS is_draft BOOLEAN DEFAULT false;

@@ -36,6 +36,53 @@ export async function POST(request: NextRequest) {
     await initializeDb();
     const userId = await getUserIdFromRequest(request);
     const body = await request.json();
+    const isDraftRequest = body?.isDraft === true;
+
+    if (isDraftRequest) {
+      const id = uuidv4();
+      const draftName = typeof body.name === 'string' && body.name.trim().length > 0 ? body.name.trim() : 'Novo rascunho';
+      const draftSlug = `${generateSlug(draftName || 'rascunho')}-${id.slice(0, 8)}`;
+      const draftPhotos = Array.isArray(body.photos) ? body.photos : [];
+      const firstPhoto = draftPhotos[0] || { before: body.beforeImage || '', after: body.afterImage || '' };
+
+      await createForm({
+        id,
+        name: draftName,
+        slug: draftSlug,
+        is_draft: true,
+        procedure_name: body.procedureName || '',
+        available_days: body.availableDays || '',
+        regular_price: typeof body.regularPrice === 'number' ? body.regularPrice : 0,
+        model_price: typeof body.modelPrice === 'number' ? body.modelPrice : 0,
+        fee_amount: typeof body.feeAmount === 'number' ? body.feeAmount : 0,
+        installment_count: typeof body.installmentCount === 'number' ? body.installmentCount : 0,
+        installment_amount: typeof body.installmentAmount === 'number' ? body.installmentAmount : 0,
+        procedure_duration: body.procedureDuration || '',
+        professional_name: body.professionalName || '',
+        instagram_handle: body.instagramHandle || '',
+        whatsapp_number: body.whatsappNumber || '',
+        before_image: firstPhoto.before || '',
+        after_image: firstPhoto.after || '',
+        photos: draftPhotos,
+        headline: body.headline || '',
+        support_text: body.supportText || '',
+        is_active: false,
+        whatsapp_message: body.whatsappMessage || '',
+        final_screen_type: body.finalScreenType || 'whatsapp',
+        form_fields: body.formFields || { name: true, whatsapp: true, email: true },
+        theme: body.theme || 'purple',
+        pixel_id: body.pixelId || '',
+        capi_token: body.capiToken || '',
+        single_photo: body.singlePhoto ?? false,
+        show_only_installment: body.showOnlyInstallment ?? false,
+        user_id: userId,
+        steps: body.steps || [],
+        custom_texts: body.customTexts || {},
+      });
+
+      return NextResponse.json({ id, slug: draftSlug, isDraft: true }, { status: 201 });
+    }
+
     const parsed = formInputSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -51,6 +98,7 @@ export async function POST(request: NextRequest) {
       id,
       name: data.name,
       slug,
+      is_draft: false,
       procedure_name: data.procedureName,
       available_days: data.availableDays,
       regular_price: data.regularPrice,
