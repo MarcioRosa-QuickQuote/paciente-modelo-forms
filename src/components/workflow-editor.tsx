@@ -401,8 +401,76 @@ export default function WorkflowEditor({
     return changed ? nextSteps : currentSteps;
   }
 
+  function sanitizeWorkflowReferences(currentSteps: FormStep[]): FormStep[] {
+    const existingIds = new Set(currentSteps.map(step => step.id));
+
+    return currentSteps.map(step => ({
+      ...step,
+      workflowNextStepId: step.workflowNextStepId && existingIds.has(step.workflowNextStepId)
+        ? step.workflowNextStepId
+        : undefined,
+      workflowOptions: (step.workflowOptions || []).map(option => {
+        if (option.target === 'step' && option.nextStepId && !existingIds.has(option.nextStepId)) {
+          return {
+            ...option,
+            target: 'next' as const,
+            nextStepId: undefined,
+          };
+        }
+
+        return option;
+      }),
+    }));
+  }
+
+  function compactWorkflowColumns(currentSteps: FormStep[]): FormStep[] {
+    const orderedXs = [...new Set(currentSteps.map((step, index) => getStepWorkflowPosition(step, index).x))].sort((left, right) => left - right);
+    if (orderedXs.length <= 1) return currentSteps;
+
+    const columnMap = new Map<number, number>();
+    const baseX = orderedXs[0];
+
+    orderedXs.forEach((x, index) => {
+      columnMap.set(x, baseX + index * NODE_GAP_X);
+    });
+
+    let changed = false;
+    const nextSteps = currentSteps.map((step, index) => {
+      const position = getStepWorkflowPosition(step, index);
+      const targetX = columnMap.get(position.x) ?? position.x;
+
+      if (targetX === position.x) return step;
+
+      changed = true;
+      return {
+        ...step,
+        workflowPosition: {
+          x: targetX,
+          y: position.y,
+        },
+      };
+    });
+
+    return changed ? nextSteps : currentSteps;
+  }
+
   function updateStep(stepId: string, updates: Partial<FormStep>) {
     onChange(stepsWithLayout.map(step => step.id === stepId ? { ...step, ...updates } : step));
+  }
+
+  function normalizeWorkflowStructure(currentSteps: FormStep[]) {
+    let nextSteps = sanitizeWorkflowReferences(currentSteps);
+    const decisionStepIds = nextSteps.filter(step => isDecisionStep(step)).map(step => step.id);
+
+    decisionStepIds.forEach(stepId => {
+      nextSteps = syncDecisionBranchSteps(nextSteps, stepId, () => createStep('livre'));
+      nextSteps = sanitizeWorkflowReferences(nextSteps);
+    });
+
+    nextSteps = compactWorkflowColumns(nextSteps);
+    nextSteps = applyMinimumHorizontalSpacing(nextSteps);
+
+    return nextSteps;
   }
 
   function syncDecisionBranches(nextSteps: FormStep[], decisionStepId: string) {
@@ -425,7 +493,7 @@ export default function WorkflowEditor({
     if (!selectedStep || selectedStep.type !== 'pergunta') return;
 
     const nextCount = (selectedStep.workflowOptions?.length || 0) + 1;
-    onChange(syncDecisionBranches(stepsWithLayout.map(step => {
+    onChange(normalizeWorkflowStructure(syncDecisionBranches(stepsWithLayout.map(step => {
       if (step.id !== selectedStep.id) return step;
       return {
         ...step,
@@ -439,7 +507,7 @@ export default function WorkflowEditor({
           },
         ],
       };
-    }), selectedStep.id));
+    }), selectedStep.id)));
   }
 
   function buildSeededWorkflowOptions(minimum = 2): WorkflowOption[] {
@@ -455,13 +523,13 @@ export default function WorkflowEditor({
     const step = stepsWithLayout.find(item => item.id === stepId);
     if (!step) return;
 
-    onChange(syncDecisionBranches(stepsWithLayout.map(currentStep => {
+    onChange(normalizeWorkflowStructure(syncDecisionBranches(stepsWithLayout.map(currentStep => {
       if (currentStep.id !== stepId) return currentStep;
       return {
         ...currentStep,
         workflowOptions: (step.workflowOptions || []).filter(option => option.id !== optionId),
       };
-    }), stepId));
+    }), stepId)));
   }
 
   function insertWorkflowStepAfter(sourceStepId: string, type: Extract<FormStepType, 'pergunta' | 'livre'>) {
@@ -540,6 +608,8 @@ export default function WorkflowEditor({
       nextSteps = syncDecisionBranches(nextSteps, newStep.id);
     }
 
+    nextSteps = normalizeWorkflowStructure(nextSteps);
+
     onChange(nextSteps);
     const nextIndex = nextSteps.findIndex(step => step.id === newStep.id);
     onCurrentStepIndexChange(nextIndex);
@@ -565,7 +635,9 @@ export default function WorkflowEditor({
         })
         .filter(step => step.id !== stepId);
 
-      const syncedSteps = syncDecisionBranches(nextSteps, stepToDelete.branchSourceStepId);
+      const syncedSteps = normalizeWorkflowStructure(
+        syncDecisionBranches(nextSteps, stepToDelete.branchSourceStepId),
+      );
       const nextIndex = Math.min(currentStepIndex, syncedSteps.length - 1);
 
       onChange(syncedSteps);
@@ -605,7 +677,7 @@ export default function WorkflowEditor({
       ? currentStepIndex - 1
       : Math.min(currentStepIndex, nextSteps.length - 1);
 
-    const compactedSteps = compactWorkflowLanes(nextSteps);
+    const compactedSteps = normalizeWorkflowStructure(nextSteps);
 
     onChange(compactedSteps);
     onCurrentStepIndexChange(Math.min(nextIndex, compactedSteps.length - 1));

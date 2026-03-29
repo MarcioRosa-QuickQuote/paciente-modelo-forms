@@ -184,20 +184,10 @@ export function syncDecisionBranchSteps(
 
   const decisionStep = strippedSteps[decisionIndex];
   const options = decisionStep.workflowOptions || [];
-  const normalizedSteps = strippedSteps.map((step, index) => {
+  let normalizedSteps = strippedSteps.map((step, index) => {
     if (index <= decisionIndex) return step;
 
     const position = getStepWorkflowPosition(step, index);
-
-    if (!hadBranches && options.length > 0) {
-      return {
-        ...step,
-        workflowPosition: {
-          x: position.x + GAP_X,
-          y: position.y,
-        },
-      };
-    }
 
     if (hadBranches && options.length === 0) {
       return {
@@ -221,14 +211,40 @@ export function syncDecisionBranchSteps(
   if (!normalizedDecisionStep) return normalizedSteps;
 
   const decisionPosition = getStepWorkflowPosition(normalizedDecisionStep, normalizedDecisionIndex);
-  const branchTargetStepId = normalizedSteps[normalizedDecisionIndex + 1]?.id;
+  const downstreamSteps = normalizedSteps.slice(normalizedDecisionIndex + 1);
+  const downstreamMinX = downstreamSteps.length > 0
+    ? Math.min(...downstreamSteps.map((step, index) => getStepWorkflowPosition(step, normalizedDecisionIndex + 1 + index).x))
+    : null;
+  const minimumMainX = decisionPosition.x + GAP_X * 2;
+
+  if (downstreamMinX !== null && downstreamMinX < minimumMainX) {
+    const deltaX = minimumMainX - downstreamMinX;
+    normalizedSteps = normalizedSteps.map((step, index) => {
+      if (index <= normalizedDecisionIndex) return step;
+      const position = getStepWorkflowPosition(step, index);
+      return {
+        ...step,
+        workflowPosition: {
+          x: position.x + deltaX,
+          y: position.y,
+        },
+      };
+    });
+  }
+
+  const shiftedDecisionIndex = normalizedSteps.findIndex(step => step.id === decisionStepId);
+  const shiftedDecisionStep = normalizedSteps[shiftedDecisionIndex];
+  if (!shiftedDecisionStep) return normalizedSteps;
+
+  const shiftedDecisionPosition = getStepWorkflowPosition(shiftedDecisionStep, shiftedDecisionIndex);
+  const branchTargetStepId = normalizedSteps[shiftedDecisionIndex + 1]?.id;
   const existingBranchStepsByOptionId = new Map(
     existingBranchSteps
       .filter(step => !!step.branchSourceOptionId)
       .map(step => [step.branchSourceOptionId as string, step]),
   );
-  const branchX = decisionPosition.x + GAP_X;
-  const startY = decisionPosition.y - ((options.length - 1) * BRANCH_GAP_Y) / 2;
+  const branchX = shiftedDecisionPosition.x + GAP_X;
+  const startY = shiftedDecisionPosition.y - ((options.length - 1) * BRANCH_GAP_Y) / 2;
 
   const generatedBranchSteps = options.map((option, optionIndex) => {
     const existingBranchStep = existingBranchStepsByOptionId.get(option.id);
@@ -254,7 +270,7 @@ export function syncDecisionBranchSteps(
   );
 
   const syncedDecisionStep: FormStep = {
-    ...normalizedDecisionStep,
+    ...shiftedDecisionStep,
     workflowOptions: options.map(option => ({
       ...option,
       target: 'step',
@@ -263,9 +279,9 @@ export function syncDecisionBranchSteps(
   };
 
   return [
-    ...normalizedSteps.slice(0, normalizedDecisionIndex),
+    ...normalizedSteps.slice(0, shiftedDecisionIndex),
     syncedDecisionStep,
     ...generatedBranchSteps,
-    ...normalizedSteps.slice(normalizedDecisionIndex + 1),
+    ...normalizedSteps.slice(shiftedDecisionIndex + 1),
   ];
 }
