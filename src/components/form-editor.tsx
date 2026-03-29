@@ -87,11 +87,15 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   const [pendingBuilderScroll, setPendingBuilderScroll] = useState(false);
   const [persistedFormId, setPersistedFormId] = useState<string | null>(initialData?.id || null);
   const [isDraftDocument, setIsDraftDocument] = useState(mode === 'create' || initialData?.isDraft === true);
+  const [authReady, setAuthReady] = useState(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const photoRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const stepIconInputRef = useRef<HTMLInputElement | null>(null);
   const elementsBuilderRef = useRef<HTMLDivElement | null>(null);
   const createBaselineRef = useRef<string | null>(null);
   const draftCreationInFlightRef = useRef(false);
+  const lastAutoSavedSnapshotRef = useRef<string | null>(null);
+  const savedToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialProcedureName = initialData?.procedureName || templateData?.procedureName || '';
   const initialProcedureDuration = initialData?.procedureDuration || templateData?.procedureDuration || '';
   const shouldPrefillTextDefaults = templateId !== 'em-branco' && (mode === 'create' || !isBlankFormLike(initialData));
@@ -193,6 +197,16 @@ export default function FormEditor({ initialData, mode, templateId, templateData
       steps: ensureWorkflowLayout(steps),
       customTexts,
     });
+  }
+
+  function showSavedAutomaticallyToast() {
+    setSavedToast(true);
+    if (savedToastTimeoutRef.current) {
+      clearTimeout(savedToastTimeoutRef.current);
+    }
+    savedToastTimeoutRef.current = setTimeout(() => {
+      setSavedToast(false);
+    }, 2000);
   }
 
   function updateField<K extends keyof FormInput>(key: K, value: FormInput[K]) {
@@ -353,11 +367,32 @@ export default function FormEditor({ initialData, mode, templateId, templateData
   }
 
   async function getAuthHeaders() {
-    const { data: { session } } = await supabase.auth.getSession();
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (session?.access_token) {
-      headers.Authorization = `Bearer ${session.access_token}`;
+    let token = authToken;
+
+    if (!token) {
+      const { data: { session } } = await supabase.auth.getSession();
+      token = session?.access_token ?? null;
     }
+
+    if (!token) {
+      try {
+        const { data } = await supabase.auth.refreshSession();
+        token = data.session?.access_token ?? null;
+      } catch {
+        token = null;
+      }
+    }
+
+    if (!token) {
+      return null;
+    }
+
+    if (token !== authToken) {
+      setAuthToken(token);
+    }
+
+    headers.Authorization = `Bearer ${token}`;
     return headers;
   }
 
@@ -376,12 +411,20 @@ export default function FormEditor({ initialData, mode, templateId, templateData
     };
   }
 
+  function buildEditorSnapshot(options?: { isDraft?: boolean; isActive?: boolean }) {
+    return JSON.stringify(buildEditorPayload(options));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
 
     try {
       const headers = await getAuthHeaders();
+      if (!headers) {
+        alert('Sua sessao ainda nao foi carregada. Aguarde um instante e tente novamente.');
+        return;
+      }
       const submitData = buildEditorPayload({
         isDraft: false,
         isActive: form.isActive,
@@ -401,6 +444,10 @@ export default function FormEditor({ initialData, mode, templateId, templateData
       const res = await fetch(url, { method, headers, body: JSON.stringify(submitData) });
 
       if (res.ok) {
+        lastAutoSavedSnapshotRef.current = buildEditorSnapshot({
+          isDraft: false,
+          isActive: form.isActive,
+        });
         setIsDraftDocument(false);
         router.push('/admin');
         router.refresh();
@@ -420,22 +467,27 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
   // Auto-save / draft persistence — ref stores latest save fn to avoid stale closures
   saveRef.current = async () => {
-    if (saving) return;
+    if (saving || !authReady) return;
 
     try {
       const headers = await getAuthHeaders();
+      if (!headers) return;
       const targetId = persistedFormId || initialData?.id || null;
 
       if (!targetId) {
         if (mode !== 'create' || createBaselineRef.current === null || draftCreationInFlightRef.current) return;
 
-        const draftChangeSnapshot = JSON.stringify(buildEditorPayload({ isDraft: false, isActive: form.isActive }));
+        const draftChangeSnapshot = buildEditorSnapshot({ isDraft: false, isActive: form.isActive });
         if (draftChangeSnapshot === createBaselineRef.current) return;
+
+        const draftRequestSnapshot = buildEditorSnapshot({ isDraft: true, isActive: false });
+        if (draftRequestSnapshot === lastAutoSavedSnapshotRef.current) return;
 
         draftCreationInFlightRef.current = true;
         const res = await fetch('/api/forms', {
           method: 'POST',
           headers,
+          keepalive: true,
           body: JSON.stringify(buildEditorPayload({ isDraft: true, isActive: false })),
         });
 
@@ -443,36 +495,115 @@ export default function FormEditor({ initialData, mode, templateId, templateData
           const data = await res.json();
           setPersistedFormId(data.id);
           setIsDraftDocument(true);
-          setSavedToast(true);
-          setTimeout(() => setSavedToast(false), 2000);
+          lastAutoSavedSnapshotRef.current = draftRequestSnapshot;
+          showSavedAutomaticallyToast();
+        } else {
+          console.error('Falha ao criar rascunho automaticamente', await res.text());
         }
         return;
       }
 
+      const updateSnapshot = buildEditorSnapshot({
+        isDraft: isDraftDocument,
+        isActive: isDraftDocument ? false : form.isActive,
+      });
+      if (updateSnapshot === lastAutoSavedSnapshotRef.current) return;
+
       const res = await fetch(`/api/forms/${targetId}`, {
         method: 'PUT',
         headers,
+        keepalive: true,
         body: JSON.stringify(buildEditorPayload({
           isDraft: isDraftDocument,
           isActive: isDraftDocument ? false : form.isActive,
         })),
       });
       if (res.ok) {
-        setSavedToast(true);
-        setTimeout(() => setSavedToast(false), 2000);
+        lastAutoSavedSnapshotRef.current = updateSnapshot;
+        showSavedAutomaticallyToast();
+      } else {
+        console.error('Falha ao salvar formulario automaticamente', await res.text());
       }
-    } catch { /* silent */ }
+    } catch (error) {
+      console.error('Erro no autosave do formulario', error);
+    }
     finally {
       draftCreationInFlightRef.current = false;
     }
   };
 
   useEffect(() => {
+    let active = true;
+
+    async function hydrateAuth() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!active) return;
+        setAuthToken(session?.access_token ?? null);
+      } finally {
+        if (active) {
+          setAuthReady(true);
+        }
+      }
+    }
+
+    hydrateAuth();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setAuthToken(session?.access_token ?? null);
+      setAuthReady(true);
+    });
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+      if (savedToastTimeoutRef.current) {
+        clearTimeout(savedToastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (mode !== 'edit') return;
+    if (lastAutoSavedSnapshotRef.current !== null) return;
+
+    lastAutoSavedSnapshotRef.current = buildEditorSnapshot({
+      isDraft: initialData?.isDraft ?? false,
+      isActive: initialData?.isDraft ? false : (initialData?.isActive ?? form.isActive),
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, initialData?.id]);
+
+  useEffect(() => {
     if (mode !== 'edit' && !(mode === 'create' && createBaselineRef.current !== null)) return;
+    if (!authReady) return;
     const timer = setTimeout(() => saveRef.current?.(), 1500);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, form, photos, steps, customTexts, persistedFormId, isDraftDocument]);
+  }, [authReady, authToken, mode, form, photos, steps, customTexts, persistedFormId, isDraftDocument]);
+
+  useEffect(() => {
+    if (!authReady) return;
+
+    function flushPendingSave() {
+      void saveRef.current?.();
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        flushPendingSave();
+      }
+    }
+
+    window.addEventListener('pagehide', flushPendingSave);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('pagehide', flushPendingSave);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [authReady]);
 
   useEffect(() => {
     setInsertPanelOpen(false);

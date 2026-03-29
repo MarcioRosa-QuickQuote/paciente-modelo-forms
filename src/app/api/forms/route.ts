@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
   try {
     await initializeDb();
     const userId = await getUserIdFromRequest(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 });
+    }
     const body = await request.json();
     const isDraftRequest = body?.isDraft === true;
 
