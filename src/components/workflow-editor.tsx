@@ -24,15 +24,15 @@ interface Props {
   photos: PhotoPair[];
 }
 
-const NODE_WIDTH = 224;
-const NODE_HEIGHT = 132;
+const NODE_WIDTH = 188;
+const NODE_HEIGHT = 112;
 const SPECIAL_NODE_WIDTH = 220;
 const SPECIAL_NODE_HEIGHT = 104;
-const INSERT_LINE_WIDTH = 16;
+const INSERT_LINE_WIDTH = 14;
 const INSERT_BUTTON_SIZE = 34;
 const HOVER_PREVIEW_WIDTH = 348;
 const HOVER_PREVIEW_HEIGHT = 654;
-const NODE_GAP_X = 380;
+const NODE_GAP_X = 260;
 
 const STEP_TYPE_LABELS: Record<FormStepType, string> = {
   foto: 'Fotos Antes/Depois',
@@ -186,12 +186,12 @@ export default function WorkflowEditor({
   }, []);
 
   const canvasWidth = useMemo(() => {
-    const stepXs = stepsWithLayout.map((step, index) => getStepWorkflowPosition(step, index).x + NODE_WIDTH + 180);
+    const stepXs = stepsWithLayout.map((step, index) => getStepWorkflowPosition(step, index).x + NODE_WIDTH + 120);
     return Math.max(
       WORKFLOW_CANVAS_MIN_WIDTH,
       ...stepXs,
-      celebrationPosition.x + SPECIAL_NODE_WIDTH + 160,
-      rejectedPosition.x + SPECIAL_NODE_WIDTH + 160,
+      celebrationPosition.x + SPECIAL_NODE_WIDTH + 120,
+      rejectedPosition.x + SPECIAL_NODE_WIDTH + 120,
     );
   }, [celebrationPosition.x, rejectedPosition.x, stepsWithLayout]);
 
@@ -293,6 +293,50 @@ export default function WorkflowEditor({
     }
   }, [onChange, stepsWithLayout]);
 
+  function compactWorkflowLanes(currentSteps: FormStep[]): FormStep[] {
+    const laneItems = new Map<number, Array<{ index: number; x: number }>>();
+
+    currentSteps.forEach((step, index) => {
+      const position = getStepWorkflowPosition(step, index);
+      const laneKey = Math.round(position.y / 88);
+      const currentLane = laneItems.get(laneKey) || [];
+      currentLane.push({ index, x: position.x });
+      laneItems.set(laneKey, currentLane);
+    });
+
+    let changed = false;
+    const nextSteps = currentSteps.map(step => ({
+      ...step,
+      workflowPosition: step.workflowPosition ? { ...step.workflowPosition } : step.workflowPosition,
+    }));
+
+    laneItems.forEach(items => {
+      const ordered = [...items].sort((left, right) => left.x - right.x);
+      const baseItem = ordered[0];
+      if (!baseItem) return;
+
+      const baseX = getStepWorkflowPosition(nextSteps[baseItem.index], baseItem.index).x;
+
+      ordered.forEach((item, laneIndex) => {
+        const position = getStepWorkflowPosition(nextSteps[item.index], item.index);
+        const targetX = baseX + laneIndex * NODE_GAP_X;
+
+        if (position.x !== targetX) {
+          nextSteps[item.index] = {
+            ...nextSteps[item.index],
+            workflowPosition: {
+              x: targetX,
+              y: position.y,
+            },
+          };
+          changed = true;
+        }
+      });
+    });
+
+    return changed ? nextSteps : currentSteps;
+  }
+
   function updateStep(stepId: string, updates: Partial<FormStep>) {
     onChange(stepsWithLayout.map(step => step.id === stepId ? { ...step, ...updates } : step));
   }
@@ -345,7 +389,7 @@ export default function WorkflowEditor({
     const shiftedSteps = stepsWithLayout.map((step, index) => {
       const position = getStepWorkflowPosition(step, index);
       const sameLane = Math.abs(position.y - sourcePosition.y) < 88;
-      const shouldShift = step.id !== sourceStepId && sameLane && position.x >= nextX - 24;
+      const shouldShift = step.id !== sourceStepId && sameLane && position.x >= nextX - 12;
 
       if (!shouldShift) return step;
 
@@ -404,8 +448,10 @@ export default function WorkflowEditor({
       ? currentStepIndex - 1
       : Math.min(currentStepIndex, nextSteps.length - 1);
 
-    onChange(nextSteps);
-    onCurrentStepIndexChange(nextIndex);
+    const compactedSteps = compactWorkflowLanes(nextSteps);
+
+    onChange(compactedSteps);
+    onCurrentStepIndexChange(Math.min(nextIndex, compactedSteps.length - 1));
     setInsertMenu(current => current?.sourceStepId === stepId ? null : current);
     setHoverPreview(current => current?.stepIndex === deleteIndex ? null : current);
   }
@@ -414,8 +460,8 @@ export default function WorkflowEditor({
     const frame = nodeFrames.get(stepId);
     if (!frame) return;
 
-    const x = clamp(frame.x + NODE_WIDTH + INSERT_LINE_WIDTH + INSERT_BUTTON_SIZE + 24, 24, canvasWidth - 236);
-    const y = clamp(frame.y + frame.height + 14, 24, canvasHeight - 138);
+    const x = clamp(frame.x + NODE_WIDTH + INSERT_LINE_WIDTH + INSERT_BUTTON_SIZE + 18, 24, canvasWidth - 236);
+    const y = clamp(frame.y + frame.height + 12, 24, canvasHeight - 138);
 
     setInsertMenu(current => current?.sourceStepId === stepId ? null : {
       sourceStepId: stepId,
@@ -435,7 +481,7 @@ export default function WorkflowEditor({
     const previewWidth = Math.min(HOVER_PREVIEW_WIDTH, Math.max(300, viewport.clientWidth - 32));
     const previewHeight = Math.min(HOVER_PREVIEW_HEIGHT, Math.max(360, viewport.clientHeight - 28));
 
-    let x = cardRect.right - viewportRect.left + 32;
+    let x = cardRect.right - viewportRect.left + 28;
     if (x + previewWidth > viewport.clientWidth - 12) {
       x = cardRect.left - viewportRect.left - previewWidth - 28;
     }
@@ -527,17 +573,14 @@ export default function WorkflowEditor({
             return (
               <div
                 key={step.id}
-                className={`group absolute overflow-visible rounded-[28px] border bg-white p-4 shadow-sm transition-all ${selected ? 'z-20 border-[#6B1C3A] shadow-lg shadow-[#6B1C3A]/10' : 'border-gray-200'} ${step.hidden ? 'opacity-60' : ''}`}
+                className="group absolute overflow-visible"
                 style={{ width: NODE_WIDTH, minHeight: NODE_HEIGHT, left: position.x, top: position.y }}
-                onMouseEnter={event => updateHoverPreview(event, index)}
-                onMouseMove={event => updateHoverPreview(event, index)}
-                onMouseLeave={() => setHoverPreview(current => current?.stepIndex === index ? null : current)}
               >
                 <span className={`pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${decision ? 'bg-violet-500' : 'bg-slate-300'}`} />
                 <span className={`pointer-events-none absolute -right-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ${decision ? 'bg-violet-500' : 'bg-slate-300'}`} />
 
-                <div className="pointer-events-none absolute left-full top-1/2 flex -translate-y-1/2 items-center pl-4">
-                  <span className="h-[2px] w-[20px] rounded-full bg-slate-300" />
+                <div className="pointer-events-none absolute left-full top-1/2 flex -translate-y-1/2 items-center pl-3">
+                  <span className="h-[2px] w-[14px] rounded-full bg-slate-300" />
                 </div>
 
                 <button
@@ -545,23 +588,29 @@ export default function WorkflowEditor({
                   data-workflow-insert-trigger
                   onMouseEnter={event => {
                     event.stopPropagation();
-                    setHoverPreview(current => current?.stepIndex === index ? null : current);
+                    setHoverPreview(null);
                   }}
                   onMouseMove={event => {
                     event.stopPropagation();
-                    setHoverPreview(current => current?.stepIndex === index ? null : current);
+                    setHoverPreview(null);
                   }}
                   onClick={event => {
                     event.stopPropagation();
                     openInsertMenu(step.id);
                   }}
-                  className="absolute left-full top-1/2 z-10 ml-6 flex h-[34px] w-[34px] -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-lg font-semibold text-gray-500 shadow-sm transition-all hover:border-[#6B1C3A]/30 hover:text-[#6B1C3A] hover:shadow"
+                  className="absolute left-full top-1/2 z-10 ml-4 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-base font-semibold text-gray-500 shadow-sm transition-all hover:border-[#6B1C3A]/30 hover:text-[#6B1C3A] hover:shadow"
                   aria-label="Inserir etapa após este card"
                 >
                   +
                 </button>
 
-                <div className="mb-3 flex items-center justify-between gap-2 rounded-2xl bg-gray-50 px-3 py-2 text-[11px] font-semibold text-gray-500">
+                <div
+                  className={`min-h-[112px] rounded-[24px] border bg-white p-3 shadow-sm transition-all ${selected ? 'z-20 border-[#6B1C3A] shadow-lg shadow-[#6B1C3A]/10' : 'border-gray-200'} ${step.hidden ? 'opacity-60' : ''}`}
+                  onMouseEnter={event => updateHoverPreview(event, index)}
+                  onMouseMove={event => updateHoverPreview(event, index)}
+                  onMouseLeave={() => setHoverPreview(current => current?.stepIndex === index ? null : current)}
+                >
+                  <div className="mb-3 flex items-center justify-between gap-2 rounded-xl bg-gray-50 px-3 py-2 text-[11px] font-semibold text-gray-500">
                   <button
                     type="button"
                     onMouseDown={event => {
@@ -603,15 +652,16 @@ export default function WorkflowEditor({
                   <p className="mt-2 text-xs leading-relaxed text-gray-500">{summarizeStep(step)}</p>
                 </button>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   {decision ? (
-                    <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700">{(step.workflowOptions || []).length} saídas</span>
+                    <span className="rounded-full bg-violet-50 px-2 py-1 text-[10px] font-semibold text-violet-700">{(step.workflowOptions || []).length} saídas</span>
                   ) : (
-                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-500">Fluxo linear</span>
+                    <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-500">Fluxo linear</span>
                   )}
-                  {step.hidden && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">Oculta</span>}
+                  {step.hidden && <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700">Oculta</span>}
                 </div>
               </div>
+            </div>
             );
           })}
 
