@@ -5,6 +5,34 @@ import { createForm, getAllForms, initializeDb, rowToFormData } from '@/db';
 import { formInputSchema } from '@/lib/validators';
 import { generateSlug } from '@/lib/utils';
 
+function getErrorDetails(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeError = error as Record<string, unknown>;
+    const parts = [
+      maybeError.message,
+      maybeError.details,
+      maybeError.hint,
+      maybeError.code,
+    ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+
+    if (parts.length > 0) {
+      return parts.join(' | ');
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return '[erro sem detalhes serializaveis]';
+    }
+  }
+
+  return String(error);
+}
+
 async function getUserIdFromRequest(request: NextRequest): Promise<string> {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) return '';
@@ -31,7 +59,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(forms);
   } catch (error) {
     console.error('Error fetching forms:', error);
-    const details = error instanceof Error ? error.message : String(error);
+    const details = getErrorDetails(error);
     return NextResponse.json({ error: 'Erro ao buscar formularios', details }, { status: 500 });
   }
 }
@@ -143,7 +171,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ id, slug }, { status: 201 });
   } catch (error: unknown) {
     console.error('Error creating form:', error);
-    const details = error instanceof Error ? error.message : String(error);
+    const details = getErrorDetails(error);
 
     if (details.includes('unique') || details.includes('duplicate')) {
       return NextResponse.json({ error: 'Ja existe um formulario com esse nome', details }, { status: 409 });

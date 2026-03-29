@@ -3,6 +3,34 @@ import { deleteForm, getFormById, initializeDb, rowToFormData, updateForm } from
 import { formInputSchema } from '@/lib/validators';
 import { generateSlug } from '@/lib/utils';
 
+function getErrorDetails(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeError = error as Record<string, unknown>;
+    const parts = [
+      maybeError.message,
+      maybeError.details,
+      maybeError.hint,
+      maybeError.code,
+    ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+
+    if (parts.length > 0) {
+      return parts.join(' | ');
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return '[erro sem detalhes serializaveis]';
+    }
+  }
+
+  return String(error);
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -19,7 +47,7 @@ export async function GET(
     return NextResponse.json(rowToFormData(row));
   } catch (error) {
     console.error('Error fetching form:', error);
-    const details = error instanceof Error ? error.message : String(error);
+    const details = getErrorDetails(error);
     return NextResponse.json({ error: 'Erro ao buscar formulario', details }, { status: 500 });
   }
 }
@@ -97,7 +125,7 @@ export async function PUT(
     return NextResponse.json(rowToFormData(updated!));
   } catch (error) {
     console.error('Error updating form:', error);
-    const details = error instanceof Error ? error.message : String(error);
+    const details = getErrorDetails(error);
     return NextResponse.json({ error: 'Erro ao atualizar formulario', details }, { status: 500 });
   }
 }
@@ -119,7 +147,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting form:', error);
-    const details = error instanceof Error ? error.message : String(error);
+    const details = getErrorDetails(error);
     return NextResponse.json({ error: 'Erro ao excluir formulario', details }, { status: 500 });
   }
 }
