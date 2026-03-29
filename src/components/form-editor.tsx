@@ -423,7 +423,7 @@ export default function FormEditor({ initialData, mode, templateId, templateData
         </div>
 
         {/* ── Step tabs card ── */}
-        <div className={editorMode === 'workflow' ? 'relative left-1/2 w-[calc(100vw-24px)] max-w-none -translate-x-1/2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col' : 'bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col'} style={{ maxHeight: 'calc(100dvh - 180px)' }}>
+        <div className={editorMode === 'workflow' ? 'relative left-1/2 w-[calc(100vw-16px)] max-w-none -translate-x-1/2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col' : 'bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col'} style={{ maxHeight: editorMode === 'workflow' ? 'calc(100dvh - 116px)' : 'calc(100dvh - 180px)' }}>
 
           {/* Navigation bar + dots (from FormStepBuilder) */}
           <FormStepBuilder

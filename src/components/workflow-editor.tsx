@@ -12,7 +12,7 @@ import {
   getStepWorkflowPosition,
   isDecisionStep,
 } from '@/lib/workflow';
-import FormPreviewPanel from './form-preview-panel';
+import { StepPreviewContent } from './form-preview-panel';
 
 interface Props {
   steps: FormStep[];
@@ -30,9 +30,15 @@ const SPECIAL_NODE_WIDTH = 220;
 const SPECIAL_NODE_HEIGHT = 104;
 const INSERT_LINE_WIDTH = 14;
 const INSERT_BUTTON_SIZE = 34;
-const HOVER_PREVIEW_WIDTH = 348;
-const HOVER_PREVIEW_HEIGHT = 654;
+const HOVER_PREVIEW_WIDTH = 260;
+const HOVER_PREVIEW_HEIGHT = 480;
 const NODE_GAP_X = 260;
+const PHONE_W = 260;
+const SHELL_PAD = 6;
+const SCREEN_W = PHONE_W - SHELL_PAD * 2;
+const INNER_W = 390;
+const SCALE = SCREEN_W / INNER_W;
+const PHONE_H = 480;
 
 const STEP_TYPE_LABELS: Record<FormStepType, string> = {
   foto: 'Fotos Antes/Depois',
@@ -61,6 +67,37 @@ function summarizeStep(step: FormStep): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+function WorkflowPhonePreview({ stepIndex, form, photos, steps }: { stepIndex: number; form: FormInput; photos: PhotoPair[]; steps: FormStep[] }) {
+  return (
+    <div className="flex-shrink-0 shadow-2xl" style={{ width: PHONE_W }}>
+      <div className="overflow-hidden rounded-[26px] bg-gray-900 p-[6px]">
+        <div className="overflow-hidden rounded-[22px] bg-white" style={{ height: PHONE_H }}>
+          <div className="flex justify-center bg-gray-900 pb-1 pt-1">
+            <div className="h-[4px] w-10 rounded-full bg-gray-700" />
+          </div>
+          <div style={{ overflow: 'hidden', height: PHONE_H - 20 }}>
+            <div
+              style={{
+                width: INNER_W,
+                transform: `scale(${SCALE})`,
+                transformOrigin: 'top left',
+                pointerEvents: 'none',
+              }}
+            >
+              <StepPreviewContent
+                form={form}
+                photos={photos}
+                steps={steps}
+                stepIndex={stepIndex}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function WorkflowEditor({
@@ -543,21 +580,9 @@ export default function WorkflowEditor({
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
-        <div>
-          <p className="text-sm font-semibold text-gray-900">Workflow do Funil</p>
-          <p className="text-xs text-gray-500">
-            Arraste os cards, use o <span className="font-semibold text-gray-700">+</span> para inserir novas etapas e visualize o preview ao passar o mouse.
-          </p>
-        </div>
-        <div className="rounded-full border border-violet-100 bg-violet-50 px-3 py-1.5 text-[11px] font-semibold text-violet-700">
-          Fluxo visual no estilo n8n
-        </div>
-      </div>
-
       <div
         ref={canvasViewportRef}
-        className="relative h-full min-h-0 flex-1 overflow-auto rounded-[28px] bg-[radial-gradient(circle_at_top,_rgba(107,28,58,0.06),_transparent_28%),linear-gradient(180deg,#ffffff_0%,#faf8fc_100%)]"
+        className="relative h-full min-h-[720px] flex-1 overflow-auto rounded-[28px] bg-[radial-gradient(circle_at_top,_rgba(107,28,58,0.06),_transparent_28%),linear-gradient(180deg,#ffffff_0%,#faf8fc_100%)]"
       >
         <div className="relative min-h-full" style={{ width: canvasWidth, height: canvasHeight }}>
           <svg className="pointer-events-none absolute inset-0 h-full w-full">
@@ -704,16 +729,12 @@ export default function WorkflowEditor({
               className="pointer-events-none absolute z-40"
               style={{ left: hoverPreview.x, top: hoverPreview.y, width: hoverPreview.width }}
             >
-              <div className="rounded-[32px] shadow-2xl shadow-gray-900/15">
-                <FormPreviewPanel
-                  form={previewForm}
-                  photos={photos}
-                  steps={stepsWithLayout}
-                  currentIndex={hoverPreview.stepIndex}
-                  onCurrentIndexChange={() => undefined}
-                  sticky={false}
-                />
-              </div>
+              <WorkflowPhonePreview
+                stepIndex={hoverPreview.stepIndex}
+                form={previewForm}
+                photos={photos}
+                steps={stepsWithLayout}
+              />
             </div>
           )}
 
