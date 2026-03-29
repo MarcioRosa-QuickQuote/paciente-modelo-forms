@@ -1225,14 +1225,39 @@ export default function FormEditor({ initialData, mode, templateId, templateData
 
                   {currentStepIsDecision ? (
                     <div className="space-y-4 rounded-2xl border border-violet-100 bg-violet-50/70 p-4">
-                      <div>
-                        <p className="text-sm font-semibold text-violet-900">Multiperguntas ativo</p>
-                        <p className="mt-1 text-xs leading-relaxed text-violet-700">
-                          Cada resposta vira um card no formulário e pode apontar para uma tela diferente no workflow.
-                        </p>
+                      <div className="sticky top-0 z-10 -mx-4 border-b border-violet-100 bg-violet-50/95 px-4 pb-4 pt-1 backdrop-blur">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-violet-900">Multiperguntas ativo</p>
+                            <p className="mt-1 text-xs leading-relaxed text-violet-700">
+                              Cada resposta vira um card no formulário e pode apontar para uma tela diferente no workflow.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={addCurrentWorkflowOption}
+                              className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 shadow-sm transition-colors hover:bg-violet-100"
+                            >
+                              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-100 text-sm leading-none text-violet-700">+</span>
+                              Adicionar resposta
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setWorkflowStepModalOpen(false);
+                                setEditorMode('workflow');
+                              }}
+                              className="rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100"
+                            >
+                              Abrir Workflow
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-3 pb-2">
                         {(currentStep.workflowOptions || []).map((option, index) => (
                           <div key={option.id} className="rounded-2xl border border-violet-100 bg-white p-3">
                             <div className="mb-2 flex items-center justify-between gap-3">
@@ -1265,26 +1290,6 @@ export default function FormEditor({ initialData, mode, templateId, templateData
                         ))}
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={addCurrentWorkflowOption}
-                          className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100"
-                        >
-                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-100 text-sm leading-none text-violet-700">+</span>
-                          Adicionar resposta
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setWorkflowStepModalOpen(false);
-                            setEditorMode('workflow');
-                          }}
-                          className="rounded-xl border border-violet-200 bg-white px-3 py-2 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100"
-                        >
-                          Abrir Workflow
-                        </button>
-                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
