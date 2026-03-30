@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import { createForm, getAllForms, initializeDb, rowToFormData } from '@/db';
 import { formInputSchema } from '@/lib/validators';
-import { generateSlug } from '@/lib/utils';
+import { generateDraftSlug, generateSlug } from '@/lib/utils';
 
 function getErrorDetails(error: unknown): string {
   if (error instanceof Error && error.message) {
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       const draftName = typeof body.name === 'string' && body.name.trim().length > 0
         ? body.name.trim()
         : 'Novo rascunho';
-      const draftSlug = `${generateSlug(draftName || 'rascunho')}-${id.slice(0, 8)}`;
+      const draftSlug = generateDraftSlug(draftName, id);
       const draftPhotos = Array.isArray(body.photos) ? body.photos : [];
       const firstPhoto = draftPhotos[0] || { before: body.beforeImage || '', after: body.afterImage || '' };
 

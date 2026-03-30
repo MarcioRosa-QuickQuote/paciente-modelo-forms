@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { deleteForm, getFormById, initializeDb, rowToFormData, updateForm } from '@/db';
 import { draftFormInputSchema, formInputSchema } from '@/lib/validators';
-import { generateSlug } from '@/lib/utils';
+import { generateDraftSlug, generateSlug } from '@/lib/utils';
 
 function getErrorDetails(error: unknown): string {
   if (error instanceof Error && error.message) {
@@ -79,8 +79,20 @@ export async function PUT(
     const updateData: Record<string, unknown> = {};
 
     if (data.name !== undefined) {
-      updateData.name = data.name;
-      updateData.slug = generateSlug(data.name);
+      const nextIsDraft = data.isDraft === true || (data.isDraft === undefined && existing.is_draft);
+      const trimmedName = data.name.trim();
+
+      if (nextIsDraft) {
+        const draftName = trimmedName.length > 0
+          ? data.name
+          : (existing.name?.trim().length ? existing.name : 'Novo rascunho');
+
+        updateData.name = draftName;
+        updateData.slug = generateDraftSlug(draftName, id);
+      } else {
+        updateData.name = data.name;
+        updateData.slug = generateSlug(data.name);
+      }
     }
     if (data.isDraft !== undefined) {
       updateData.is_draft = data.isDraft;
