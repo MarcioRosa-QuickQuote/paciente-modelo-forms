@@ -395,6 +395,15 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
   const totalResponses = firstStepStats.sim + firstStepStats.nao;
   const whatsappClicks = getPositionStats(visibleStepCount + 1).sim || 0;
   const conversionRate = totalResponses > 0 ? Math.round((whatsappClicks / totalResponses) * 100) : 0;
+  const stepVolumes = visibleSteps.map((step, index) => {
+    const stepStats = getStepStats(step, index + 1);
+    return stepStats.sim + stepStats.nao;
+  });
+  const maxBarValue = Math.max(1, whatsappClicks, ...stepVolumes);
+  const getRelativeBarWidth = (value: number) => {
+    if (value <= 0) return 0;
+    return (value / maxBarValue) * 100;
+  };
 
   return (
     <div ref={containerRef} className="relative">
@@ -541,6 +550,11 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                     const total = s.sim + s.nao;
                     const simPct = total > 0 ? Math.round((s.sim / total) * 100) : 0;
                     const naoPct = total > 0 ? Math.round((s.nao / total) * 100) : 0;
+                    const totalWidthPct = getRelativeBarWidth(total);
+                    const simSegmentPct = total > 0 ? (s.sim / total) * 100 : 0;
+                    const naoSegmentPct = total > 0 ? (s.nao / total) * 100 : 0;
+                    const simVisiblePct = (totalWidthPct * simSegmentPct) / 100;
+                    const naoVisiblePct = (totalWidthPct * naoSegmentPct) / 100;
                     const stepLabel = getStepInfo(step.type, step.label).label;
 
                     return (
@@ -560,23 +574,32 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                         </div>
                         {total > 0 ? (
                           <>
-                            <div className="flex gap-1 h-10 rounded-xl overflow-hidden">
-                              {simPct > 0 && (
-                                <div
-                                  className="bg-emerald-500 flex items-center justify-center transition-all duration-500 rounded-l-xl"
-                                  style={{ width: `${simPct}%` }}
-                                >
-                                  <span className="text-white text-xs font-bold">Sim {simPct}%</span>
-                                </div>
-                              )}
-                              {naoPct > 0 && (
-                                <div
-                                  className="bg-red-400 flex items-center justify-center transition-all duration-500 rounded-r-xl"
-                                  style={{ width: `${naoPct}%` }}
-                                >
-                                  <span className="text-white text-xs font-bold">Não {naoPct}%</span>
-                                </div>
-                              )}
+                            <div className="h-10 bg-gray-100 rounded-xl overflow-hidden">
+                              <div
+                                className="flex h-full rounded-xl overflow-hidden transition-[width] duration-500"
+                                style={{ width: `${totalWidthPct}%` }}
+                              >
+                                {s.sim > 0 && (
+                                  <div
+                                    className="bg-emerald-500 flex items-center justify-center transition-all duration-500"
+                                    style={{ width: `${simSegmentPct}%` }}
+                                  >
+                                    {simVisiblePct >= 16 && (
+                                      <span className="px-2 text-white text-xs font-bold whitespace-nowrap">Sim {simPct}%</span>
+                                    )}
+                                  </div>
+                                )}
+                                {s.nao > 0 && (
+                                  <div
+                                    className="bg-red-400 flex items-center justify-center transition-all duration-500"
+                                    style={{ width: `${naoSegmentPct}%` }}
+                                  >
+                                    {naoVisiblePct >= 16 && (
+                                      <span className="px-2 text-white text-xs font-bold whitespace-nowrap">Não {naoPct}%</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             <div className="flex justify-between mt-1">
                               <span className="text-xs text-emerald-600 font-medium">{s.sim} sim</span>
@@ -600,6 +623,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                       ? getStepStats(visibleSteps[visibleSteps.length - 1], visibleSteps.length).sim
                       : 0;
                     const clickPct = prevSim > 0 ? Math.round((clicks / prevSim) * 100) : 0;
+                    const clickBarWidthPct = getRelativeBarWidth(clicks);
                     return (
                       <div
                         onMouseEnter={e => handleBarMouseEnter(visibleSteps.length, e)}
@@ -618,14 +642,16 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                           <span className="text-xs text-gray-400">{clicks} cliques</span>
                         </div>
                         {clicks > 0 ? (
-                          <div className="flex gap-1 h-10 rounded-xl overflow-hidden">
+                          <div className="h-10 bg-gray-100 rounded-xl overflow-hidden">
                             <div
-                              className="bg-green-500 flex items-center justify-center transition-all duration-500 rounded-xl"
-                              style={{ width: `${Math.max(clickPct, 10)}%` }}
+                              className="h-full bg-green-500 flex items-center justify-center transition-[width] duration-500 rounded-xl"
+                              style={{ width: `${clickBarWidthPct}%` }}
                             >
-                              <span className="text-white text-xs font-bold">
-                                {clicks} cliques ({clickPct}% dos que aceitaram)
-                              </span>
+                              {clickBarWidthPct >= 22 && (
+                                <span className="px-2 text-white text-xs font-bold whitespace-nowrap">
+                                  {clicks} cliques ({clickPct}% dos que aceitaram)
+                                </span>
+                              )}
                             </div>
                           </div>
                         ) : (
