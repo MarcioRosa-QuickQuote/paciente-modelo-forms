@@ -5,10 +5,12 @@ import { CustomTexts, FormInput, FormStep, FormStepType, PhotoPair, WorkflowOpti
 import {
   WORKFLOW_CANVAS_MIN_HEIGHT,
   WORKFLOW_CANVAS_MIN_WIDTH,
+  WORKFLOW_SPECIAL_NODE_HEIGHT,
   WORKFLOW_SPECIAL_NODE_IDS,
+  WORKFLOW_SPECIAL_NODE_WIDTH,
   buildWorkflowConnections,
   ensureWorkflowLayout,
-  getSpecialWorkflowPosition,
+  getNormalizedSpecialWorkflowPositions,
   getStepWorkflowPosition,
   isDecisionStep,
   parseWorkflowNodePosition,
@@ -33,8 +35,6 @@ interface Props {
 
 const NODE_WIDTH = 188;
 const NODE_HEIGHT = 152;
-const SPECIAL_NODE_WIDTH = 220;
-const SPECIAL_NODE_HEIGHT = 104;
 const INSERT_LINE_WIDTH = 14;
 const INSERT_BUTTON_SIZE = 34;
 const HOVER_PREVIEW_WIDTH = 260;
@@ -177,14 +177,12 @@ export default function WorkflowEditor({
       ...(rejected ? { rejected } : {}),
     };
   }, [customTexts.workflowCelebrationNodePosition, customTexts.workflowRejectedNodePosition]);
-  const celebrationPosition = useMemo(
-    () => getSpecialWorkflowPosition(stepsWithLayout, 'celebration', specialPositions),
+  const normalizedSpecialPositions = useMemo(
+    () => getNormalizedSpecialWorkflowPositions(stepsWithLayout, specialPositions),
     [specialPositions, stepsWithLayout],
   );
-  const rejectedPosition = useMemo(
-    () => getSpecialWorkflowPosition(stepsWithLayout, 'rejected', specialPositions),
-    [specialPositions, stepsWithLayout],
-  );
+  const celebrationPosition = normalizedSpecialPositions.celebration;
+  const rejectedPosition = normalizedSpecialPositions.rejected;
 
   useEffect(() => {
     if (!steps.some(step => !step.workflowPosition)) return;
@@ -201,16 +199,25 @@ export default function WorkflowEditor({
       const deltaY = event.clientY - activeDrag.pointerY;
 
       if (activeDrag.kind === 'special' && activeDrag.screen) {
-        const key = activeDrag.screen === 'celebration'
-          ? 'workflowCelebrationNodePosition'
-          : 'workflowRejectedNodePosition';
+        const nextSpecialPositions = getNormalizedSpecialWorkflowPositions(stepsWithLayout, {
+          celebration: activeDrag.screen === 'celebration'
+            ? {
+                x: activeDrag.startX + deltaX,
+                y: activeDrag.startY + deltaY,
+              }
+            : celebrationPosition,
+          rejected: activeDrag.screen === 'rejected'
+            ? {
+                x: activeDrag.startX + deltaX,
+                y: activeDrag.startY + deltaY,
+              }
+            : rejectedPosition,
+        });
 
         onCustomTextsChange(prev => ({
           ...prev,
-          [key]: serializeWorkflowNodePosition({
-            x: activeDrag.startX + deltaX,
-            y: activeDrag.startY + deltaY,
-          }),
+          workflowCelebrationNodePosition: serializeWorkflowNodePosition(nextSpecialPositions.celebration),
+          workflowRejectedNodePosition: serializeWorkflowNodePosition(nextSpecialPositions.rejected),
         }));
         return;
       }
@@ -238,7 +245,7 @@ export default function WorkflowEditor({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragging, onChange, onCustomTextsChange, stepsWithLayout]);
+  }, [celebrationPosition, dragging, onChange, onCustomTextsChange, rejectedPosition, stepsWithLayout]);
 
   useEffect(() => {
     if (!dragging) return;
@@ -297,8 +304,8 @@ export default function WorkflowEditor({
     return Math.max(
       WORKFLOW_CANVAS_MIN_WIDTH,
       ...stepXs,
-      celebrationPosition.x + SPECIAL_NODE_WIDTH + 120,
-      rejectedPosition.x + SPECIAL_NODE_WIDTH + 120,
+      celebrationPosition.x + WORKFLOW_SPECIAL_NODE_WIDTH + 120,
+      rejectedPosition.x + WORKFLOW_SPECIAL_NODE_WIDTH + 120,
     );
   }, [celebrationPosition.x, rejectedPosition.x, stepsWithLayout]);
 
@@ -307,8 +314,8 @@ export default function WorkflowEditor({
     return Math.max(
       WORKFLOW_CANVAS_MIN_HEIGHT,
       ...stepYs,
-      celebrationPosition.y + SPECIAL_NODE_HEIGHT + 120,
-      rejectedPosition.y + SPECIAL_NODE_HEIGHT + 120,
+      celebrationPosition.y + WORKFLOW_SPECIAL_NODE_HEIGHT + 120,
+      rejectedPosition.y + WORKFLOW_SPECIAL_NODE_HEIGHT + 120,
     );
   }, [celebrationPosition.y, rejectedPosition.y, stepsWithLayout]);
 
@@ -323,15 +330,15 @@ export default function WorkflowEditor({
     frames.set(WORKFLOW_SPECIAL_NODE_IDS.celebration, {
       x: celebrationPosition.x,
       y: celebrationPosition.y,
-      width: SPECIAL_NODE_WIDTH,
-      height: SPECIAL_NODE_HEIGHT,
+      width: WORKFLOW_SPECIAL_NODE_WIDTH,
+      height: WORKFLOW_SPECIAL_NODE_HEIGHT,
     });
 
     frames.set(WORKFLOW_SPECIAL_NODE_IDS.rejected, {
       x: rejectedPosition.x,
       y: rejectedPosition.y,
-      width: SPECIAL_NODE_WIDTH,
-      height: SPECIAL_NODE_HEIGHT,
+      width: WORKFLOW_SPECIAL_NODE_WIDTH,
+      height: WORKFLOW_SPECIAL_NODE_HEIGHT,
     });
 
     return frames;
@@ -992,7 +999,7 @@ export default function WorkflowEditor({
 
           <div
             className="absolute overflow-visible"
-            style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: celebrationPosition.x, top: celebrationPosition.y }}
+            style={{ width: WORKFLOW_SPECIAL_NODE_WIDTH, minHeight: WORKFLOW_SPECIAL_NODE_HEIGHT, left: celebrationPosition.x, top: celebrationPosition.y }}
           >
             <span className="pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
             <div className={`rounded-[28px] border p-4 shadow-sm transition-all ${selectedSpecialNode === 'celebration' ? 'border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-500/10' : 'border-emerald-200 bg-emerald-50/80'}`}>
@@ -1033,7 +1040,7 @@ export default function WorkflowEditor({
 
           <div
             className="absolute overflow-visible"
-            style={{ width: SPECIAL_NODE_WIDTH, minHeight: SPECIAL_NODE_HEIGHT, left: rejectedPosition.x, top: rejectedPosition.y }}
+            style={{ width: WORKFLOW_SPECIAL_NODE_WIDTH, minHeight: WORKFLOW_SPECIAL_NODE_HEIGHT, left: rejectedPosition.x, top: rejectedPosition.y }}
           >
             <span className="pointer-events-none absolute -left-[7px] top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-white bg-rose-500 shadow-sm" />
             <div className={`rounded-[28px] border p-4 shadow-sm transition-all ${selectedSpecialNode === 'rejected' ? 'border-rose-500 bg-rose-50 shadow-lg shadow-rose-500/10' : 'border-rose-200 bg-rose-50/80'}`}>

@@ -6,12 +6,17 @@ export const WORKFLOW_SPECIAL_NODE_IDS = {
   celebration: '__workflow_celebration__',
   rejected: '__workflow_rejected__',
 } as const;
+export const WORKFLOW_SPECIAL_NODE_WIDTH = 220;
+export const WORKFLOW_SPECIAL_NODE_HEIGHT = 104;
 
 const START_X = 72;
 const START_Y = 96;
 const GAP_X = 260;
 const GAP_Y = 180;
 const BRANCH_GAP_Y = 220;
+const SPECIAL_NODE_MIN_Y = 48;
+const SPECIAL_NODE_OFFSET_X = 320;
+const SPECIAL_NODE_GAP_Y = 32;
 
 export type WorkflowSpecialScreen = 'celebration' | 'rejected';
 export type WorkflowDestination =
@@ -130,28 +135,50 @@ export function resolveWorkflowDestination(
   return { kind: 'special', screen: 'celebration' };
 }
 
+export function getNormalizedSpecialWorkflowPositions(
+  steps: FormStep[],
+  overrides?: Partial<Record<WorkflowSpecialScreen, WorkflowPosition>>,
+): Record<WorkflowSpecialScreen, WorkflowPosition> {
+  const positions = steps.map((step, index) => getStepWorkflowPosition(step, index));
+  const maxX = positions.length > 0 ? Math.max(...positions.map(position => position.x)) : START_X;
+  const minY = positions.length > 0 ? Math.min(...positions.map(position => position.y)) : START_Y;
+  const maxY = positions.length > 0 ? Math.max(...positions.map(position => position.y)) : START_Y + GAP_Y;
+  const minimumSpecialX = maxX + SPECIAL_NODE_OFFSET_X;
+
+  const celebration = {
+    x: Math.max(minimumSpecialX, Math.round(overrides?.celebration?.x ?? minimumSpecialX)),
+    y: Math.max(SPECIAL_NODE_MIN_Y, Math.round(overrides?.celebration?.y ?? Math.max(SPECIAL_NODE_MIN_Y, minY + 20))),
+  };
+
+  const rejected = {
+    x: Math.max(minimumSpecialX, Math.round(overrides?.rejected?.x ?? minimumSpecialX)),
+    y: Math.max(SPECIAL_NODE_MIN_Y, Math.round(overrides?.rejected?.y ?? (maxY + 160))),
+  };
+
+  const overlapsHorizontally = (
+    celebration.x < rejected.x + WORKFLOW_SPECIAL_NODE_WIDTH
+    && celebration.x + WORKFLOW_SPECIAL_NODE_WIDTH > rejected.x
+  );
+
+  if (overlapsHorizontally) {
+    const minimumRejectedY = celebration.y + WORKFLOW_SPECIAL_NODE_HEIGHT + SPECIAL_NODE_GAP_Y;
+    if (rejected.y < minimumRejectedY) {
+      rejected.y = minimumRejectedY;
+    }
+  }
+
+  return {
+    celebration,
+    rejected,
+  };
+}
+
 export function getSpecialWorkflowPosition(
   steps: FormStep[],
   screen: WorkflowSpecialScreen,
   overrides?: Partial<Record<WorkflowSpecialScreen, WorkflowPosition>>,
 ): WorkflowPosition {
-  const override = overrides?.[screen];
-  if (override) {
-    return {
-      x: Math.max(32, Math.round(override.x)),
-      y: Math.max(32, Math.round(override.y)),
-    };
-  }
-
-  const positions = steps.map((step, index) => getStepWorkflowPosition(step, index));
-  const maxX = positions.length > 0 ? Math.max(...positions.map(position => position.x)) : START_X;
-  const minY = positions.length > 0 ? Math.min(...positions.map(position => position.y)) : START_Y;
-  const maxY = positions.length > 0 ? Math.max(...positions.map(position => position.y)) : START_Y + GAP_Y;
-
-  return {
-    x: maxX + 320,
-    y: screen === 'celebration' ? Math.max(48, minY + 20) : maxY + 160,
-  };
+  return getNormalizedSpecialWorkflowPositions(steps, overrides)[screen];
 }
 
 export function buildWorkflowConnections(steps: FormStep[]): WorkflowConnection[] {
