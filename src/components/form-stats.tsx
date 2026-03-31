@@ -574,7 +574,7 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                         </div>
                         {total > 0 ? (
                           <>
-                            <div className="h-10 bg-gray-100 rounded-xl overflow-hidden">
+                            <div className="h-10 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
                               <div
                                 className="flex h-full rounded-xl overflow-hidden transition-[width] duration-500"
                                 style={{ width: `${totalWidthPct}%` }}
@@ -642,7 +642,8 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                           <span className="text-xs text-gray-400">{clicks} cliques</span>
                         </div>
                         {clicks > 0 ? (
-                          <div className="h-10 bg-gray-100 rounded-xl overflow-hidden">
+                          <>
+                          <div className="h-10 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
                             <div
                               className="h-full bg-green-500 flex items-center justify-center transition-[width] duration-500 rounded-xl"
                               style={{ width: `${clickBarWidthPct}%` }}
@@ -654,6 +655,12 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
                               )}
                             </div>
                           </div>
+                          <div className="mt-1 flex justify-center">
+                            <span className="text-xs text-green-600 font-medium text-center">
+                              {clicks} cliques ({clickPct}% dos que aceitaram)
+                            </span>
+                          </div>
+                          </>
                         ) : (
                           <div className="h-10 bg-gray-50 rounded-xl flex items-center justify-center">
                             <span className="text-xs text-gray-400">Nenhum clique ainda</span>
