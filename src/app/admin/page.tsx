@@ -2,10 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FormData } from '@/types/form';
+import { FormData, FormStep } from '@/types/form';
 import { formatCurrency } from '@/lib/utils';
 import FormStats from '@/components/form-stats';
 import { supabase } from '@/lib/supabase-client';
+
+interface StepStats {
+  sim: number;
+  nao: number;
+}
+
+interface StatsResponse {
+  byPosition: Record<string, StepStats>;
+  byStepId: Record<string, StepStats>;
+}
+
+interface DashboardFormSummary {
+  totalResponses: number;
+  whatsappClicks: number;
+}
 
 async function authFetch(url: string, options: RequestInit = {}) {
   const {
@@ -24,6 +39,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [expandedStats, setExpandedStats] = useState<string | null>(null);
   const [togglingIds, setTogglingIds] = useState<string[]>([]);
+  const [formSummaries, setFormSummaries] = useState<Record<string, DashboardFormSummary>>({});
 
   useEffect(() => {
     fetchForms();
@@ -33,11 +49,53 @@ export default function AdminDashboard() {
     try {
       const res = await authFetch('/api/forms');
       const data = await res.json();
-      setForms(Array.isArray(data) ? data : []);
+      const nextForms = Array.isArray(data) ? data : [];
+      setForms(nextForms);
+      await fetchFormSummaries(nextForms);
     } catch (error) {
       console.error('Error fetching forms:', error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchFormSummaries(nextForms: FormData[]) {
+    const publishedForms = nextForms.filter(form => !form.isDraft);
+
+    if (publishedForms.length === 0) {
+      setFormSummaries({});
+      return;
+    }
+
+    try {
+      const summaryEntries = await Promise.all(
+        publishedForms.map(async (form) => {
+          try {
+            const res = await authFetch(`/api/stats/${form.id}`);
+            if (!res.ok) {
+              throw new Error(`stats_failed_${form.id}`);
+            }
+
+            const stats = (await res.json()) as StatsResponse;
+            const visibleSteps = (form.steps || []).filter((step: FormStep) => !step.hidden);
+            const firstVisibleStep = visibleSteps[0];
+            const firstStepStats = firstVisibleStep
+              ? stats.byStepId?.[firstVisibleStep.id] || stats.byPosition?.['1'] || { sim: 0, nao: 0 }
+              : { sim: 0, nao: 0 };
+            const totalResponses = firstStepStats.sim + firstStepStats.nao;
+            const whatsappClicks = stats.byPosition?.[String(visibleSteps.length + 1)]?.sim || 0;
+
+            return [form.id, { totalResponses, whatsappClicks }] as const;
+          } catch (error) {
+            console.error(`Error fetching summary for form ${form.id}:`, error);
+            return [form.id, { totalResponses: 0, whatsappClicks: 0 }] as const;
+          }
+        })
+      );
+
+      setFormSummaries(Object.fromEntries(summaryEntries));
+    } catch (error) {
+      console.error('Error fetching form summaries:', error);
     }
   }
 
@@ -198,6 +256,7 @@ export default function AdminDashboard() {
             const isToggling = togglingIds.includes(form.id);
             const isDraftCard = form.isDraft;
             const isLinkDisabled = isDraftCard || !form.isActive || isToggling;
+            const summary = formSummaries[form.id];
 
             return (
               <div key={form.id} className="space-y-0">
@@ -246,6 +305,19 @@ export default function AdminDashboard() {
                           {isDraftCard ? 'Rascunho privado - ainda nao publicado' : `/formulario/${form.slug}`}
                         </code>
                       </div>
+
+                      {!isDraftCard && (
+                        <div className="mt-4 grid grid-cols-2 gap-3 sm:max-w-sm">
+                          <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Total</p>
+                            <p className="text-xl font-bold text-gray-900">{summary ? summary.totalResponses : '--'}</p>
+                          </div>
+                          <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
+                            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-600">Clicaram no Zap</p>
+                            <p className="text-xl font-bold text-emerald-700">{summary ? summary.whatsappClicks : '--'}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-col items-stretch gap-3 xl:ml-4 xl:items-end">
