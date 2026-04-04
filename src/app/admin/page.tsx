@@ -449,13 +449,12 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
+                  {expandedStats === form.id && (
+                    <div className="mt-6 border-t border-gray-100 pt-6">
+                      <FormStats formId={form.id} formData={form} embedded />
+                    </div>
+                  )}
                 </div>
-
-                {expandedStats === form.id && (
-                  <div className="mt-2">
-                    <FormStats formId={form.id} formData={form} />
-                  </div>
-                )}
               </div>
             );
           })}

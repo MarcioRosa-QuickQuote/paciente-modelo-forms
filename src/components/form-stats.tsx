@@ -223,7 +223,15 @@ function LeadsList({ leads, loading }: { leads: Lead[]; loading: boolean }) {
 
 // ── FormStats ──────────────────────────────────────────────────────────────────
 
-export default function FormStats({ formId, formData }: { formId: string; formData: FormData }) {
+export default function FormStats({
+  formId,
+  formData,
+  embedded = false,
+}: {
+  formId: string;
+  formData: FormData;
+  embedded?: boolean;
+}) {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [clearing, setClearing] = useState(false);
@@ -404,10 +412,13 @@ export default function FormStats({ formId, formData }: { formId: string; formDa
     if (value <= 0) return 0;
     return (value / maxBarValue) * 100;
   };
+  const shellClass = embedded
+    ? 'overflow-hidden'
+    : 'bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden';
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className={shellClass}>
       {/* Header */}
       <div className="p-6 border-b border-gray-100 flex items-start justify-between gap-4">
         <div>
