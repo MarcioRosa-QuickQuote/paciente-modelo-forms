@@ -307,14 +307,14 @@ export default function AdminDashboard() {
                       </div>
 
                       {!isDraftCard && (
-                        <div className="mt-4 grid grid-cols-2 gap-3 sm:max-w-sm">
-                          <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Total</p>
-                            <p className="text-xl font-bold text-gray-900">{summary ? summary.totalResponses : '--'}</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
+                            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Total</span>
+                            <span className="text-sm font-bold text-gray-900">{summary ? summary.totalResponses : '--'}</span>
                           </div>
-                          <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-                            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-600">Clicaram no Zap</p>
-                            <p className="text-xl font-bold text-emerald-700">{summary ? summary.whatsappClicks : '--'}</p>
+                          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/70 px-3 py-1.5">
+                            <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">Zap</span>
+                            <span className="text-sm font-bold text-emerald-700">{summary ? summary.whatsappClicks : '--'}</span>
                           </div>
                         </div>
                       )}
