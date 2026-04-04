@@ -20,6 +20,7 @@ interface StatsResponse {
 interface DashboardFormSummary {
   totalResponses: number;
   whatsappClicks: number;
+  conversionRate: number;
 }
 
 async function authFetch(url: string, options: RequestInit = {}) {
@@ -84,11 +85,12 @@ export default function AdminDashboard() {
               : { sim: 0, nao: 0 };
             const totalResponses = firstStepStats.sim + firstStepStats.nao;
             const whatsappClicks = stats.byPosition?.[String(visibleSteps.length + 1)]?.sim || 0;
+            const conversionRate = totalResponses > 0 ? Math.round((whatsappClicks / totalResponses) * 100) : 0;
 
-            return [form.id, { totalResponses, whatsappClicks }] as const;
+            return [form.id, { totalResponses, whatsappClicks, conversionRate }] as const;
           } catch (error) {
             console.error(`Error fetching summary for form ${form.id}:`, error);
-            return [form.id, { totalResponses: 0, whatsappClicks: 0 }] as const;
+            return [form.id, { totalResponses: 0, whatsappClicks: 0, conversionRate: 0 }] as const;
           }
         })
       );
@@ -306,18 +308,6 @@ export default function AdminDashboard() {
                         </code>
                       </div>
 
-                      {!isDraftCard && (
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
-                          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
-                            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Total</span>
-                            <span className="text-sm font-bold text-gray-900">{summary ? summary.totalResponses : '--'}</span>
-                          </div>
-                          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/70 px-3 py-1.5">
-                            <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">Zap</span>
-                            <span className="text-sm font-bold text-emerald-700">{summary ? summary.whatsappClicks : '--'}</span>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex flex-col items-stretch gap-3 xl:ml-4 xl:items-end">
@@ -329,27 +319,45 @@ export default function AdminDashboard() {
                           Continuar editando
                         </Link>
                       )}
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={form.isActive}
-                        aria-label={isDraftCard ? 'Rascunho nao pode ser ativado' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
-                        disabled={isToggling || isDraftCard}
-                        onClick={() => handleToggleActive(form)}
-                        className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors ${
-                          !isDraftCard && form.isActive ? 'bg-emerald-500' : 'bg-gray-300'
-                        } ${isToggling ? 'cursor-wait opacity-70' : isDraftCard ? 'cursor-not-allowed opacity-50' : 'hover:shadow-sm'}`}
-                        title={isDraftCard ? 'Publique o rascunho primeiro' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
-                      >
-                        <span className="sr-only">
-                          {isDraftCard ? 'Publique o rascunho primeiro' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
-                        </span>
-                        <span
-                          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                            !isDraftCard && form.isActive ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        {!isDraftCard && (
+                          <>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
+                              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Total</span>
+                              <span className="text-sm font-bold text-gray-900">{summary ? summary.totalResponses : '--'}</span>
+                            </div>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/70 px-3 py-1.5">
+                              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">Zap</span>
+                              <span className="text-sm font-bold text-emerald-700">{summary ? summary.whatsappClicks : '--'}</span>
+                            </div>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-[#6B1C3A]/15 bg-[#6B1C3A]/5 px-3 py-1.5">
+                              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6B1C3A]">Conv.</span>
+                              <span className="text-sm font-bold text-[#6B1C3A]">{summary ? `${summary.conversionRate}%` : '--'}</span>
+                            </div>
+                          </>
+                        )}
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={form.isActive}
+                          aria-label={isDraftCard ? 'Rascunho nao pode ser ativado' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
+                          disabled={isToggling || isDraftCard}
+                          onClick={() => handleToggleActive(form)}
+                          className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors ${
+                            !isDraftCard && form.isActive ? 'bg-emerald-500' : 'bg-gray-300'
+                          } ${isToggling ? 'cursor-wait opacity-70' : isDraftCard ? 'cursor-not-allowed opacity-50' : 'hover:shadow-sm'}`}
+                          title={isDraftCard ? 'Publique o rascunho primeiro' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
+                        >
+                          <span className="sr-only">
+                            {isDraftCard ? 'Publique o rascunho primeiro' : (form.isActive ? 'Desativar formulario' : 'Ativar formulario')}
+                          </span>
+                          <span
+                            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                              !isDraftCard && form.isActive ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
 
                       <div className="flex flex-wrap items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
                         <button
